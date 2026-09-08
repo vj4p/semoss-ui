@@ -28,6 +28,7 @@ import {
 	toast,
 } from "@semoss/ui/next";
 import { uploadFile } from "@/api";
+import ollamaLogo from "@/assets/img/OLLAMA.svg";
 import {
 	CATALOG_MODALITIES,
 	toReasoningConfig,
@@ -86,11 +87,18 @@ const MODEL_PROVIDER_SUBTYPE_BY_NAME: Record<string, string> = {
 	"Model Router": "MODEL_ROUTER",
 };
 
+// Providers whose tab icon isn't in the shared EngineSubtypeIcon registry -
+// rendered directly from a bundled asset instead.
+const PROVIDER_ICON_URL_BY_NAME: Record<string, string> = {
+	Ollama: ollamaLogo,
+};
+
 /**
  * Helper component to display provider icon with fallback to initials
  */
 const ProviderIcon: React.FC<{ provider: string }> = ({ provider }) => {
 	const subtype = MODEL_PROVIDER_SUBTYPE_BY_NAME[provider];
+	const iconUrl = PROVIDER_ICON_URL_BY_NAME[provider];
 
 	const getInitials = (name: string) => {
 		return name
@@ -100,6 +108,16 @@ const ProviderIcon: React.FC<{ provider: string }> = ({ provider }) => {
 			.slice(0, 2)
 			.toUpperCase();
 	};
+
+	if (iconUrl) {
+		return (
+			<img
+				src={iconUrl}
+				alt={`${provider} logo`}
+				className="size-5 rounded-[4px] object-contain"
+			/>
+		);
+	}
 
 	if (subtype) {
 		return (
