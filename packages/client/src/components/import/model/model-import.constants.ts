@@ -1,7 +1,8 @@
 // Removed unused import (was: import { link } from "fs");
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: TODO
-import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
+
 import ollamaLogo from "@/assets/img/OLLAMA.svg";
+import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
 
 type FieldType =
 	| "text"
