@@ -1,6 +1,7 @@
 // Removed unused import (was: import { link } from "fs");
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: TODO
 import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
+import ollamaLogo from "@/assets/img/OLLAMA.svg";
 
 type FieldType =
 	| "text"
@@ -219,6 +220,18 @@ const OTHER_MODEL_FORM_CONFIG_BY_PROVIDER: Record<string, ModelFormConfig> = {
 			},
 		],
 	},
+	Ollama: {
+		fieldOverrides: [
+			{
+				key: "MODEL",
+				patch: { default: "", value: "", disabled: false },
+			},
+			{
+				key: "INIT_MODEL_ENGINE",
+				patch: { disabled: false },
+			},
+		],
+	},
 	Perplexity: {
 		fieldOverrides: [
 			{
@@ -363,6 +376,14 @@ export const IMPORTABLE_MODELS = {
 				"Define your base URL, model route, and API parameters to ensure compatibility with OpenAI’s API schema.",
 			Credentials:
 				"Enter your API key or authentication header details to securely connect with the compatible API service.",
+		},
+		Ollama: {
+			General:
+				"Connect to a local or remote Ollama server to use any model you have pulled there, via Ollama's OpenAI-compatible API.",
+			Settings:
+				"Set the endpoint, model tag, and token limits to match the model running on your Ollama server.",
+			Credentials:
+				"Ollama does not require a real API key - enter any non-empty value to satisfy the OpenAI client.",
 		},
 		Perplexity: {
 			General:
@@ -2173,6 +2194,148 @@ export const IMPORTABLE_MODELS = {
 			],
 		},
 		{
+			name: "Ollama",
+			types: [
+				{
+					model_types: ["llm"],
+					fields: [
+						{
+							key: "NAME",
+							label: "Catalog Name",
+							type: "text",
+							required: true,
+							category: "General",
+							rules: {
+								pattern: {
+									value: /^[\w\-\s]+$/,
+									message:
+										"Catalog names can only contain alphanumeric characters and dashes.",
+								},
+								custom_rules: {
+									value: 'CheckEngineName ( "[VALUE]") ;',
+									message:
+										"This Catalog name has already been used, please try another.",
+								},
+							},
+						},
+						{
+							key: "MODEL_TYPE",
+							label: "Model Type",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "TEXT_GENERATION",
+							category: "General",
+						},
+						{
+							key: "MODEL_BRAND",
+							label: "Model Brand",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "OLLAMA",
+							category: "General",
+						},
+						{
+							key: "MODEL",
+							label: "Model Name",
+							type: "text",
+							disabled: false,
+							required: true,
+							category: "General",
+							helperText:
+								"The exact model tag pulled on that Ollama server, e.g. llama3.2 or mistral - see `ollama list` on that server.",
+						},
+						{
+							key: "VAR_NAME",
+							label: "Variable Name",
+							type: "hidden",
+							required: true,
+							disabled: true,
+							value: "myModel",
+							category: "General",
+						},
+						{
+							key: "ENDPOINT",
+							label: "Endpoint",
+							type: "url",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"Ollama's OpenAI-compatible endpoint, e.g. http://<host>:11434/v1 - must include the /v1 suffix.",
+						},
+						{
+							key: "OPEN_AI_KEY",
+							label: "API Key",
+							type: "password",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"Ollama does not validate this - any non-empty value works, e.g. 'ollama'.",
+						},
+						{
+							key: "MAX_TOKENS",
+							label: "Max Completion Tokens",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Max Token must be a positive integer",
+								},
+							},
+							category: "Settings",
+						},
+						{
+							key: "CONTEXT_WINDOW",
+							label: "Context Window",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Context Window must be a positive integer",
+								},
+							},
+							category: "Settings",
+						},
+						{
+							key: "KEEP_INPUT_OUTPUT",
+							label: "Record Questions and Responses",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "KEEP_CONVERSATION_HISTORY",
+							label: "Keep Conversation History",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "INIT_MODEL_ENGINE",
+							label: "Init Script",
+							type: "text",
+							required: true,
+							disabled: false,
+							helperText:
+								"Note: Ollama is connected using the OpenAI-compatible API.",
+							default:
+								"import genai_client;${VAR_NAME} = genai_client.OpenAiClient(endpoint = '${ENDPOINT}', model_name = '${MODEL}', api_key = '${OPEN_AI_KEY}', context_window = ${CONTEXT_WINDOW}, max_tokens = ${MAX_TOKENS})",
+							category: "Settings",
+						},
+					],
+				},
+			],
+		},
+		{
 			name: "Perplexity",
 			types: [
 				{
@@ -3440,6 +3603,19 @@ export const MODEL_VERSIONS: ModelVersionsByProvider = {
 					},
 				],
 			},
+		},
+	],
+	Ollama: [
+		{
+			name: "ollama-model",
+			display: "Ollama Model",
+			icon: ollamaLogo,
+			modelBrand: "OLLAMA",
+			embedding: false,
+			link: "https://github.com/ollama/ollama/blob/main/docs/api.md",
+			description:
+				"Connect to any model served by a reachable Ollama instance, using Ollama's OpenAI-compatible API.",
+			formConfig: OTHER_MODEL_FORM_CONFIG_BY_PROVIDER.Ollama,
 		},
 	],
 	Perplexity: [

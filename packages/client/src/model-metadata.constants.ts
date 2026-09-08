@@ -33,6 +33,7 @@ export const SERVING_PROVIDER_OPTIONS: ModelMetadataOption[] = [
 	{ label: "NVIDIA NIM", value: "NVIDIA_NIM" },
 	{ label: "Perplexity", value: "PERPLEXITY" },
 	{ label: "Self-hosted / Custom Endpoint", value: "SELF_HOSTED" },
+	{ label: "Ollama", value: "OLLAMA" },
 	{ label: "Local / Embedded", value: "LOCAL" },
 ];
 

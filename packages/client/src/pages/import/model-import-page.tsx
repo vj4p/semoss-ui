@@ -252,6 +252,7 @@ const SERVING_PROVIDER_BY_NAME: Record<string, string> = {
 	Embedded: "LOCAL",
 	"Google Gemini": "GOOGLE_VERTEX",
 	"NVIDIA NIM": "NVIDIA_NIM",
+	Ollama: "OLLAMA",
 	OpenAI: "OPENAI",
 	Perplexity: "PERPLEXITY",
 	"Self Hosted": "SELF_HOSTED",
