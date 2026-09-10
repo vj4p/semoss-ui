@@ -18,6 +18,21 @@ export const FilesPanel = ({ projectId }: FilesPanelProps) => {
 	const explorer = useFileExplorer({
 		mode: { type: "APP", app: projectId },
 		onItemSelect: (item: FileItem) => setOpenPath(item.path),
+		onItemsMoved: (movedItems) => {
+			setOpenPath((current) => {
+				if (current === null) return current;
+				const moved = movedItems.find((m) => m.oldPath === current);
+				return moved ? moved.newPath : current;
+			});
+		},
+		onItemsDeleted: (deletedItems) => {
+			setOpenPath((current) => {
+				if (current === null) return current;
+				return deletedItems.some((item) => item.path === current)
+					? null
+					: current;
+			});
+		},
 	});
 
 	return (
