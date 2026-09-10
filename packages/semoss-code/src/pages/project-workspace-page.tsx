@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router";
 import { useInsight } from "@semoss/sdk/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@semoss/ui/next";
 import { ChatPanel } from "../components/chat/chat-panel";
 import { FilesPanel } from "../components/files/files-panel";
 import { VersionsPanel } from "../components/versions/versions-panel";
@@ -13,6 +14,13 @@ export const ProjectWorkspacePage = () => {
 	const [rightTab, setRightTab] = useState<RightTab>("FILES");
 
 	if (!projectId) return null;
+	if (insight.error) {
+		return (
+			<div className="p-4 text-destructive text-sm">
+				Failed to load: {insight.error.message}
+			</div>
+		);
+	}
 	if (!insight.isReady) return <div className="p-4">Loading…</div>;
 
 	return (
@@ -25,29 +33,28 @@ export const ProjectWorkspacePage = () => {
 				/>
 			</div>
 			<div className="flex w-1/2 flex-col">
-				<div className="flex border-b">
-					<button
-						type="button"
-						className={`px-4 py-2 text-sm ${rightTab === "FILES" ? "border-primary border-b-2 font-medium" : "text-muted-foreground"}`}
-						onClick={() => setRightTab("FILES")}
+				<Tabs
+					value={rightTab}
+					onValueChange={(value) => setRightTab(value as RightTab)}
+					className="flex-1"
+				>
+					<TabsList>
+						<TabsTrigger value="FILES">Files</TabsTrigger>
+						<TabsTrigger value="VERSIONS">Versions</TabsTrigger>
+					</TabsList>
+					<TabsContent
+						value="FILES"
+						className="flex-1 overflow-hidden"
 					>
-						Files
-					</button>
-					<button
-						type="button"
-						className={`px-4 py-2 text-sm ${rightTab === "VERSIONS" ? "border-primary border-b-2 font-medium" : "text-muted-foreground"}`}
-						onClick={() => setRightTab("VERSIONS")}
-					>
-						Versions
-					</button>
-				</div>
-				<div className="flex-1 overflow-hidden">
-					{rightTab === "FILES" ? (
 						<FilesPanel key={projectId} projectId={projectId} />
-					) : (
+					</TabsContent>
+					<TabsContent
+						value="VERSIONS"
+						className="flex-1 overflow-hidden"
+					>
 						<VersionsPanel key={projectId} projectId={projectId} />
-					)}
-				</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</div>
 	);
