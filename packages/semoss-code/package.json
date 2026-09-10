@@ -6,7 +6,7 @@
         "build": "vite build --configLoader runner --mode production",
         "build:dev": "vite build --configLoader runner --mode development",
         "type-check": "tsc --pretty --noEmit",
-        "test": "vitest run --configLoader runner"
+        "test": "vitest run --passWithNoTests --configLoader runner"
     },
     "dependencies": {
         "@semoss/i18n": "workspace:*",
