@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AgentRunItem, AgentRunSubscription } from "@semoss/sdk";
 import { AgentStore } from "@semoss/sdk";
 
@@ -91,6 +91,15 @@ export const useAgentSession = (
 		},
 		[roomId, insightId],
 	);
+
+	// Stop polling when the consuming component unmounts (e.g. the user
+	// navigates away mid-run) -- otherwise the subscription's poll loop
+	// keeps running against a component that's no longer there to render it.
+	useEffect(() => {
+		return () => {
+			subscriptionRef.current?.stop();
+		};
+	}, []);
 
 	return { items, status, send };
 };
