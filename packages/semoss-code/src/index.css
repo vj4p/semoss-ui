@@ -1,0 +1,23 @@
+@import "@semoss/ui/globals.css";
+@import "@semoss/shared/globals.css";
+
+@source "./**/*.{ts,tsx}";
+@source "../../../libs/shared/src/**/*.{ts,tsx}";
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+        Cantarell, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
