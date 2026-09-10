@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { runPixel } from "@semoss/sdk";
-import { Button } from "@semoss/ui/next";
+import { Button, toast } from "@semoss/ui/next";
 
 interface Commit {
 	commitId: string;
@@ -26,6 +26,7 @@ export const VersionsPanel = ({ projectId }: VersionsPanelProps) => {
 		);
 		if (response.errors.length > 0) {
 			console.error(response.errors.join(","));
+			toast.error("Failed to load commit history.");
 			return;
 		}
 		setCommits(response.pixelReturn[0].output);
@@ -46,6 +47,11 @@ export const VersionsPanel = ({ projectId }: VersionsPanelProps) => {
 			await loadCommits();
 		} catch (e) {
 			console.error(e);
+			toast.error(
+				e instanceof Error
+					? e.message
+					: "Failed to restore this commit.",
+			);
 		} finally {
 			setRestoringId(null);
 		}
@@ -76,7 +82,7 @@ export const VersionsPanel = ({ projectId }: VersionsPanelProps) => {
 					<Button
 						size="sm"
 						variant="outline"
-						disabled={restoringId === commit.commitId}
+						disabled={restoringId !== null}
 						onClick={() => void restore(commit.commitId)}
 					>
 						Restore

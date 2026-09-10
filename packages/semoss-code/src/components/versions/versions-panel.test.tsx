@@ -31,7 +31,8 @@ test("lists commits and restores on click", async () => {
 				},
 			],
 		})
-		.mockResolvedValueOnce({ errors: [], pixelReturn: [{ output: true }] });
+		.mockResolvedValueOnce({ errors: [], pixelReturn: [{ output: true }] })
+		.mockResolvedValueOnce({ errors: [], pixelReturn: [{ output: [] }] });
 
 	render(<VersionsPanel projectId="proj-1" />);
 
