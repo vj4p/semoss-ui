@@ -23,6 +23,7 @@ import {
 	AgentExecutionLimitsFields,
 	AgentFormSection,
 	type AgentFormValues,
+	AgentHarnessField,
 	AgentHooksField,
 	AgentModelField,
 	AgentSubagentsField,
@@ -41,6 +42,7 @@ type GetWorkspaceResponse = {
 	known_hook_kinds?: string[];
 	config_json?: {
 		model_id?: string;
+		harness_type?: string;
 		use_default_agent_tools?: boolean;
 		budgets?: {
 			max_turns?: number;
@@ -93,6 +95,7 @@ export const AgentEditor = () => {
 					description: data.description ?? "",
 					instructions: data.system_prompt ?? "",
 					modelId: data.config_json?.model_id ?? "",
+					harnessType: data.config_json?.harness_type ?? "",
 					useDefaultAgentTools:
 						data.config_json?.use_default_agent_tools ?? true,
 					maxTurns:
@@ -217,6 +220,7 @@ export const AgentEditor = () => {
 								)}
 							/>
 							<AgentModelField control={control} />
+							<AgentHarnessField control={control} />
 						</AgentFormSection>
 
 						<Separator />

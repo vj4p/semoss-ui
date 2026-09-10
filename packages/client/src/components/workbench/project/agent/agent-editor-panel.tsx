@@ -28,6 +28,7 @@ type GetWorkspaceResponse = {
 	default_tools?: AgentDefaultTool[];
 	config_json?: {
 		model_id?: string;
+		harness_type?: string;
 		use_default_agent_tools?: boolean;
 		tool_policy?: {
 			default_tools?: {
@@ -63,6 +64,7 @@ function toFormValues(response: GetWorkspaceResponse): AgentFormValues {
 		description: response.description ?? "",
 		instructions: response.system_prompt ?? "",
 		modelId: response.config_json?.model_id ?? "",
+		harnessType: response.config_json?.harness_type ?? "",
 		useDefaultAgentTools:
 			response.config_json?.use_default_agent_tools ?? true,
 		disabledDefaultTools:
