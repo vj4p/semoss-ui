@@ -543,7 +543,6 @@ export const runAgentMessage = async (
 				roomId: room.roomId,
 				command: text,
 				engine: room.model.engine_id,
-				harnessType: AGENT_HARNESS_TYPE,
 				agentId: room.options.workspace?.workspace_id,
 			},
 			room.insightId,
