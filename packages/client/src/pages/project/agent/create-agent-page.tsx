@@ -25,6 +25,7 @@ import {
 	AgentExecutionLimitsFields,
 	AgentFormSection,
 	type AgentFormValues,
+	AgentHarnessField,
 	AgentModelField,
 	AgentSubagentsField,
 	buildEditWorkspacePixel,
@@ -86,6 +87,7 @@ export const CreateAgentPage = () => {
 			// as empty and would otherwise wipe them.
 			const hasExecutionSettings =
 				data.modelId ||
+				data.harnessType ||
 				!data.useDefaultAgentTools ||
 				data.maxTurns ||
 				data.maxReflections ||
@@ -232,6 +234,7 @@ export const CreateAgentPage = () => {
 						/>
 
 						<AgentModelField control={control} />
+						<AgentHarnessField control={control} />
 					</AgentFormSection>
 
 					<AgentFormSection
