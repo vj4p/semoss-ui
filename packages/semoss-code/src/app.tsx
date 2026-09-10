@@ -5,6 +5,7 @@ import { Env, InsightProvider } from "@semoss/sdk/react";
 import { LoginPage } from "@semoss/shared";
 import { ThemeProvider, Toaster } from "@semoss/ui/next";
 import { ProjectPickerPage } from "./pages/project-picker-page";
+import { ProjectWorkspacePage } from "./pages/project-workspace-page";
 
 Env.update({
 	MODULE: import.meta.env.MODULE || "/Monolith",
@@ -22,7 +23,7 @@ const router = createHashRouter([
 	},
 	{
 		path: "/project/:projectId",
-		element: <div>Workspace — coming in Task 7</div>,
+		element: <ProjectWorkspacePage />,
 	},
 ]);
 
