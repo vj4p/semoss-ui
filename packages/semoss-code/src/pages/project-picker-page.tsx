@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { runPixel } from "@semoss/sdk";
-import { Button, Card, Input, Spinner } from "@semoss/ui/next";
+import { Button, Card, Input, Spinner, toast } from "@semoss/ui/next";
 
 interface CodeProject {
 	project_id: string;
@@ -30,6 +30,7 @@ export const ProjectPickerPage = () => {
 			setStatus("SUCCESS");
 		} catch (e) {
 			console.error(e);
+			toast.error("Failed to load projects.");
 			setStatus("ERROR");
 		}
 	};
@@ -51,6 +52,9 @@ export const ProjectPickerPage = () => {
 			navigate(`/project/${projectId}`);
 		} catch (e) {
 			console.error(e);
+			toast.error(
+				e instanceof Error ? e.message : "Failed to create project.",
+			);
 			setIsCreating(false);
 		}
 	};
