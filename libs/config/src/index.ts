@@ -1,2 +1,2 @@
-export * from "./create-vite-config";
-export * from "./vite.constants";
+export * from "./create-vite-config.ts";
+export * from "./vite.constants.ts";
