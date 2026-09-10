@@ -42,6 +42,7 @@ export const useAgentSession = (
 
 	const send = useCallback(
 		async (command: string, workspaceId?: string) => {
+			subscriptionRef.current?.stop();
 			setStatus("RUNNING");
 			try {
 				const store = await AgentStore.start(
