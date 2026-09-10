@@ -6,6 +6,7 @@ export {
 	type AgentFormProps,
 } from "./agent-form";
 export { AgentFormSection } from "./agent-form-section";
+export { AgentHarnessField } from "./agent-harness-field";
 export { AgentHooksField } from "./agent-hooks-field";
 export { AgentModelField } from "./agent-model-field";
 export { AgentSubagentsField } from "./agent-subagents-field";
