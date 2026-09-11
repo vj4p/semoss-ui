@@ -20,11 +20,13 @@ const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL
  * These load straight from a sibling package's build output, so there is no
  * project to look up and no `public_home` round trip.
  */
-const SYSTEM_APP_URI = /^system:\/\/([a-zA-Z0-9._-]+)(\/.*)?$/;
+const SYSTEM_APP_URI = /^system:\/\/([a-zA-Z0-9_-]+)(\/.*)?$/;
 
 /**
  * Resolves a `system://` resourceURI to a path relative to this app's own
  * build output. Returns null when the URI is not a system app URI.
+ *
+ * Security: validates that path segments don't contain traversal sequences.
  */
 const resolveSystemAppUrl = (
 	resourceURI: string | undefined,
@@ -33,7 +35,22 @@ const resolveSystemAppUrl = (
 		return null;
 	}
 	const match = SYSTEM_APP_URI.exec(resourceURI);
-	return match ? `../../${match[1]}/dist${match[2] ?? "/"}` : null;
+	if (!match) {
+		return null;
+	}
+
+	const packageName = match[1];
+	const path = match[2] ?? "/";
+
+	// Reject path traversal attempts in both package name and path
+	if (packageName.includes("..") || path.includes("..")) {
+		console.warn(
+			`[Security] Rejected system:// URI with traversal: ${resourceURI}`,
+		);
+		return null;
+	}
+
+	return `../../${packageName}/dist${path}`;
 };
 
 interface ToolsViewProps {

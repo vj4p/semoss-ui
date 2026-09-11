@@ -313,10 +313,11 @@ export const ToolsDefaultView = observer(
 					success = true;
 				} else {
 					// Normal MCP tool execution for non-Playwright tools
+					// Security: wrap all string parameters consistently to prevent pixel injection
 					const response = await room.runRoomPixel<[unknown]>(
-						`RunMCPTool(project = [ "${getToolEngineId(tool.json._meta) || app}" ], roomId=${JSON.stringify(room.roomId)}, function=[ "${
+						`RunMCPTool(project = [ "<encode>${getToolEngineId(tool.json._meta) || app}</encode>" ], roomId=${JSON.stringify(room.roomId)}, function=[ "<encode>${
 							tool?.json.name
-						}" ], paramValues=[ ${JSON.stringify(data)} ]);`,
+						}</encode>" ], paramValues=[ ${JSON.stringify(data)} ]);`,
 						false,
 						false,
 					);

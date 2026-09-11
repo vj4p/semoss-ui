@@ -557,13 +557,18 @@ export class ToolSaveController {
 		}
 	};
 
-	/** Inner AddPlaygroundToolExecution params (no wrapper) for a save entry. */
+	/**
+	 * Inner AddPlaygroundToolExecution params (no wrapper) for a save entry.
+	 *
+	 * Security: all string values are wrapped in <encode> tags to prevent pixel
+	 * injection via IDs or names containing pixel metacharacters.
+	 */
 	private buildParams = (entry: ToolSaveEntry): string =>
-		`engine=["${this.message.room.model.engine_id}"],
-roomId=["${this.message.room.roomId}"],
-${this.message.id ? `parentMessageId=["${this.message.id}"],` : ""}
-toolId=["${entry.tool.id}"],
-toolName=["${entry.tool.json.name}"],
+		`engine=["<encode>${this.message.room.model.engine_id}</encode>"],
+roomId=["<encode>${this.message.room.roomId}</encode>"],
+${this.message.id ? `parentMessageId=["<encode>${this.message.id}</encode>"],` : ""}
+toolId=["<encode>${entry.tool.id}</encode>"],
+toolName=["<encode>${entry.tool.json.name}</encode>"],
 toolExecutionResponse=["<encode>${entry.toolResponse}</encode>"],
 paramValues=[${JSON.stringify({})}],
 mcpToolStatus=${JSON.stringify(entry.toolStatus)},
