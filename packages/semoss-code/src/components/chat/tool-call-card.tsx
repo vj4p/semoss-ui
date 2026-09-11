@@ -1,4 +1,10 @@
-import { CheckCircle2, CircleDashed, Loader2, XCircle } from "lucide-react";
+import {
+	CheckCircle2,
+	CircleDashed,
+	Loader2,
+	PauseCircle,
+	XCircle,
+} from "lucide-react";
 import type React from "react";
 import type { AgentRunItem } from "@semoss/sdk";
 
@@ -9,6 +15,7 @@ interface ToolCallCardProps {
 const STATUS_ICON: Record<string, React.ReactNode> = {
 	QUEUED: <CircleDashed className="size-4 text-muted-foreground" />,
 	RUNNING: <Loader2 className="size-4 animate-spin text-primary" />,
+	INPUT_REQUIRED: <PauseCircle className="size-4 text-amber-600" />,
 	COMPLETED: <CheckCircle2 className="size-4 text-green-600" />,
 	FAILED: <XCircle className="size-4 text-destructive" />,
 	REJECTED: <XCircle className="size-4 text-destructive" />,
