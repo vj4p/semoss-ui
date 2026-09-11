@@ -86,9 +86,9 @@ jobs:
                 cd packages/browser-automation
                 pnpm run build
 
-            - name: Build harness
+            - name: Build semoss-code
               run: |
-                cd packages/harness
+                cd packages/semoss-code
                 pnpm run build
 
             # ---------- Download and Set Up semoss/bi -----------
@@ -140,12 +140,12 @@ jobs:
                 mkdir -p semoss-ui-build/packages/playground
                 mkdir -p semoss-ui-build/packages/terminal
                 mkdir -p semoss-ui-build/packages/browser-automation
-                mkdir -p semoss-ui-build/packages/harness
+                mkdir -p semoss-ui-build/packages/semoss-code
                 cp -r packages/client/dist semoss-ui-build/packages/client
                 cp -r packages/playground/dist semoss-ui-build/packages/playground
                 cp -r packages/terminal/dist semoss-ui-build/packages/terminal
                 cp -r packages/browser-automation/dist semoss-ui-build/packages/browser-automation
-                cp -r packages/harness/dist semoss-ui-build/packages/harness
+                cp -r packages/semoss-code/dist semoss-ui-build/packages/semoss-code
                 cp -r packages/legacy semoss-ui-build/packages
                 cp -r index.html semoss-ui-build/
             
@@ -278,9 +278,9 @@ jobs:
                 cd packages/browser-automation
                 pnpm run build
 
-            - name: Build harness
+            - name: Build semoss-code
               run: |
-                cd packages/harness
+                cd packages/semoss-code
                 pnpm run build
 
             # ---------- Download and Set Up semoss/bi -----------
@@ -514,9 +514,9 @@ jobs:
                 cd packages/browser-automation
                 pnpm run build
 
-            - name: Build harness
+            - name: Build semoss-code
               run: |
-                cd packages/harness
+                cd packages/semoss-code
                 pnpm run build
 
             # ---------- Download and Set Up semoss/bi -----------
