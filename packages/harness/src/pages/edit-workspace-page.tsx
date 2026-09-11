@@ -5,6 +5,7 @@ import {
 	Maximize2Icon,
 	SparklesIcon,
 	UsersRound,
+	ZapIcon,
 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useEffect, useId, useMemo, useState } from "react";
@@ -27,6 +28,12 @@ import {
 	toast,
 } from "@semoss/ui/next";
 import { InstructionsModal } from "@/components";
+import {
+	type AgentHookRow,
+	fromHookRows,
+	toHookRows,
+	WorkspaceHooksForm,
+} from "@/components/workspace/workspace-hooks-form";
 import { useChat, useGlobalBreadcrumbs, useRoot } from "@/hooks";
 import type { MCPConfig, SkillConfig, Workspace } from "@/types";
 import {
@@ -62,6 +69,7 @@ export const EditWorkspacePage = observer(() => {
 	const [toolbox, setToolbox] = useState<MCPConfig[]>([]);
 	const [skills, setSkills] = useState<SkillConfig[]>([]);
 	const [prompts, setPrompts] = useState<string[]>([]);
+	const [hooks, setHooks] = useState<AgentHookRow[]>([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [instructionsModal, setInstructionsModal] = useState(false);
 
@@ -110,6 +118,7 @@ export const EditWorkspacePage = observer(() => {
 		setKnowledge(nextKnowledge);
 		setToolbox(nextToolbox);
 		setSkills(w.skills ?? []);
+		setHooks(toHookRows(w.config_json?.hooks ?? []));
 	}, [getWorkspace.status, getWorkspace.data]);
 
 	// Track whether form differs from the loaded workspace
@@ -135,7 +144,10 @@ export const EditWorkspacePage = observer(() => {
 			stringIdsKey(prompts) !== stringIdsKey(w.prompts ?? []) ||
 			idsKey(knowledge) !== idsKey(initKnowledge) ||
 			idsKey(toolbox) !== idsKey(initToolbox) ||
-			idsKey(skills) !== idsKey(w.skills ?? [])
+			idsKey(skills) !== idsKey(w.skills ?? []) ||
+			// Hooks are order-sensitive and have no ids, so compare structurally.
+			JSON.stringify(fromHookRows(hooks)) !==
+				JSON.stringify(w.config_json?.hooks ?? [])
 		);
 	}, [
 		name,
@@ -145,6 +157,7 @@ export const EditWorkspacePage = observer(() => {
 		knowledge,
 		toolbox,
 		skills,
+		hooks,
 		getWorkspace.data,
 	]);
 
@@ -188,6 +201,7 @@ export const EditWorkspacePage = observer(() => {
 				prompts,
 				mcp: [...knowledge, ...toolbox],
 				skills,
+				hooks: fromHookRows(hooks),
 			});
 			navigate(`/agent/${workspaceId}`);
 		} catch (err) {
@@ -374,6 +388,22 @@ export const EditWorkspacePage = observer(() => {
 							disabled={isSaving}
 							onChange={(next) => setSkills(next)}
 							className="h-112"
+						/>
+					</section>
+
+					{/* Automations (CONFIG_JSON.hooks) */}
+					<section className="flex flex-col gap-3">
+						<h2 className="flex items-center gap-2 font-semibold text-foreground text-lg">
+							<ZapIcon className="size-5" />
+							{t("workspace:hooks.title")}
+						</h2>
+						<p className="text-muted-foreground text-sm">
+							{t("workspace:hooks.description")}
+						</p>
+						<WorkspaceHooksForm
+							hooks={hooks}
+							disabled={isSaving}
+							onChange={setHooks}
 						/>
 					</section>
 

@@ -63,8 +63,46 @@ export interface Workspace {
 		 * opinion and the room's own model is used.
 		 */
 		model_id?: string;
+
+		/**
+		 * Agent lifecycle hooks. Each entry is `{ kind, ...kind-specific }` and
+		 * is resolved by AgentHookRegistry when a run starts. Persisted through
+		 * EditWorkspace's `hooks` parameter.
+		 */
+		hooks?: AgentHook[];
 	};
 }
+
+/**
+ * One agent lifecycle hook entry from `WORKSPACE.CONFIG_JSON.hooks[]`.
+ *
+ * `kind` must be one of AgentHookRegistry's registered kinds; the backend
+ * rejects anything else. Only `kind: "pixel"` carries extra fields, and its
+ * `pixel` value is required and non-empty.
+ */
+export interface AgentHook {
+	kind: AgentHookKind;
+
+	/** Required when `kind` is "pixel" — the expression fired at each event. */
+	pixel?: string;
+
+	/**
+	 * Events to fire on. Omitted or empty means every lifecycle event this hook
+	 * is called for. Only meaningful for `kind: "pixel"`.
+	 */
+	events?: AgentHookEvent[];
+}
+
+export type AgentHookKind = "git_commit" | "log_tools" | "pixel" | "ppt_to_pdf";
+
+export type AgentHookEvent =
+	| "onRoomCreation"
+	| "beforeRun"
+	| "afterAgentInit"
+	| "beforeTool"
+	| "afterTool"
+	| "afterRun"
+	| "beforeAgentDeInit";
 
 /**
  * Instructions from the backend

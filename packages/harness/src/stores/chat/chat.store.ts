@@ -3,6 +3,7 @@ import { download, type Insight, runPixel } from "@semoss/sdk/react";
 import type { ThemeMap } from "@semoss/shared";
 import type {
 	AbstractPixelMessage,
+	AgentHook,
 	Engine,
 	MCPConfig,
 	PixelMessageTextPart,
@@ -740,7 +741,14 @@ export class ChatStore {
 			| "mcp"
 			| "skills"
 			| "prompts"
-		>,
+		> & {
+			/**
+			 * Lifecycle hooks. Omit to leave the workspace's existing hooks
+			 * alone — EditWorkspace preserves CONFIG_JSON fields it isn't given,
+			 * so sending nothing is different from sending [].
+			 */
+			hooks?: AgentHook[];
+		},
 	): Promise<string> => {
 		try {
 			const mcp = data.mcp.map(
@@ -748,7 +756,13 @@ export class ChatStore {
 			);
 			const skills = data.skills.map((s) => s.id);
 
-			const pixel = `EditWorkspace(workspaceId=${JSON.stringify(workspaceId)}, name=${JSON.stringify(data.name)}, description="<encode>${data.description}</encode>", systemPrompt="<encode>${data.system_prompt}</encode>", mcp=${JSON.stringify(mcp)}, skills=${JSON.stringify(skills)}, prompts=${JSON.stringify(data.prompts)})`;
+			// Only send hooks when the caller supplied them; the reactor treats
+			// an absent key as "leave as-is" and an empty array as "clear".
+			const hooksParam = data.hooks
+				? `, hooks=${JSON.stringify(data.hooks)}`
+				: "";
+
+			const pixel = `EditWorkspace(workspaceId=${JSON.stringify(workspaceId)}, name=${JSON.stringify(data.name)}, description="<encode>${data.description}</encode>", systemPrompt="<encode>${data.system_prompt}</encode>", mcp=${JSON.stringify(mcp)}, skills=${JSON.stringify(skills)}, prompts=${JSON.stringify(data.prompts)}${hooksParam})`;
 			const { pixelReturn } = await this._actions.run<[string]>(pixel);
 
 			// throw errors

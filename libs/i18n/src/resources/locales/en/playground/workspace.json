@@ -154,6 +154,38 @@
 		"bulkDeleteSuccess": "Deleted {{count}} chats",
 		"bulkDeletePartialFail": "Failed to delete {{failed}} of {{total}} chats"
 	},
+	"hooks": {
+		"title": "Automations",
+		"description": "Rules that run automatically at points in this agent's run. Use them to verify, commit or log without changing the agent's instructions.",
+		"empty": "No automations yet. Add one to run a step automatically on every agent run.",
+		"add": "Add automation",
+		"remove": "Remove automation",
+		"fixedPoint": "Runs at a fixed point",
+		"pixelLabel": "Pixel to run",
+		"pixelHelp": "Runs on the agent's own insight, under the same user. Errors are logged and never abort the run.",
+		"pixelRequired": "A Pixel expression is required for this automation.",
+		"eventsLabel": "When to run",
+		"eventsAll": "Nothing selected, so this runs at every lifecycle point.",
+		"eventsHelp": "Runs only at the selected points.",
+		"kinds": {
+			"pixel": {
+				"label": "Run a Pixel",
+				"description": "Fires any Pixel expression at the lifecycle points you choose."
+			},
+			"git_commit": {
+				"label": "Commit changes to git",
+				"description": "Runs git add and commit on the project after each run, so agent edits land in version history."
+			},
+			"log_tools": {
+				"label": "Log tool calls",
+				"description": "Writes each tool call to the server log. Useful when debugging an agent's behaviour."
+			},
+			"ppt_to_pdf": {
+				"label": "Convert documents to PDF",
+				"description": "Converts generated presentation and document files to PDF after a run."
+			}
+		}
+	},
 	"instructions": {
 		"expand": "Expand",
 		"viewTitle": "Instructions",
