@@ -1,0 +1,55 @@
+/*
+ * Accent color themes for the harness.
+ *
+ * The platform's ThemeProvider only handles light/dark/system, and the design
+ * tokens in @semoss/ui/globals.css carry a single fixed accent. These classes
+ * are applied to <html> alongside `light`/`dark` by useColorTheme, so an accent
+ * choice is independent of light/dark and survives toggling between them.
+ *
+ * Only `--primary` and the focus `--ring` are overridden. Backgrounds, borders
+ * and text stay on the platform tokens, so contrast behaviour in both modes is
+ * whatever the design system already guarantees. Following globals.css's own
+ * convention, each accent is a single value shared by light and dark rather
+ * than a per-mode pair; every value below carries white text at >= 4.5:1
+ * (`--primary-foreground` is already near-white in both modes).
+ *
+ * Imported after globals.css in index.css, so these win on equal specificity.
+ * `.dark` sets `--primary` too, hence the `.dark.theme-*` pairs at 2 classes.
+ */
+
+/* Default is the platform accent — declared so switching back is explicit. */
+.theme-default,
+.dark.theme-default {
+	--primary: rgba(5, 112, 240, 1);
+	--ring: rgba(5, 112, 240, 0.6);
+}
+
+.theme-violet,
+.dark.theme-violet {
+	--primary: rgba(124, 58, 237, 1);
+	--ring: rgba(124, 58, 237, 0.6);
+}
+
+.theme-emerald,
+.dark.theme-emerald {
+	--primary: rgba(4, 120, 87, 1);
+	--ring: rgba(4, 120, 87, 0.6);
+}
+
+.theme-amber,
+.dark.theme-amber {
+	--primary: rgba(180, 83, 9, 1);
+	--ring: rgba(180, 83, 9, 0.6);
+}
+
+.theme-rose,
+.dark.theme-rose {
+	--primary: rgba(225, 29, 72, 1);
+	--ring: rgba(225, 29, 72, 0.6);
+}
+
+.theme-slate,
+.dark.theme-slate {
+	--primary: rgba(71, 85, 105, 1);
+	--ring: rgba(71, 85, 105, 0.6);
+}

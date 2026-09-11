@@ -38,6 +38,14 @@
 		"noKnowledgeFound": "No Knowledge Found",
 		"noToolboxFound": "No Toolboxes Found"
 	},
+	"theme": {
+		"title": "Theme",
+		"mode": "Appearance",
+		"accent": "Accent color",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System"
+	},
 	"tooltips": {
 		"cannotDeleteWorkspaceMCPs": "Cannot delete workspace MCPs",
 		"cannotDeleteAgentMCPs": "Cannot delete agent MCPs"

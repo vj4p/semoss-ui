@@ -1,5 +1,6 @@
 export * from "./use-active-index";
 export * from "./use-chat";
+export * from "./use-color-theme";
 export * from "./use-global-breadcrumbs";
 export * from "./use-graceful-errors";
 export * from "./use-loading-message";

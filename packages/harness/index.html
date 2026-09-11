@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <!--
+            @semoss/sdk reads this for the backend module path. Env.MODULE
+            defaults to "", which sends every request to the page origin
+            (/packages/harness/dist/...) instead of the API, so the app boots,
+            fires pixels, gets redirects back and never renders. The platform
+            rewrites this tag in place when it needs a different route prefix —
+            it is keyed by id — but shipping it here means a plain rebuild
+            cannot leave the dist without it.
+        -->
+        <script id="semoss-env" type="application/json">{"MODULE":"/Monolith"}</script>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!--
+            Tomcat serves this dist as static files, so without these a browser
+            keeps a cached index.html that points at content-hashed asset names
+            from a previous build. After a redeploy those files are gone and the
+            app fails to boot until a manual hard refresh.
+        -->
+        <meta http-equiv="Cache-Control" content="no-cache" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
         <title>Harness</title>
     </head>
     <body>
         <div id="root"></div>
-        <script type="module" src="/src/main.tsx"></script>
+        <script type="module" src="./src/main.tsx"></script>
     </body>
 </html>

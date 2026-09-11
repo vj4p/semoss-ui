@@ -22,7 +22,7 @@ import {
 	useCacheState,
 	useTheme,
 } from "@semoss/ui/next";
-import { GlobalFooter, GlobalNav } from "@/components";
+import { GlobalFooter, GlobalNav, ThemePicker } from "@/components";
 import { GlobalDialog } from "@/components/common/global-dialog";
 import { LandingTour } from "@/components/common/landing-tour";
 import { ChatContext, NavbarContext, TourContext } from "@/contexts";
@@ -279,6 +279,7 @@ export const MainLayout = observer(() => {
 									<div className="flex-1" />
 									<div className="flex items-center gap-2">
 										{navbarActions ?? null}
+										<ThemePicker />
 									</div>
 								</div>
 								<Separator />
