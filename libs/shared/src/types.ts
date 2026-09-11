@@ -91,6 +91,15 @@ export interface App {
  * Theme object returned from the backend
  */
 export interface ThemeMap {
+	/**
+	 * Theme for the harness app. Optional and identical in shape to
+	 * `playground` — the harness falls back to the playground theme when this
+	 * is absent, so existing deployments keep their styling, but setting it
+	 * lets the harness carry its own name/logo/colors instead of showing
+	 * Playground's branding.
+	 */
+	harness?: ThemeMap["playground"];
+
 	playground: {
 		/** Name of the app */
 		name: string;

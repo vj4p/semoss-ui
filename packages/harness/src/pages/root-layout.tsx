@@ -20,7 +20,22 @@ export const RootLayout = ({ children }: PropsWithChildren) => {
 			try {
 				if (rawTheme) {
 					const parsedTheme = JSON.parse(String(rawTheme));
-					theme = parsedTheme?.playground || {};
+					// Prefer this app's own theme slot. Without it the harness
+					// renders the platform's Playground branding — same name,
+					// logo and colors — because that was the only slot that
+					// existed.
+					if (parsedTheme?.harness) {
+						theme = parsedTheme.harness;
+					} else if (parsedTheme?.playground) {
+						// Inherit Playground's styling so themed deployments
+						// that predate the `harness` slot keep their colors and
+						// logos, but drop its `name` — otherwise this app
+						// announces itself as "Playground" in the title bar and
+						// in assistant copy. VITE_NAME supplies our own.
+						const { name: _playgroundName, ...styling } =
+							parsedTheme.playground;
+						theme = styling;
+					}
 				}
 			} catch (_e) {}
 
