@@ -1,0 +1,334 @@
+import type { AgentRunStatusValue } from "@semoss/sdk";
+
+export interface Engine {
+	engine_id: string;
+	engine_name: string;
+	engine_display_name?: string;
+	engine_type:
+		| "MODEL"
+		| "STORAGE"
+		| "DATABASE"
+		| "FUNCTION"
+		| "VECTOR"
+		| "GUARDRAIL";
+	engine_subtype?: string;
+	engine_favorite?: number;
+	engine_global?: boolean;
+	engine_discoverable?: boolean;
+	engine_user_permission?: number;
+	engine_group_permission?: number;
+	engine_date_created?: string;
+	engine_cost?: string;
+	low_engine_name?: string;
+	description?: string;
+
+	/** @deprecated legacy keys from MyEngines */
+	app_id?: string;
+	/** @deprecated legacy keys from MyEngines */
+	app_name?: string;
+	/** @deprecated legacy keys from MyEngines */
+	app_type?:
+		| "MODEL"
+		| "STORAGE"
+		| "DATABASE"
+		| "FUNCTION"
+		| "VECTOR"
+		| "GUARDRAIL";
+}
+
+export interface App {
+	project_id: string;
+	project_name: string;
+	project_display_name?: string;
+	description?: string;
+	project_date_created: string;
+	project_type: string;
+	user_permission: number;
+}
+
+export interface Workspace {
+	workspace_id: string;
+	name: string;
+	date_created: string; // ISO string
+	description: string;
+	system_prompt: string;
+	mcp: MCPConfig[];
+	skills: SkillConfig[];
+	prompts: string[];
+
+	/** Agent settings saved on the workspace by the agent editor. */
+	config_json?: {
+		/**
+		 * The agent's default model. Absent or empty means the agent has no
+		 * opinion and the room's own model is used.
+		 */
+		model_id?: string;
+	};
+}
+
+/**
+ * Instructions from the backend
+ */
+export interface Instructions {
+	/** ID of the instructions */
+	id: string;
+
+	/** Description */
+	description: string;
+
+	/** Context info */
+	context: string;
+}
+
+// Re-export types from shared to avoid breaking existing imports
+export type {
+	MCP,
+	MCPConfig,
+	Prompt,
+	Skill,
+	SkillConfig,
+} from "@semoss/shared";
+
+/**
+ * Messages from the backend
+ */
+export type PixelMessage = InputPixelMessage | ResponsePixelMessage;
+
+export interface AbstractPixelMessage {
+	io: "INPUT" | "OUTPUT";
+	messageId: string;
+	parentMessageId?: string;
+	summaryLeafMessageId?: string;
+	visible: boolean;
+	platform_generated: boolean;
+	modelId: string;
+	modelType: string;
+	dateCreated: string;
+	parts: (
+		| PixelMessageThinkingPart
+		| PixelMessageTextPart
+		| PixelMessageMediaPart
+		| PixelMessageToolCallPart
+		| PixelMessageToolResultPart
+		| PixelMessageSubagentPart
+	)[];
+	tokens: number;
+	ornaments: {
+		modelName?: string;
+		/** Set on messages tagged as part of an agent run — see agent-harness.ts. */
+		agentRunId?: string;
+	};
+	pruneToolsAbove: boolean;
+}
+
+export interface InputPixelMessage extends AbstractPixelMessage {
+	io: "INPUT";
+	type: "INPUT_TEXT" | "INPUT_TOOL_EXEC";
+	parts: (
+		| PixelMessageTextPart
+		| PixelMessageMediaPart
+		| PixelMessageToolResultPart
+	)[];
+}
+
+export interface ResponsePixelMessage extends AbstractPixelMessage {
+	io: "OUTPUT";
+	parts: (
+		| PixelMessageTextPart
+		| PixelMessageThinkingPart
+		| PixelMessageMediaPart
+		| PixelMessageToolCallPart
+		| PixelMessageToolResultPart
+		| PixelMessageSubagentPart
+	)[];
+	ornaments: {
+		modelName?: string;
+		/** Set on messages tagged as part of an agent run — see agent-harness.ts. */
+		agentRunId?: string;
+	};
+	feedback?: {
+		rating: boolean;
+		feedbackText: string;
+		messageId: string;
+		messageType: "RESPONSE_TEXT";
+		feedbackDate: string; // YYYY-MM-DD HH:MM:SS
+	};
+}
+
+export interface PixelMessageThinkingPart {
+	type: "THINKING";
+	thinking: string;
+}
+
+export interface PixelMessageTextPart {
+	type: "TEXT";
+	text: string;
+	uiText: string;
+}
+
+export interface PixelMessageMediaPart {
+	type: "MEDIA";
+	mediaInfo: {
+		base64Data?: string;
+		fileFormat?: string;
+		fileName: string;
+		fileLocation?: string;
+		mediaInputType: "FILE";
+		mimeType?: string;
+	};
+}
+
+export interface PixelMessageToolCallPart {
+	type: "TOOL_CALL";
+	toolCall: {
+		id: string;
+		type: string;
+		name: string;
+		arguments: Record<string, unknown>;
+		_tool_found: boolean;
+		original_name: string;
+		// Optional in MCP: the backend only sets it when the tool declares one.
+		// Use ToolStore.displayName rather than reading this directly.
+		title?: string;
+		description: string;
+		// Set by the backend when the model provider executed the tool itself
+		// (e.g. web_search). Server tools lack the MCP `_meta`
+		// block and their TOOL_RESULT lands in the same response message.
+		server_tool?: boolean;
+		// Optional in practice, not just in MCP: platform-synthesized tools (e.g.
+		// SpawnSubAgent/CheckSubAgentStatus/WaitForSubAgent) don't get the usual
+		// MCP-project metadata enrichment, so their persisted TOOL_CALL omits it
+		// entirely. Always optional-chain reads of this field.
+		_meta?: {
+			SMSS_ENGINE_NAME: string;
+			SMSS_ENGINE_ID: string;
+			SMSS_ENGINE_TYPE: string;
+			SMSS_PROJECT_NAME: string;
+			SMSS_PROJECT_ID: string;
+			SMSS_MCP_EXECUTION:
+				| "auto"
+				| "ask"
+				| "disabled"
+				| "agent-ask"
+				| "agent-auto";
+			// The tool's declared name, before the backend rewrote it into the
+			// LLM-facing name. On length-limited providers that rewrite is not
+			// reversible (short engine-id prefix plus truncation), so this is the
+			// only way back to the real name.
+			SMSS_ORIGINAL_TOOL_NAME?: string;
+			SMSS_MCP_UI?: {
+				loadingMessage?: string;
+				displayLocation?: "inline" | "sidebar" | "hidden";
+				resourceURI?: string;
+				autoOpen?: boolean;
+			};
+			// Set only on platform-synthesized subagent tools (spawn/named/check/
+			// wait) — see SubAgentToolSynthesizer.
+			SMSS_TOOL_KIND?:
+				| "semoss_subagent_spawn"
+				| "semoss_subagent_named"
+				| "semoss_subagent_check"
+				| "semoss_subagent_wait";
+		};
+	};
+}
+
+export interface PixelMessageToolResultPart {
+	type: "TOOL_RESULT";
+	toolResult: {
+		toolCallId: string;
+		toolName: string;
+		output: string;
+		toolParameterValues: Record<string, unknown>;
+		toolStatus: "success" | "error" | "cancelled" | "paused";
+	};
+}
+
+/**
+ * A subagent spawned by an agent-run turn — see agent-harness.ts. WIP: status
+ * only, no alias/result/error rendering yet.
+ */
+export interface PixelMessageSubagentPart {
+	type: "SUBAGENT";
+	subagent: {
+		id: string;
+		status: AgentRunStatusValue;
+		/** Named-subagent alias, when spawned via a named tool. Live only — never persisted, so absent after a reload. */
+		alias?: string;
+		/** Set once status is COMPLETED. */
+		resultPreview?: string;
+		/** Set once status is FAILED. */
+		error?: string;
+	};
+}
+
+export interface MCPTool {
+	description?: string;
+	inputSchema: {
+		properties?: { [key: string]: object };
+		required?: string[];
+		type: "object";
+		title: string;
+	};
+	name: string;
+	outputSchema?: {
+		properties?: { [key: string]: object };
+		required?: string[];
+		type: "object";
+	};
+	title?: string;
+	original_name: string;
+	description?: string;
+	title?: string;
+	_meta: {
+		generated_on: string;
+		SMSS_MCP_UI?: {
+			loadingMessage?: string;
+			resourceURI?: string;
+			displayLocation?: "inline" | "sidebar" | "hidden";
+			autoOpen?: boolean;
+		};
+	};
+}
+
+export interface ToolStructure {
+	_meta: {
+		SMSS_PROJECT_NAME: string;
+		SMSS_PROJECT_ID: string;
+		SMSS_ENGINE_NAME: string;
+		SMSS_ENGINE_TYPE: string;
+		SMSS_ENGINE_ID: string;
+	};
+	tools: MCPTool[];
+}
+
+export interface User {
+	date_added: string;
+	name: string;
+	permission: string;
+	id: string;
+	type: string;
+	email: string;
+}
+
+export interface ProjectDependency {
+	engine_type:
+		| "PROJECT"
+		| "STORAGE"
+		| "DATABASE"
+		| "FUNCTION"
+		| "MODEL"
+		| "VECTOR";
+	engine_id: string;
+	engine_name: string;
+	engine_subtype?: string;
+	description?: string;
+	engine_discoverable?: boolean;
+	permission_name?: "READ_ONLY" | "EDIT" | "OWNER";
+	engine_global?: boolean;
+	access_permission?: number; // The permission level the user has requested, if any
+	tags?: string; // comma separated tags
+	can_view_dependencies?: boolean;
+	engine_date_created?: string;
+	dependencies?: string[]; // Array of dependency engine IDs
+}

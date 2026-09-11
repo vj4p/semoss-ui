@@ -7,7 +7,7 @@ import {
 
 export default createViteConfig({
 	rootDir: import.meta.dirname,
-	port: DEV_SERVER_PORTS.semossCode,
+	port: DEV_SERVER_PORTS.harness,
 	manualChunks: localeManualChunks,
 	alias: [
 		// FileEditor (from @semoss/shared) wraps Monaco. libs/shared is
