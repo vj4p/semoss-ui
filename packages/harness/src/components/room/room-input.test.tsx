@@ -57,6 +57,10 @@ vi.mock("@/hooks", async (importOriginal) => {
 		useGracefulErrors: () => ({
 			getGracefulErrorMessage: vi.fn((msg: string) => msg),
 		}),
+		// RoomInput renders RoomContextUsageIndicator, which reads
+		// chat.models.contextWindow. Without this the real hook throws
+		// "useChat must be used within Chat" and every test in this file fails.
+		useChat: () => ({ chat: { models: { contextWindow: undefined } } }),
 	};
 });
 

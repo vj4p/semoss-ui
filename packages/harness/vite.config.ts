@@ -30,4 +30,11 @@ export default createViteConfig({
 			? undefined
 			: JSON.stringify(env.SECRET_KEY),
 	}),
+	// Without this the suite has no jest-dom matchers and every
+	// toBeInTheDocument assertion fails as "Invalid Chai property", which is
+	// how this package's tests have behaved since it was forked. Also supplies
+	// the ResizeObserver and canvas stubs jsdom lacks.
+	test: {
+		setupFiles: "./vitest.setup.ts",
+	},
 });
