@@ -17,7 +17,11 @@ import {
 	Button,
 	cn,
 	DropdownMenuItem,
+	DropdownMenuPortal,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	ResizableHandle,
 	ResizablePanel,
 	ResizablePanelGroup,
@@ -42,7 +46,10 @@ import { RoomOptionsForm } from "@/components/room/room-options-form";
 import { FileDragProvider, useFileDrag } from "@/contexts";
 import { useChat, useGlobalBreadcrumbs, useRoot } from "@/hooks";
 import { RoomStore } from "@/stores";
-import { DEFAULT_AGENT_HARNESS_TYPE } from "@/stores/message/agent-harness";
+import {
+	AGENT_HARNESS_TYPES,
+	DEFAULT_AGENT_HARNESS_TYPE,
+} from "@/stores/message/agent-harness";
 import type { MCPConfig, Prompt, Workspace } from "@/types";
 
 /**
@@ -653,30 +660,82 @@ export const NewRoomPage = observer(() => {
 																</div>
 															) : null}
 														</DropdownMenuItem>
-														<DropdownMenuItem
-															onSelect={() => {
-																setMode(
-																	"agent",
-																);
-																onOpenChange(
-																	false,
-																);
-															}}
-														>
-															<SparklesIcon />
-															<span className="flex-1">
-																{t(
-																	"room:modes.agent",
-																)}
-															</span>
+														{/*
+														 * Submenu rather than a
+														 * plain item: picking the
+														 * harness is the same
+														 * decision as entering
+														 * agent mode, and burying
+														 * it in room settings made
+														 * it undiscoverable.
+														 */}
+														<DropdownMenuSub>
+															<DropdownMenuSubTrigger>
+																<SparklesIcon />
+																<span className="flex-1">
+																	{t(
+																		"room:modes.agent",
+																	)}
+																</span>
+																{mode ===
+																"agent" ? (
+																	<div className="px-1">
+																		<CheckIcon />
+																	</div>
+																) : null}
+															</DropdownMenuSubTrigger>
+															<DropdownMenuPortal>
+																<DropdownMenuSubContent>
+																	{AGENT_HARNESS_TYPES.map(
+																		(
+																			harness,
+																		) => {
+																			const isActive =
+																				mode ===
+																					"agent" &&
+																				(tempRoomStore
+																					.options
+																					.harnessType ??
+																					DEFAULT_AGENT_HARNESS_TYPE) ===
+																					harness;
 
-															{mode ===
-															"agent" ? (
-																<div className="px-1">
-																	<CheckIcon />
-																</div>
-															) : null}
-														</DropdownMenuItem>
+																			return (
+																				<DropdownMenuItem
+																					key={
+																						harness
+																					}
+																					onSelect={() => {
+																						tempRoomStore.setOptions(
+																							{
+																								harnessType:
+																									harness,
+																							},
+																						);
+																						setMode(
+																							"agent",
+																						);
+																						onOpenChange(
+																							false,
+																						);
+																					}}
+																				>
+																					<span className="flex-1">
+																						{t(
+																							`room:harness.types.${harness}.label`,
+																						)}
+																					</span>
+																					{isActive ? (
+																						<div className="px-1">
+																							<CheckIcon />
+																						</div>
+																					) : null}
+																				</DropdownMenuItem>
+																			);
+																		},
+																	)}
+																</DropdownMenuSubContent>
+															</DropdownMenuPortal>
+														</DropdownMenuSub>
 														<DropdownMenuSeparator />
 													</>
 												)}

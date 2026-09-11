@@ -296,6 +296,9 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 			[options.mcp],
 		);
 		const toolboxCount = options.mcp.length - knowledgeCount;
+		const activeHarness = isAgentHarnessType(options.harnessType)
+			? options.harnessType
+			: DEFAULT_AGENT_HARNESS_TYPE;
 		// Agent chip indicates a current selection. The Agent tab inside the
 		// modal is always visible; editability is gated on `onWorkspaceChange`.
 		const agentChipWorkspace = options.workspace ?? null;
@@ -309,7 +312,10 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 				key: "harness",
 				icon: SparklesIcon,
 				hoverIcon: onExitAgentHarness ? XIcon : undefined,
-				label: t("modes.agent"),
+				// Name the active harness rather than the generic mode label —
+				// which loop is running is the thing worth seeing at a glance,
+				// and it differs per room.
+				label: t(`harness.types.${activeHarness}.label`),
 				onClick: onExitAgentHarness,
 				title: onExitAgentHarness ? t("modes.exitAgent") : undefined,
 			},
