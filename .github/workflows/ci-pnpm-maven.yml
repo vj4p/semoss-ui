@@ -278,6 +278,11 @@ jobs:
                 cd packages/browser-automation
                 pnpm run build
 
+            - name: Build semoss-code
+              run: |
+                cd packages/semoss-code
+                pnpm run build
+
             # ---------- Download and Set Up semoss/bi -----------
             
             - name: Remove previous legacy folder
@@ -507,6 +512,11 @@ jobs:
             - name: Build browser automation
               run: |
                 cd packages/browser-automation
+                pnpm run build
+
+            - name: Build semoss-code
+              run: |
+                cd packages/semoss-code
                 pnpm run build
 
             # ---------- Download and Set Up semoss/bi -----------
