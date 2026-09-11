@@ -61,6 +61,7 @@ export type AgentFormValues = {
 	description: string;
 	instructions: string;
 	modelId: string;
+	harnessType: string;
 	useDefaultAgentTools: boolean;
 	disabledDefaultTools: string[];
 	maxTurns: string;
@@ -82,6 +83,7 @@ export const AGENT_FORM_DEFAULT_VALUES: AgentFormValues = {
 	description: "",
 	instructions: "",
 	modelId: "",
+	harnessType: "",
 	useDefaultAgentTools: true,
 	disabledDefaultTools: [],
 	maxTurns: "",

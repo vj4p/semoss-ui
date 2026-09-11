@@ -7,6 +7,7 @@ import { mcpToPlatformUrl, promptToPlatformUrl } from "@/utility";
 import { AgentDefaultToolsField } from "./agent-default-tools-field";
 import { AgentExecutionLimitsFields } from "./agent-execution-limits-fields";
 import { AgentFormSection } from "./agent-form-section";
+import { AgentHarnessField } from "./agent-harness-field";
 import { AgentHooksField } from "./agent-hooks-field";
 import { AgentModelField } from "./agent-model-field";
 import { AgentSubagentsField } from "./agent-subagents-field";
@@ -107,6 +108,7 @@ export const AgentForm = ({
 						)}
 					/>
 					<AgentModelField control={control} />
+					<AgentHarnessField control={control} />
 				</AgentFormSection>
 
 				<Separator />

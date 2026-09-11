@@ -916,7 +916,6 @@ export const createWorkbenchAssistantSlice = (
 							roomId,
 							command,
 							engine: model.engine_id,
-							harnessType: "semoss",
 							// The SDK forwards agentId as the pixel's
 							// workspaceId.
 							agentId:
