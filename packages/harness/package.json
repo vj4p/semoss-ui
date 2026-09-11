@@ -1,5 +1,5 @@
 {
-    "name": "@semoss/semoss-code",
+    "name": "@semoss/harness",
     "private": true,
     "scripts": {
         "dev": "vite --configLoader runner --mode development",

@@ -6,7 +6,7 @@ export const DEV_SERVER_PORTS = {
 	browserAutomation: 5176,
 	auditlog: 5177,
 	chromeExtension: 5178,
-	semossCode: 5179,
+	harness: 5179,
 } as const;
 
 /**

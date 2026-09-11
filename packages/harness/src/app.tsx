@@ -32,9 +32,9 @@ export const App = () => (
 		<InsightProvider>
 			<ThemeProvider
 				defaultTheme="light"
-				storageKey="smss-ui-theme-semoss-code"
+				storageKey="smss-ui-theme-harness"
 			>
-				<LoginPage branding={<div>Semoss Code</div>}>
+				<LoginPage branding={<div>Harness</div>}>
 					<RouterProvider router={router} />
 				</LoginPage>
 				<Toaster position="top-center" closeButton />
