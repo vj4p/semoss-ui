@@ -284,7 +284,7 @@ export const WorkspaceHooksForm: React.FC<WorkspaceHooksFormProps> = observer(
 											</FieldLabel>
 											<Input
 												className="font-mono text-xs"
-												placeholder="write_file, edit_file"
+												placeholder="WriteFile, EditFile"
 												value={(hook.tools ?? []).join(
 													", ",
 												)}
