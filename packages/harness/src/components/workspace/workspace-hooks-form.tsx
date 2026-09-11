@@ -7,6 +7,7 @@ import {
 	Field,
 	FieldDescription,
 	FieldLabel,
+	Input,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -60,6 +61,26 @@ const HOOK_EVENTS: AgentHookEvent[] = [
 	"afterTool",
 	"afterRun",
 	"beforeAgentDeInit",
+];
+
+/** Events that actually carry a tool name, so the tool filter applies. */
+const TOOL_EVENTS: AgentHookEvent[] = ["beforeTool", "afterTool"];
+
+/**
+ * True when the rule runs at a tool event. An empty selection means "every
+ * event", which includes the tool ones.
+ */
+const toolEventSelected = (events?: AgentHookEvent[]) =>
+	!events?.length || events.some((event) => TOOL_EVENTS.includes(event));
+
+/** Split the comma-separated input into trimmed, de-duplicated tool names. */
+const parseToolList = (value: string): string[] => [
+	...new Set(
+		value
+			.split(",")
+			.map((entry) => entry.trim())
+			.filter(Boolean),
+	),
 ];
 
 interface WorkspaceHooksFormProps {
@@ -134,6 +155,7 @@ export const WorkspaceHooksForm: React.FC<WorkspaceHooksFormProps> = observer(
 												: {
 														pixel: undefined,
 														events: undefined,
+														tools: undefined,
 													}),
 										})
 									}
@@ -247,6 +269,45 @@ export const WorkspaceHooksForm: React.FC<WorkspaceHooksFormProps> = observer(
 													)}
 										</FieldDescription>
 									</Field>
+
+									{/*
+									 * Only the tool events carry a tool, so the
+									 * filter is meaningless for a rule that runs
+									 * purely at run level.
+									 */}
+									{toolEventSelected(hook.events) ? (
+										<Field>
+											<FieldLabel>
+												{t(
+													"workspace:hooks.toolsLabel",
+												)}
+											</FieldLabel>
+											<Input
+												className="font-mono text-xs"
+												placeholder="write_file, edit_file"
+												value={(hook.tools ?? []).join(
+													", ",
+												)}
+												disabled={disabled}
+												onChange={(e) =>
+													update(index, {
+														tools: parseToolList(
+															e.target.value,
+														),
+													})
+												}
+											/>
+											<FieldDescription>
+												{(hook.tools?.length ?? 0) === 0
+													? t(
+															"workspace:hooks.toolsAll",
+														)
+													: t(
+															"workspace:hooks.toolsHelp",
+														)}
+											</FieldDescription>
+										</Field>
+									) : null}
 								</div>
 							) : null}
 						</div>

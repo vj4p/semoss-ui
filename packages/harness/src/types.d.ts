@@ -91,6 +91,12 @@ export interface AgentHook {
 	 * is called for. Only meaningful for `kind: "pixel"`.
 	 */
 	events?: AgentHookEvent[];
+
+	/**
+	 * Tool names to narrow the two tool-level events to. Omitted or empty means
+	 * every tool. Has no effect on run-level events, which carry no tool.
+	 */
+	tools?: string[];
 }
 
 export type AgentHookKind = "git_commit" | "log_tools" | "pixel" | "ppt_to_pdf";
