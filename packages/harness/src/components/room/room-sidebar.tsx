@@ -1,6 +1,7 @@
 import {
 	BotIcon,
 	FolderTreeIcon,
+	GaugeIcon,
 	HammerIcon,
 	MonitorXIcon,
 	PanelBottomIcon,
@@ -32,6 +33,7 @@ import {
 import type { RoomStore } from "@/stores";
 import { RoomAuditLogReport } from "./room-audit-log-report";
 import { RoomConfiguration } from "./room-configuration";
+import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
 import { RoomFileExplorer } from "./room-file-explorer";
 import { RoomSubagent } from "./room-subagent";
@@ -267,6 +269,12 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<BotIcon className="size-4 text-foreground" />
 									);
+								} else if (
+									component === "agent-effectiveness-report"
+								) {
+									renderValues.leading = (
+										<GaugeIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -322,6 +330,12 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									return <RoomConfiguration room={room} />;
 								} else if (component === "audit-log-report") {
 									return <RoomAuditLogReport room={room} />;
+								} else if (
+									component === "agent-effectiveness-report"
+								) {
+									return (
+										<RoomEffectivenessReport room={room} />
+									);
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {

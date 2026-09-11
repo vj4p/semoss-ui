@@ -42,6 +42,7 @@ import { RoomOptionsForm } from "@/components/room/room-options-form";
 import { FileDragProvider, useFileDrag } from "@/contexts";
 import { useChat, useGlobalBreadcrumbs, useRoot } from "@/hooks";
 import { RoomStore } from "@/stores";
+import { DEFAULT_AGENT_HARNESS_TYPE } from "@/stores/message/agent-harness";
 import type { MCPConfig, Prompt, Workspace } from "@/types";
 
 /**
@@ -233,7 +234,11 @@ export const NewRoomPage = observer(() => {
 				mcp: tempRoomStore.options.mcp,
 				// Persist the agent harness selection so the room stays in agent
 				// mode across reloads.
-				harnessType: mode === "agent" ? "semoss" : undefined,
+				harnessType:
+					mode === "agent"
+						? (tempRoomStore.options.harnessType ??
+							DEFAULT_AGENT_HARNESS_TYPE)
+						: undefined,
 			};
 
 			// add workspace id and name
@@ -841,6 +846,9 @@ export const NewRoomPage = observer(() => {
 													}
 												}}
 												agentEditable
+												harnessEditable={
+													mode === "agent"
+												}
 												onOptionsChange={(opts) => {
 													if (!opts) return;
 													if ("workspace" in opts) {

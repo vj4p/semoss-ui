@@ -1,4 +1,5 @@
 import {
+	GaugeIcon,
 	MoveDownIcon,
 	MoveUpIcon,
 	ScrollTextIcon,
@@ -110,6 +111,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Activity Log",
 			component: "audit-log-report",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open agent-run telemetry for this room in the right side panel.
+	 */
+	const handleOpenTelemetry = useCallback(() => {
+		room.addSidebarNode("room-agent-telemetry", {
+			type: "tab",
+			name: "Telemetry",
+			component: "agent-effectiveness-report",
 			config: {},
 			enableClose: true,
 		});
@@ -616,6 +630,20 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										<ScrollTextIcon />
 										<span className="flex-1">
 											Activity Log
+										</span>
+									</DropdownMenuItem>
+								)}
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenTelemetry();
+											onOpenChange(false);
+										}}
+									>
+										<GaugeIcon />
+										<span className="flex-1">
+											Telemetry
 										</span>
 									</DropdownMenuItem>
 								)}

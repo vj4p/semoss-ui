@@ -16,6 +16,7 @@ import {
 	ToolStore,
 } from "@/stores";
 import {
+	type AgentHarnessType,
 	reconnectAgentRun,
 	reconstructAllSubagents,
 } from "@/stores/message/agent-harness";
@@ -124,11 +125,11 @@ interface RoomStoreInterface {
 		predefinedPrompts: Prompt[];
 
 		/*
-		 * Agent harness to run messages through (e.g. "semoss"). When set, the
-		 * room runs in agent mode and messages are sent via RunAgent instead of
+		 * Agent harness to run messages through. When set, the room runs in
+		 * agent mode and messages are sent via RunAgent instead of
 		 * AskPlayground. Persisted so the mode survives a reload.
 		 */
-		harnessType?: string;
+		harnessType?: AgentHarnessType;
 
 		/*
 		 * Temperature of the model (0–1). Only used when enableTemperature is true.

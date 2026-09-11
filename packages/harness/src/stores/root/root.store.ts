@@ -93,7 +93,10 @@ export class RootStore {
 				enableModelSelect: true,
 				enableAgent: true,
 				enableSuggestions: false,
-				enableAgentHarness: false,
+				// Agent mode is this app's whole purpose — inherited as `false`
+				// from Playground, where it gates an opt-in extra. A platform
+				// theme can still turn it back off.
+				enableAgentHarness: true,
 				enableRewrite: true,
 				enablePromptOptimizer: true,
 				enableDarkMode: true,
@@ -118,10 +121,11 @@ export class RootStore {
 		// merge with the environment variables
 		try {
 			const parsed = JSON.parse(THEME);
-			// Support both wrapped ({ playground: {...} }) and flat formats
-			const theme = (parsed?.playground || parsed) as Partial<
-				ThemeMap["playground"]
-			>;
+			// Support wrapped ({ harness: {...} } or { playground: {...} }) and
+			// flat formats. `harness` wins so this app can be themed on its own.
+			const theme = (parsed?.harness ||
+				parsed?.playground ||
+				parsed) as Partial<ThemeMap["playground"]>;
 
 			// update the theme
 			this.updateTheme(theme);

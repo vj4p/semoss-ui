@@ -61,7 +61,10 @@ import {
 import { useFileDrag } from "@/contexts";
 import { useGracefulErrors, useRoot } from "@/hooks";
 import type { RoomStore } from "@/stores";
-import { AGENT_HARNESS_TYPE } from "@/stores/message/agent-harness";
+import {
+	DEFAULT_AGENT_HARNESS_TYPE,
+	isAgentHarnessType,
+} from "@/stores/message/agent-harness";
 import type { Engine, MCPConfig, Workspace } from "@/types";
 import { isKnowledgeMcp } from "@/utility/mcp-utils";
 import { PromptOptimizer } from "../../components/prompt/PromptOptimizer";
@@ -271,7 +274,13 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 					try {
 						await room.updateRoomOptions({
 							...room.options,
-							harnessType: AGENT_HARNESS_TYPE,
+							// Keep an already-chosen harness; only fill in the
+							// default when switching a chat room into agent mode.
+							harnessType: isAgentHarnessType(
+								room.options.harnessType,
+							)
+								? room.options.harnessType
+								: DEFAULT_AGENT_HARNESS_TYPE,
 						});
 					} catch (e) {
 						console.error(

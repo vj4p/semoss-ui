@@ -18,6 +18,7 @@ export const RoomConfiguration: React.FC<RoomConfigurationProps> = observer(
 				<RoomOptionsForm
 					model={room.model}
 					options={room.options}
+					harnessEditable={room.mode === "agent"}
 					onModelChange={(model) => {
 						if (model) {
 							room.setModel(model);
@@ -25,8 +26,22 @@ export const RoomConfiguration: React.FC<RoomConfigurationProps> = observer(
 						}
 					}}
 					onOptionsChange={(options) => {
-						if (options) {
-							room.setOptions(options);
+						if (!options) {
+							return;
+						}
+
+						room.setOptions(options);
+
+						// harnessType picks which backend loop runs the next
+						// message, so it has to survive a reload — the rest of
+						// this form stays session-local.
+						if (options.harnessType) {
+							room.updateRoomOptions(room.options).catch((e) => {
+								console.error(
+									"Failed to persist agent harness",
+									e,
+								);
+							});
 						}
 					}}
 				/>

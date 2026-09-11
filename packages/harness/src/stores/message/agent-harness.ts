@@ -24,9 +24,25 @@ import { InputMessageStore } from "./input-message.store";
 import { ResponseMessageStore } from "./response-message.store";
 
 /**
- * Agent harness type sent to the backend RunAgent reactor.
+ * Agent harness types sent to the backend RunAgent reactor. Must stay in sync
+ * with AgentHarnessRegistry's static block — resolve() throws
+ * IllegalArgumentException on any other nonblank value.
  */
-export const AGENT_HARNESS_TYPE = "semoss";
+export const AGENT_HARNESS_TYPES = [
+	"semoss",
+	"claude_code",
+	"github_copilot_py",
+] as const;
+
+export type AgentHarnessType = (typeof AGENT_HARNESS_TYPES)[number];
+
+/** Mirrors AgentHarnessRegistry.DEFAULT_HARNESS. */
+export const DEFAULT_AGENT_HARNESS_TYPE: AgentHarnessType = "semoss";
+
+export const isAgentHarnessType = (
+	value: string | undefined,
+): value is AgentHarnessType =>
+	!!value && (AGENT_HARNESS_TYPES as readonly string[]).includes(value);
 
 /**
  * Live AgentStores keyed by runId, so a decision made from the tool UI (which
@@ -544,6 +560,9 @@ export const runAgentMessage = async (
 				command: text,
 				engine: room.model.engine_id,
 				agentId: room.options.workspace?.workspace_id,
+				harnessType: isAgentHarnessType(room.options.harnessType)
+					? room.options.harnessType
+					: DEFAULT_AGENT_HARNESS_TYPE,
 			},
 			room.insightId,
 		);

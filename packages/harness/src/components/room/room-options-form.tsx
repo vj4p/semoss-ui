@@ -13,6 +13,11 @@ import {
 	FieldLabel,
 	FieldLegend,
 	FieldSet,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 	Slider,
 	Textarea,
 	Tooltip,
@@ -20,8 +25,14 @@ import {
 	TooltipTrigger,
 } from "@semoss/ui/next";
 import { MCPOverlay } from "@/components";
-import { useRoot } from "@/hooks";
+import { useChat, useRoot } from "@/hooks";
 import type { RoomStore } from "@/stores";
+import {
+	AGENT_HARNESS_TYPES,
+	type AgentHarnessType,
+	DEFAULT_AGENT_HARNESS_TYPE,
+	isAgentHarnessType,
+} from "@/stores/message/agent-harness";
 import { splitMcpByType } from "@/utility/mcp-utils";
 
 interface RoomOptionsFormProps {
@@ -43,6 +54,12 @@ interface RoomOptionsFormProps {
 	 * settings panel is read-only. Pass `true` from new-room contexts.
 	 */
 	agentEditable?: boolean;
+
+	/**
+	 * Whether to show the agent-harness picker. Only meaningful in agent mode,
+	 * so callers pass the room's mode check rather than this defaulting to true.
+	 */
+	harnessEditable?: boolean;
 }
 
 export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
@@ -52,9 +69,15 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 		options,
 		onOptionsChange = () => null,
 		agentEditable = false,
+		harnessEditable = false,
 	}) => {
 		const { t } = useTranslation(["room", "common"]);
 		const { root } = useRoot();
+		const { chat } = useChat();
+
+		const selectedHarness = isAgentHarnessType(options?.harnessType)
+			? options.harnessType
+			: DEFAULT_AGENT_HARNESS_TYPE;
 
 		/**
 		 * State
@@ -123,6 +146,53 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 											align: "start",
 										}}
 									/>
+									{chat.models.available.length === 0 && (
+										<FieldDescription className="text-warning">
+											{t("room:form.modelEmpty")}
+										</FieldDescription>
+									)}
+								</Field>
+							)}
+							{harnessEditable && (
+								<Field>
+									<FieldLabel>
+										{t("room:harness.label")}
+									</FieldLabel>
+									<Select
+										value={selectedHarness}
+										onValueChange={(value) =>
+											onOptionsChange({
+												harnessType:
+													value as AgentHarnessType,
+											})
+										}
+									>
+										<SelectTrigger className="w-full">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{AGENT_HARNESS_TYPES.map((type) => (
+												<SelectItem
+													key={type}
+													value={type}
+												>
+													{t(
+														`room:harness.types.${type}.label`,
+													)}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<FieldDescription>
+										{t(
+											`room:harness.types.${selectedHarness}.description`,
+										)}
+									</FieldDescription>
+									{selectedHarness !== "semoss" && (
+										<FieldDescription className="text-warning">
+											{t("room:harness.shellCaution")}
+										</FieldDescription>
+									)}
 								</Field>
 							)}
 							<Field>

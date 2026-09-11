@@ -29,11 +29,31 @@
 	},
 	"form": {
 		"modelLabel": "Model",
+		"modelEmpty": "No models available. A connected model only appears here once it is tagged \"text-generation\" in its engine settings.",
 		"instructionsLabel": "Instructions",
 		"agentLabel": "Agent",
 		"knowledgeLabel": "Knowledge",
 		"toolboxLabel": "Toolboxes",
 		"temperatureLabel": "Temperature"
+	},
+	"harness": {
+		"label": "Agent harness",
+		"description": "Which agent loop runs your messages.",
+		"shellCaution": "Runs its own tools outside this room's toolbox, including shell commands. Scope is set by the deployment's agent sandbox policy.",
+		"types": {
+			"semoss": {
+				"label": "SEMOSS native",
+				"description": "Platform tool loop. Uses the MCP tools and skills attached to this room."
+			},
+			"claude_code": {
+				"label": "Claude Code",
+				"description": "Spawns the Claude Code CLI with its own shell, file, search and sub-agent tools."
+			},
+			"github_copilot_py": {
+				"label": "GitHub Copilot",
+				"description": "Runs the GitHub Copilot agent harness."
+			}
+		}
 	},
 	"modes": {
 		"ask": "Chat Mode",
