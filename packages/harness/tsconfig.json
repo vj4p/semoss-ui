@@ -2,7 +2,17 @@
 	"extends": "@semoss/config/tsconfig.base.json",
 	"compilerOptions": {
 		"strict": true,
-		"paths": { "@/*": ["./src/*"] }
+		"paths": {
+			"@/*": ["./src/*"],
+			// @semoss/terminal is consumed at source, and its own Monaco import
+			// is resolved by a vite alias the build supplies. Mirror that alias
+			// here so typecheck can follow it too — otherwise pulling in the
+			// terminal reports "Cannot find module 'monaco-editor'" against
+			// that package's source rather than ours.
+			"monaco-editor": [
+				"../../libs/shared/node_modules/monaco-editor/esm/vs/editor/editor.api"
+			]
+		}
 	},
 	"include": ["vite-env.d.ts", "src"],
 	"exclude": ["dist", "node_modules"]

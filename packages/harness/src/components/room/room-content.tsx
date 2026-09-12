@@ -4,6 +4,7 @@ import {
 	MoveUpIcon,
 	ScrollTextIcon,
 	Settings2Icon,
+	TerminalIcon,
 	TriangleAlertIcon,
 } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -111,6 +112,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Activity Log",
 			component: "audit-log-report",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open a Pixel/Python/R/Shell console for this room's insight.
+	 */
+	const handleOpenTerminal = useCallback(() => {
+		room.addSidebarNode("room-terminal", {
+			type: "tab",
+			name: "Terminal",
+			component: "room-terminal",
 			config: {},
 			enableClose: true,
 		});
@@ -633,6 +647,16 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										</span>
 									</DropdownMenuItem>
 								)}
+								<DropdownMenuItem
+									onSelect={(e) => {
+										e.preventDefault();
+										handleOpenTerminal();
+										onOpenChange(false);
+									}}
+								>
+									<TerminalIcon />
+									<span className="flex-1">Terminal</span>
+								</DropdownMenuItem>
 								{room.mode === "agent" && (
 									<DropdownMenuItem
 										onSelect={(e) => {

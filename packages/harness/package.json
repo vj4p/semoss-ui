@@ -13,6 +13,7 @@
         "@semoss/i18n": "workspace:*",
         "@semoss/sdk": "workspace:*",
         "@semoss/shared": "workspace:*",
+        "@semoss/terminal": "workspace:*",
         "@semoss/ui": "workspace:*",
         "dayjs": "1.11.8",
         "lexical": "^0.39.0",

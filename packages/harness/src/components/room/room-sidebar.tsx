@@ -6,6 +6,7 @@ import {
 	MonitorXIcon,
 	PanelBottomIcon,
 	Settings2Icon,
+	TerminalIcon,
 	TvMinimalIcon,
 	XIcon,
 } from "lucide-react";
@@ -37,6 +38,7 @@ import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
 import { RoomFileExplorer } from "./room-file-explorer";
 import { RoomSubagent } from "./room-subagent";
+import { RoomTerminal } from "./room-terminal";
 import { RoomTool } from "./room-tool";
 
 interface RoomSidebarProps {
@@ -275,6 +277,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<GaugeIcon className="size-4 text-foreground" />
 									);
+								} else if (component === "room-terminal") {
+									renderValues.leading = (
+										<TerminalIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -336,6 +342,8 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									return (
 										<RoomEffectivenessReport room={room} />
 									);
+								} else if (component === "room-terminal") {
+									return <RoomTerminal room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {
