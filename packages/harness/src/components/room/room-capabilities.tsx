@@ -82,7 +82,9 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 			try {
 				const { pixelReturn } = await insight.actions.run<
 					[ProjectDependency[]]
-				>(`GetProjectDependencies(project=["${projectId}"]);`);
+				>(
+					`GetProjectDependencies(project=[${JSON.stringify(projectId)}]);`,
+				);
 				const output = pixelReturn[0]?.output;
 				setDependencies(Array.isArray(output) ? output : []);
 			} catch (e) {
@@ -111,7 +113,7 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 			setSavingEngine(true);
 			try {
 				await insight.actions.run(
-					`SetProjectDependencies(project="${projectId}", dependencies=${JSON.stringify(
+					`SetProjectDependencies(project=${JSON.stringify(projectId)}, dependencies=${JSON.stringify(
 						next.map(toDependencyPayload),
 					)})`,
 				);

@@ -101,6 +101,13 @@ const changeTypeVariant = (
  * human to see the result or merge it. This is that surface: the branches, the
  * commits on the current one, the diff of any commit, and a merge.
  *
+ * Every interpolated value goes through `JSON.stringify` rather than being wrapped in
+ * hand-written quotes. Branch names are not this panel's own data — they are read back
+ * from the repository, and git permits a double quote in a refname (only backslash is
+ * rejected), so a branch arriving from a clone or the git CLI could otherwise close the
+ * string literal and append its own Pixel. `ProjectGitCreateBranch` validates the names
+ * it creates, which does nothing for the ones it did not.
+ *
  * Reads are assembled from three reactors rather than one because none of them is
  * a branch-vs-branch diff. `ProjectGitDiff` — despite the name — computes a
  * *conflict* diff for a single file and requires a `side`, so it is no use here;
@@ -135,7 +142,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 			// batch errored, so batching these meant a project with no commit history
 			// took the branch list down with it and the panel showed nothing at all.
 			const branchResponse = await insight.actions.run<[BranchesOutput]>(
-				`ProjectGitBranches(project=["${projectId}"]);`,
+				`ProjectGitBranches(project=[${JSON.stringify(projectId)}]);`,
 			);
 			const branchData = (branchResponse.pixelReturn[0]?.output ??
 				{}) as BranchesOutput;
@@ -148,7 +155,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 				const commitResponse = await insight.actions.run<
 					[CommitsOutput]
 				>(
-					`ProjectCommitDetails(project=["${projectId}"], limit=[${COMMIT_LIMIT}], offset=[0]);`,
+					`ProjectCommitDetails(project=[${JSON.stringify(projectId)}], limit=[${COMMIT_LIMIT}], offset=[0]);`,
 				);
 				const commitData = commitResponse.pixelReturn[0]?.output as
 					| CommitsOutput
@@ -184,7 +191,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 		setDiffLoading(true);
 		try {
 			const { pixelReturn } = await insight.actions.run<[DiffOutput]>(
-				`ProjectCommitDiff(project=["${projectId}"], commitId=["${commitId}"]);`,
+				`ProjectCommitDiff(project=[${JSON.stringify(projectId)}], commitId=[${JSON.stringify(commitId)}]);`,
 			);
 			const output = pixelReturn[0]?.output as DiffOutput | undefined;
 			setDiffFiles(
@@ -201,7 +208,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 	const checkout = async (branch: string) => {
 		try {
 			await insight.actions.run(
-				`ProjectGitCheckout(project=["${projectId}"], branch=["${branch}"]);`,
+				`ProjectGitCheckout(project=[${JSON.stringify(projectId)}], branch=[${JSON.stringify(branch)}]);`,
 			);
 			toast.success(t("changes.checkedOut", { branch }));
 			await load();
@@ -230,7 +237,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 					},
 				]
 			>(
-				`ProjectGitMerge(project=["${projectId}"], branch=["${branch}"]);`,
+				`ProjectGitMerge(project=[${JSON.stringify(projectId)}], branch=[${JSON.stringify(branch)}]);`,
 			);
 			const result = pixelReturn[0];
 			if (result?.operationType?.indexOf("ERROR") > -1) {
