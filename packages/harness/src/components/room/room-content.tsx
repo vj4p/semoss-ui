@@ -4,6 +4,7 @@ import {
 	HistoryIcon,
 	MoveDownIcon,
 	MoveUpIcon,
+	PlugIcon,
 	ScrollTextIcon,
 	Settings2Icon,
 	TerminalIcon,
@@ -166,6 +167,20 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Telemetry",
 			component: "agent-effectiveness-report",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open the capabilities panel — engines attached to the project, and the
+	 * reactor packs exposed to the agent as tools.
+	 */
+	const handleOpenCapabilities = useCallback(() => {
+		room.addSidebarNode("room-capabilities", {
+			type: "tab",
+			name: "Capabilities",
+			component: "room-capabilities",
 			config: {},
 			enableClose: true,
 		});
@@ -724,6 +739,20 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										<GaugeIcon />
 										<span className="flex-1">
 											Telemetry
+										</span>
+									</DropdownMenuItem>
+								)}
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenCapabilities();
+											onOpenChange(false);
+										}}
+									>
+										<PlugIcon />
+										<span className="flex-1">
+											Capabilities
 										</span>
 									</DropdownMenuItem>
 								)}

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
 import {
 	Button,
+	cn,
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -28,6 +29,7 @@ import {
 	toast,
 } from "@semoss/ui/next";
 import { useChat } from "@/hooks";
+import type { ProjectKind } from "@/stores";
 import type { App } from "@/types";
 import { copyToClipboard, platformAppUrl, portalUrl } from "@/utility";
 
@@ -94,6 +96,9 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 		const [createOpen, setCreateOpen] = useState(false);
 		const [newName, setNewName] = useState("");
 		const [newDescription, setNewDescription] = useState("");
+		// Immutable once created — PROJECT_ENUM_TYPE is written into the .smss at
+		// creation and no reactor changes it, so this cannot be a later setting.
+		const [newKind, setNewKind] = useState<ProjectKind>("CODE");
 		const [creating, setCreating] = useState(false);
 
 		const load = useCallback(async () => {
@@ -132,6 +137,7 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 				const created = await chat.createCodeProject(
 					newName,
 					newDescription,
+					newKind,
 				);
 				onChange({
 					project_id: created.project_id,
@@ -236,6 +242,15 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 												void chat.scaffoldProjectForAgents(
 													project.project_id,
 													projectLabel(project),
+													// The guide has to match the
+													// project: a blocks app has no
+													// portals/ files to explain and
+													// a whole JSON contract that a
+													// CODE guide says nothing about.
+													project.project_type ===
+														"BLOCKS"
+														? "BLOCKS"
+														: "CODE",
 												);
 											}
 										}}
@@ -289,9 +304,13 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 										void copyToClipboard(
 											platformAppUrl(value.project_id) ??
 												portalUrl(value.project_id),
-										);
-										toast.success(
-											t("room:project.linkCopied"),
+											() =>
+												toast.success(
+													t(
+														"room:project.linkCopied",
+													),
+												),
+											(message) => toast.error(message),
 										);
 									}}
 								>
@@ -365,6 +384,63 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 										setNewDescription(e.target.value)
 									}
 								/>
+							</Field>
+							<Field>
+								<FieldLabel>
+									{t("room:project.kindLabel")}
+								</FieldLabel>
+								<div className="grid grid-cols-2 gap-2">
+									{(
+										[
+											{
+												kind: "CODE" as ProjectKind,
+												title: t(
+													"room:project.kindCode",
+												),
+												help: t(
+													"room:project.kindCodeHelp",
+												),
+											},
+											{
+												kind: "BLOCKS" as ProjectKind,
+												title: t(
+													"room:project.kindBlocks",
+												),
+												help: t(
+													"room:project.kindBlocksHelp",
+												),
+											},
+										] as const
+									).map((option) => (
+										<button
+											key={option.kind}
+											type="button"
+											disabled={creating}
+											aria-pressed={
+												newKind === option.kind
+											}
+											onClick={() =>
+												setNewKind(option.kind)
+											}
+											className={cn(
+												"flex flex-col gap-1 rounded-md border p-3 text-left transition-colors disabled:opacity-50",
+												newKind === option.kind
+													? "border-primary bg-primary/5"
+													: "hover:bg-muted",
+											)}
+										>
+											<span className="font-medium text-sm">
+												{option.title}
+											</span>
+											<span className="text-muted-foreground text-xs">
+												{option.help}
+											</span>
+										</button>
+									))}
+								</div>
+								<FieldDescription>
+									{t("room:project.kindHelp")}
+								</FieldDescription>
 							</Field>
 						</div>
 

@@ -11,8 +11,23 @@ import type {
 	PixelMessageToolCallPart,
 	Workspace,
 } from "@/types";
-import { normalizeTimestamp, projectAgentsMd } from "@/utility";
+import {
+	blocksProjectAgentsMd,
+	normalizeTimestamp,
+	projectAgentsMd,
+	starterBlocksState,
+} from "@/utility";
 import { RoomStore } from "../room";
+
+/**
+ * Project types the harness can create and put a room on.
+ *
+ * `CODE` serves files out of `portals/`. `BLOCKS` is a single
+ * `portals/blocks.json` the client renders — 42 widgets, grids and charts bound to
+ * a live frame. The type is immutable after creation, so this is a decision the
+ * user makes once, up front.
+ */
+export type ProjectKind = "CODE" | "BLOCKS";
 
 const DEFAUlT_MODEL_ID = import.meta.env.VITE_DEFAUlT_MODEL_ID || "";
 const DEFAUlT_MODEL_NAME = import.meta.env.VITE_DEFAUlT_MODEL_NAME || "";
@@ -778,14 +793,17 @@ export class ChatStore {
 	};
 
 	/**
-	 * CODE projects (apps) the user can open in a room.
+	 * Projects (apps) the user can open in a room.
 	 *
-	 * Filtered to CODE because that is the project type the app catalog shows
-	 * and the type a coding session is meant to edit.
+	 * CODE and BLOCKS are the two types an agent can meaningfully build: CODE is
+	 * files served out of `portals/`, BLOCKS is a single `portals/blocks.json` the
+	 * client renders. Both appear in the app catalog. INSIGHTS, WORKSPACE, SKILL
+	 * and NOTEBOOK projects are deliberately excluded — a room pointed at one of
+	 * those would have the agent editing something with a different contract.
 	 */
 	listCodeProjects = async (filter?: string): Promise<App[]> => {
 		const clauses = [
-			`projectType=${JSON.stringify(["CODE"])}`,
+			`projectType=${JSON.stringify(["CODE", "BLOCKS"])}`,
 			`onlyFavorites=[false]`,
 		];
 		if (filter?.trim()) {
@@ -815,17 +833,34 @@ export class ChatStore {
 	createCodeProject = async (
 		name: string,
 		description?: string,
+		projectType: ProjectKind = "CODE",
 	): Promise<App> => {
 		const trimmed = name.trim();
 		if (!trimmed) {
 			throw new Error("A project name is required");
 		}
 
-		await this._actions.run(
-			`CreateProject(project=${JSON.stringify([trimmed])}, projectType=${JSON.stringify(
-				["CODE"],
-			)}, global=[false]);`,
-		);
+		if (projectType === "BLOCKS") {
+			// A blocks app must be *born* as BLOCKS. PROJECT_ENUM_TYPE is written
+			// into the .smss once at creation and no reactor mutates it, so a CODE
+			// project can never be converted — the viewer would keep choosing
+			// CodeRenderer and iframe portals/ no matter what blocks.json said.
+			// CreateAppFromBlocks sets the type and writes the first state in one
+			// step; CreateProject cannot set BLOCKS and seed content together.
+			await this._actions.run(
+				`CreateAppFromBlocks(project=${JSON.stringify([
+					trimmed,
+				])}, json=["<encode>${starterBlocksState(
+					trimmed,
+				)}</encode>"], global=[false]);`,
+			);
+		} else {
+			await this._actions.run(
+				`CreateProject(project=${JSON.stringify([trimmed])}, projectType=${JSON.stringify(
+					["CODE"],
+				)}, global=[false]);`,
+			);
+		}
 
 		const matches = await this.listCodeProjects(trimmed);
 		// Match on either field: project_name is not reliably the name that was
@@ -862,7 +897,11 @@ export class ChatStore {
 			}
 		}
 
-		await this.scaffoldProjectForAgents(created.project_id, trimmed);
+		await this.scaffoldProjectForAgents(
+			created.project_id,
+			trimmed,
+			projectType,
+		);
 
 		// Publishing is what makes the project's portal reachable. Non-fatal:
 		// the project is still created and editable if this fails.
@@ -878,9 +917,13 @@ export class ChatStore {
 	};
 
 	/**
-	 * Give a CODE project the two things an agent cannot discover for itself: an
-	 * `AGENTS.md` saying that `portals/` is the only served directory and what
-	 * URL the finished app has, and the `portals/` folder itself.
+	 * Give a project the things an agent cannot discover for itself.
+	 *
+	 * For a CODE project that is an `AGENTS.md` saying `portals/` is the only
+	 * served directory and what URL the finished app has, plus the `portals/`
+	 * folder itself. For a BLOCKS project it is the `blocks.json` contract — the
+	 * flat block map, the exact widget names, and the three renames that would
+	 * otherwise each produce a silently blank app.
 	 *
 	 * `AgentsMdLoader` reads `AGENTS.md` out of the agent's working directory
 	 * into the system prompt, and for a project-scoped room that working
@@ -900,6 +943,7 @@ export class ChatStore {
 	scaffoldProjectForAgents = async (
 		projectId: string,
 		projectName: string,
+		projectType: ProjectKind = "CODE",
 	): Promise<void> => {
 		try {
 			const { pixelReturn } = await this._actions.run<
@@ -918,17 +962,20 @@ export class ChatStore {
 			// CLAUDE.md counts: AgentsMdLoader reads either name, so a project
 			// carrying one is already configured.
 			if (!names.has("AGENTS.md") && !names.has("CLAUDE.md")) {
+				const guide =
+					projectType === "BLOCKS"
+						? blocksProjectAgentsMd(projectId, projectName)
+						: projectAgentsMd(projectId, projectName);
 				await this._actions.run(
 					`SaveAppAssets(project=${JSON.stringify([projectId])}, filePath=${JSON.stringify(
 						["AGENTS.md"],
-					)}, content=["<encode>${projectAgentsMd(
-						projectId,
-						projectName,
-					)}</encode>"], comment=["Scaffold project conventions for agents"]);`,
+					)}, content=["<encode>${guide}</encode>"], comment=["Scaffold project conventions for agents"]);`,
 				);
 			}
 
-			if (!names.has("portals")) {
+			// A blocks app already has portals/blocks.json, written by
+			// CreateAppFromBlocks — there is nothing to keep the folder alive for.
+			if (projectType !== "BLOCKS" && !names.has("portals")) {
 				await this._actions.run(
 					`SaveAppAssets(project=${JSON.stringify([projectId])}, filePath=${JSON.stringify(
 						["portals/.gitkeep"],

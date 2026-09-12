@@ -7,6 +7,7 @@ import {
 	HistoryIcon,
 	MonitorXIcon,
 	PanelBottomIcon,
+	PlugIcon,
 	Settings2Icon,
 	TerminalIcon,
 	TvMinimalIcon,
@@ -36,6 +37,7 @@ import {
 } from "@semoss/ui/next";
 import type { RoomStore } from "@/stores";
 import { RoomAuditLogReport } from "./room-audit-log-report";
+import { RoomCapabilities } from "./room-capabilities";
 import { RoomConfiguration } from "./room-configuration";
 import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
@@ -301,6 +303,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<ClockIcon className="size-4 text-foreground" />
 									);
+								} else if (component === "room-capabilities") {
+									renderValues.leading = (
+										<PlugIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -370,6 +376,8 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									component === "room-scheduled-runs"
 								) {
 									return <RoomScheduledRuns room={room} />;
+								} else if (component === "room-capabilities") {
+									return <RoomCapabilities room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {

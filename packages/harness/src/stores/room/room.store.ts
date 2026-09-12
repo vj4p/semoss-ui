@@ -32,6 +32,7 @@ import type {
 	ResponsePixelMessage,
 	Workspace,
 } from "@/types";
+import { EMPTY_PACK_TOOLS, resolvePackTools } from "@/utility";
 import {
 	type StreamHandlers,
 	StreamJobController,
@@ -174,6 +175,15 @@ interface RoomStoreInterface {
 			project_id: string;
 			project_name?: string;
 		};
+
+		/*
+		 * Capability pack ids enabled for this room — see utility/capability-packs.
+		 * The packs themselves live in the room's own MCP toolbox on disk, which the
+		 * backend discovers by itself; this list is the record of intent, so the UI
+		 * knows what is on and so re-applying can send the full set (one
+		 * MakeRoomPixelMCP call owns every tool it generated).
+		 */
+		packs?: string[];
 
 		/*
 		 * Temperature of the model (0–1). Only used when enableTemperature is true.
@@ -925,6 +935,63 @@ export class RoomStore {
 		} catch (e) {
 			console.error("Failed to set project context for room", e);
 		}
+	};
+
+	/**
+	 * Capability packs
+	 */
+
+	/** Pack ids currently enabled for this room. */
+	get packs(): string[] {
+		return this._store.options.packs ?? [];
+	}
+
+	/**
+	 * Turn one capability pack on or off, and rewrite the room's tool set.
+	 *
+	 * Writes the tools into the room's own `mcp/pixel_mcp.json` via
+	 * `MakeRoomPixelMCP`. Nothing else is needed to make them reachable: the
+	 * backend already folds a room folder's MCP definitions into every model call
+	 * (`Room.getAllToolsJsonForRoom` checks `InternalMCP.hasDefinitions` on the
+	 * room folder), so the tools appear on the next turn without touching
+	 * `options.mcp`.
+	 *
+	 * **The full set goes every time.** `MakeRoomPixelMCP` treats the reactors it
+	 * is handed as everything its generator owns for that room and drops what it
+	 * wrote before and was not asked for again. Sending one pack at a time would
+	 * quietly delete the others. Tools written by a different generator — a
+	 * Playwright toolbox, say — carry another stamp and are preserved.
+	 *
+	 * Order matters on the failure path: the pixel runs first and the options are
+	 * only persisted once it succeeds, so a failed write can't leave the UI
+	 * claiming a pack is on when the room has no such tools.
+	 *
+	 * @param packId - id from CAPABILITY_PACKS.
+	 * @param enabled - true to add, false to remove.
+	 */
+	setCapabilityPack = async (packId: string, enabled: boolean) => {
+		const current = new Set(this.packs);
+		if (enabled) {
+			current.add(packId);
+		} else {
+			current.delete(packId);
+		}
+		const next = [...current];
+
+		const resolved = resolvePackTools(next);
+		const { reactors, metadata } =
+			resolved.reactors.length > 0 ? resolved : EMPTY_PACK_TOOLS;
+
+		await this.runRoomPixel(
+			`MakeRoomPixelMCP(roomId=${JSON.stringify(
+				this._store.roomId,
+			)}, reactor=${JSON.stringify(reactors)}, mcpMetadata=${JSON.stringify(
+				metadata,
+			)});`,
+			false,
+		);
+
+		await this.updateRoomOptions({ ...this._store.options, packs: next });
 	};
 
 	/**

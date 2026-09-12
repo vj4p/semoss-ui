@@ -1,3 +1,3 @@
-import { ChatStore } from "./chat.store";
+import { ChatStore, type ProjectKind } from "./chat.store";
 
-export { ChatStore };
+export { ChatStore, type ProjectKind };

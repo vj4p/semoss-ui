@@ -43,7 +43,7 @@
 		"create": "New project",
 		"clear": "Clear",
 		"createTitle": "New project",
-		"createDescription": "Creates a CODE project and publishes it, so the agent's work lands in a real app that shows up in the catalog.",
+		"createDescription": "Creates the project and publishes it, so the agent's work lands in a real app that shows up in the catalog.",
 		"nameLabel": "Name",
 		"nameHelp": "Used as the project name in the app catalog.",
 		"descriptionLabel": "Description",
@@ -52,7 +52,13 @@
 		"createFailed": "Failed to create the project",
 		"loadFailed": "Failed to load projects",
 		"openApp": "Open app",
-		"linkCopied": "App link copied"
+		"linkCopied": "App link copied",
+		"kindLabel": "Kind",
+		"kindHelp": "This cannot be changed later.",
+		"kindCode": "Code",
+		"kindCodeHelp": "HTML, CSS and JS served from portals/.",
+		"kindBlocks": "Blocks",
+		"kindBlocksHelp": "A data-bound app of grids and charts, built from JSON."
 	},
 	"harness": {
 		"label": "Agent harness",
@@ -164,5 +170,23 @@
 		"searchPlaceholder": "Search knowledge and toolboxes",
 		"noResults": "No matching items found",
 		"noItemsAvailable": "No knowledge or toolboxes available"
+	},
+	"capabilities": {
+		"noProject": "Select a project for this room to attach engines and enable capability packs.",
+		"enginesTitle": "Engines",
+		"enginesHelp": "Attached engines are named in the agent's system prompt, with their ids, so it knows what it may use.",
+		"databases": "Databases",
+		"knowledgeStores": "Knowledge stores",
+		"storage": "Storage",
+		"detach": "Detach",
+		"engineSaveFailed": "Could not save the project's engines",
+		"packsTitle": "Capability packs",
+		"packsHelp": "Each pack adds a set of SEMOSS tools to this room. Tools that change things outside this project ask before running.",
+		"toolCount": "{{count}} tools",
+		"askCount": "{{count}} ask first",
+		"needsEngine": "Attach a {{types}} engine for this to be useful.",
+		"packEnabled": "{{name}} enabled",
+		"packDisabled": "{{name}} disabled",
+		"packFailed": "Could not update the room's tools"
 	}
 }
