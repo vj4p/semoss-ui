@@ -18,6 +18,7 @@ import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
 import {
 	FlexLayout,
+	getFileExplorerAdapter,
 	getFileIconComponent,
 	useTabBarScroll,
 } from "@semoss/shared";
@@ -70,8 +71,13 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 		const newPath = `${dir}${newName}`;
 		(async () => {
 			try {
+				// Rename in whichever tree the explorer and editor are showing —
+				// the project's when the room has one. Hardcoding the INSIGHT
+				// family here renamed nothing in a project-scoped room. Built
+				// through the shared adapter so the family word and its scope
+				// argument stay in one place.
 				await insight.actions.run(
-					`RenameInsightAsset(filePath=["${path}"], newValue=["${newPath}"]);`,
+					getFileExplorerAdapter(room.fileMode).rename(path, newPath),
 				);
 				room.removeSidebarNode(id);
 				room.openFileEditorSidebarNode(newPath, {
