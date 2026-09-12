@@ -33,7 +33,7 @@ import type {
 	ResponsePixelMessage,
 	Workspace,
 } from "@/types";
-import { EMPTY_PACK_TOOLS, resolvePackTools } from "@/utility";
+import { isPackProject, normalizePackId, packLabel } from "@/utility";
 import {
 	type StreamHandlers,
 	StreamJobController,
@@ -184,11 +184,21 @@ interface RoomStoreInterface {
 		};
 
 		/*
-		 * Capability pack ids enabled for this room — see utility/capability-packs.
-		 * The packs themselves live in the room's own MCP toolbox on disk, which the
-		 * backend discovers by itself; this list is the record of intent, so the UI
-		 * knows what is on and so re-applying can send the full set (one
-		 * MakeRoomPixelMCP call owns every tool it generated).
+		 * Capability pack ids enabled for this room, as written by an older build.
+		 *
+		 * Deprecated and never written any more: a pack is a seeded project, so an
+		 * enabled pack is an entry in `mcp` below like any other toolbox, and keeping a
+		 * second list of the same fact invites the two to disagree. Still read, so a
+		 * room saved before the change reports its packs instead of appearing to have
+		 * none — see the `packs` getter.
+		 *
+		 * Reading it is the whole of the compatibility story, deliberately. Such a room
+		 * also has the old build's copy of the pack tools in its own room folder, which
+		 * is not cleaned up, so migrating it leaves the same reactor exposed twice —
+		 * once from the room folder and once from the pack project. That is untidy
+		 * rather than broken (the builder uniquifies the second name), and it is left
+		 * alone because the frontend-constant shape never shipped: no deployment has a
+		 * room in this state.
 		 */
 		packs?: string[];
 
@@ -1009,57 +1019,76 @@ export class RoomStore {
 	 * Capability packs
 	 */
 
-	/** Pack ids currently enabled for this room. */
+	/**
+	 * Pack ids currently enabled for this room.
+	 *
+	 * Derived from `options.mcp` rather than stored, because a pack *is* an attached
+	 * toolbox — deriving it means the toggle can never disagree with the tools the
+	 * agent will actually be handed. Legacy `options.packs` entries are folded in and
+	 * translated so a room saved by an older build still shows its packs; the union is
+	 * deduped because a migrated room can legitimately carry both.
+	 */
 	get packs(): string[] {
-		return this._store.options.packs ?? [];
+		const fromMcp = this._store.options.mcp
+			.map((mcp) => mcp?.id)
+			.filter((id): id is string => isPackProject(id));
+		const legacy = (this._store.options.packs ?? []).map(normalizePackId);
+		return [...new Set([...fromMcp, ...legacy])];
 	}
 
 	/**
-	 * Turn one capability pack on or off, and rewrite the room's tool set.
+	 * Turn one capability pack on or off.
 	 *
-	 * Writes the tools into the room's own `mcp/pixel_mcp.json` via
-	 * `MakeRoomPixelMCP`. Nothing else is needed to make them reachable: the
-	 * backend already folds a room folder's MCP definitions into every model call
-	 * (`Room.getAllToolsJsonForRoom` checks `InternalMCP.hasDefinitions` on the
-	 * room folder), so the tools appear on the next turn without touching
-	 * `options.mcp`.
+	 * A pack is a seeded `platform__pack-*` project, so this attaches or detaches that
+	 * project as an MCP toolbox and nothing more — no tools are generated, copied or
+	 * deleted. The agent picks it up because its tool list is the union of workspace
+	 * resources and `room.options.mcp[]`.
 	 *
-	 * **The full set goes every time.** `MakeRoomPixelMCP` treats the reactors it
-	 * is handed as everything its generator owns for that room and drops what it
-	 * wrote before and was not asked for again. Sending one pack at a time would
-	 * quietly delete the others. Tools written by a different generator — a
-	 * Playwright toolbox, say — carry another stamp and are preserved.
+	 * This used to write the pack's reactors into the room's own
+	 * `mcp/pixel_mcp.json` via `MakeRoomPixelMCP`, from a reactor list held in the
+	 * frontend. That had to send every enabled pack on every change — the reactor owns
+	 * the whole set it generated and drops whatever it is not asked for again — so
+	 * toggling one pack rewrote them all, and a room's tools were a copy of the
+	 * frontend's idea of a pack rather than the pack itself. Attaching the project
+	 * keeps one copy of the definition, inherits its RBAC, and leaves the room folder
+	 * for tools that genuinely belong to the room.
 	 *
-	 * Order matters on the failure path: the pixel runs first and the options are
-	 * only persisted once it succeeds, so a failed write can't leave the UI
-	 * claiming a pack is on when the room has no such tools.
+	 * Legacy `options.packs` is dropped on the first toggle rather than migrated
+	 * separately: `packs` already folds it into the derived list, so writing the union
+	 * back as `mcp` entries is the migration.
 	 *
-	 * @param packId - id from CAPABILITY_PACKS.
-	 * @param enabled - true to add, false to remove.
+	 * @param packId - pack project id, e.g. `pack-data`.
+	 * @param enabled - true to attach, false to detach.
 	 */
 	setCapabilityPack = async (packId: string, enabled: boolean) => {
-		const current = new Set(this.packs);
+		const id = normalizePackId(packId);
+
+		// Start from every pack this room has, however it was recorded, so a legacy
+		// room does not silently lose its other packs when one is toggled.
+		const packIds = new Set(this.packs);
 		if (enabled) {
-			current.add(packId);
+			packIds.add(id);
 		} else {
-			current.delete(packId);
+			packIds.delete(id);
 		}
-		const next = [...current];
 
-		const resolved = resolvePackTools(next);
-		const { reactors, metadata } =
-			resolved.reactors.length > 0 ? resolved : EMPTY_PACK_TOOLS;
-
-		await this.runRoomPixel(
-			`MakeRoomPixelMCP(roomId=${JSON.stringify(
-				this._store.roomId,
-			)}, reactor=${JSON.stringify(reactors)}, mcpMetadata=${JSON.stringify(
-				metadata,
-			)});`,
-			false,
+		const others = this._store.options.mcp.filter(
+			(mcp) => !isPackProject(mcp?.id),
 		);
+		// A pack is a project, so it is attached as one. There is no "toolbox" MCP
+		// type - "toolbox" is the UI's word for the tab these appear under, while the
+		// wire type of anything project-shaped is PROJECT.
+		const packEntries = [...packIds].map((packProjectId) => ({
+			type: "PROJECT" as const,
+			id: packProjectId,
+			name: packLabel(packProjectId),
+		}));
 
-		await this.updateRoomOptions({ ...this._store.options, packs: next });
+		const { packs: _legacyPacks, ...options } = this._store.options;
+		await this.updateRoomOptions({
+			...options,
+			mcp: [...others, ...packEntries],
+		});
 	};
 
 	/**

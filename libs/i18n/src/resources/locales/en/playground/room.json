@@ -182,6 +182,7 @@
 		"engineSaveFailed": "Could not save the project's engines",
 		"packsTitle": "Capability packs",
 		"packsHelp": "Each pack adds a set of SEMOSS tools to this room. Tools that change things outside this project ask before running.",
+		"noPacks": "No capability packs are available on this instance.",
 		"toolCount": "{{count}} tools",
 		"askCount": "{{count}} ask first",
 		"needsEngine": "Attach a {{types}} engine for this to be useful.",
