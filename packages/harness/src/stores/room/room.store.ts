@@ -6,7 +6,7 @@ import {
 	runPixelAsync,
 	uploadInsight,
 } from "@semoss/sdk/react";
-import { FlexLayout, type ThemeMap } from "@semoss/shared";
+import { type FileMode, FlexLayout, type ThemeMap } from "@semoss/shared";
 import { STREAMING_PLACEHOLDER_ID } from "@/constants";
 import {
 	type AbstractMessageStore,
@@ -37,6 +37,24 @@ import {
 	StreamJobController,
 	type StreamOptions,
 } from "./stream-job-controller";
+
+/**
+ * Which asset tree a room's file explorer and editors should browse.
+ *
+ * A project-scoped room does its work in the project's assets folder — that is
+ * where the agent's tools write and where the terminal starts — so the INSIGHT
+ * tree is the wrong one to show: the room folder stays empty and the explorer
+ * reads "Empty folder" while the app sits in the project.
+ *
+ * The APP adapter is a full peer of the INSIGHT one (browse/search/rename/copy/
+ * delete/upload/download, all scoped by `project=[...]`), so switching costs
+ * nothing in capability.
+ *
+ * A standalone function rather than only a getter so a component can memoize on
+ * the project id and keep a stable object identity, without restating the rule.
+ */
+export const fileModeForProject = (projectId?: string): FileMode =>
+	projectId ? { type: "APP", app: projectId } : { type: "INSIGHT" };
 
 /** One row from ListAllJobs, flattened. */
 export interface ScheduledRun {
@@ -499,6 +517,16 @@ export class RoomStore {
 	 */
 	get sidebar() {
 		return this._store.sidebar;
+	}
+
+	/**
+	 * The asset tree this room's file explorer and editors browse — see
+	 * {@link fileModeForProject}. Both read it so they cannot disagree about
+	 * which tree a path belongs to; listing a project file the editor then tried
+	 * to open from the insight would 404.
+	 */
+	get fileMode(): FileMode {
+		return fileModeForProject(this._store.options.project?.project_id);
 	}
 
 	/** Setters */

@@ -8,7 +8,6 @@ import {
 	FileExplorerNewAction,
 	FileExplorerRefreshAction,
 	type FileItem,
-	type FileMode,
 	FlexLayout,
 	getFileEditorPathScope,
 	getParentPath,
@@ -17,7 +16,7 @@ import {
 	resolveMovedPath,
 	useFileExplorer,
 } from "@semoss/shared";
-import type { RoomStore } from "@/stores";
+import { fileModeForProject, type RoomStore } from "@/stores";
 
 interface RoomFileExplorerProps {
 	/** Layout */
@@ -30,9 +29,6 @@ interface RoomFileExplorerProps {
 	node: FlexLayout.TabNode;
 }
 
-/** Module scope: the insight scope carries no parameters of its own. */
-const INSIGHT_MODE: FileMode = { type: "INSIGHT" };
-
 /**
  * An in-place rename, as opposed to a move to another directory.
  *
@@ -43,7 +39,11 @@ const isRename = (moved: FileExplorerMovedItem) =>
 	getParentPath(moved.oldPath) === getParentPath(moved.newPath);
 
 /**
- * The room sidebar's file explorer over the room insight's workspace.
+ * The room sidebar's file explorer.
+ *
+ * Browses whichever tree the room is actually working in: the selected project's
+ * assets when it has one, otherwise the room insight's own workspace. See
+ * {@link fileModeForProject}.
  *
  * Sidebar tabs are FlexLayout nodes owned by the room store, so the tab sync is
  * local; only the path arithmetic (`resolveMovedPath`) is shared with the other
@@ -54,9 +54,18 @@ export const RoomFileExplorer: React.FC<RoomFileExplorerProps> = observer(
 		const insight = useInsight();
 
 		const config: { initialPath?: string } = node.getConfig() ?? {};
+
+		// Follows the room's project: with one selected this browses the
+		// project's assets, which is where the agent actually writes. Memoized on
+		// the id so the mode object stays referentially stable across renders.
+		const projectId = room.options.project?.project_id;
+		const fileMode = useMemo(
+			() => fileModeForProject(projectId),
+			[projectId],
+		);
 		const scope = useMemo(
-			() => getFileEditorPathScope(INSIGHT_MODE, insight.insightId),
-			[insight.insightId],
+			() => getFileEditorPathScope(fileMode, insight.insightId),
+			[fileMode, insight.insightId],
 		);
 
 		/**
@@ -176,7 +185,7 @@ export const RoomFileExplorer: React.FC<RoomFileExplorerProps> = observer(
 		};
 
 		const explorer = useFileExplorer({
-			mode: INSIGHT_MODE,
+			mode: fileMode,
 			initialPath: config.initialPath,
 			onItemSelect: openFileTab,
 			onItemsMoved: (movedItems) => {

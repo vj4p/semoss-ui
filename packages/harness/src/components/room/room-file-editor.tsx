@@ -20,9 +20,9 @@ export const RoomFileEditor: React.FC<RoomFileEditorProps> = observer(
 		return (
 			<FileEditor
 				key={`${config.path}-${room.sidebar.fileKeys[config.path] ?? 0}`}
-				mode={{
-					type: "INSIGHT",
-				}}
+				// Same tree the explorer lists — the project's when the room has
+				// one. See RoomStore.fileMode.
+				mode={room.fileMode}
 				path={config.path}
 				onChange={(_content, isModified) => {
 					const updated = isModified
