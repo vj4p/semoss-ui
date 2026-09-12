@@ -97,6 +97,18 @@ const formatPercent = (value?: number | null) =>
 		? `${Math.round(value * 100)}%`
 		: "—";
 
+/**
+ * Money, at a scale that stays legible for an agent run.
+ *
+ * Runs on a cheap model cost fractions of a cent, so two decimal places would
+ * render almost everything as "$0.00". Four gives a usable figure without
+ * pretending to more precision than the rates carry.
+ */
+const formatCost = (value: number, currency = "USD") => {
+	const symbol = currency === "USD" ? "$" : `${currency} `;
+	return `${symbol}${value.toFixed(value >= 1 ? 2 : 4)}`;
+};
+
 const formatDuration = (ms?: number | null) => {
 	if (typeof ms !== "number" || !Number.isFinite(ms)) {
 		return "—";
@@ -139,6 +151,56 @@ const Stat = ({
 	</div>
 );
 
+/**
+ * Shape returned by GetModelCost. `cost` is null when no model in scope had
+ * published pricing — see ModelCostCalculator: an unpriced model is reported as
+ * unpriced rather than as free, so null must render as "not priced" and never as
+ * zero.
+ */
+interface CostOutput {
+	totals?: {
+		cost?: number | null;
+		currency?: string;
+		inputTokens?: number;
+		outputTokens?: number;
+		cacheReadTokens?: number;
+	};
+	coverage?: {
+		pricedModels?: number;
+		unpricedModels?: number;
+		complete?: boolean;
+	};
+}
+
+/**
+ * Shape returned by AssessAgentEffectiveness (the LLM-judge companion).
+ *
+ * The score is per-dimension with an `overallScore` roll-up inside `assessment` —
+ * there is no single top-level score. `metricsDisagreements` is the interesting
+ * field: the judge is shown the deterministic metrics and reports where the
+ * transcript contradicts them, which is how you catch a score that is wrong rather
+ * than merely low.
+ */
+interface JudgeOutput {
+	assessment?: {
+		overallScore?: number | null;
+		verdict?: string;
+		topIssues?: string[];
+		recommendations?: string[];
+		metricsDisagreements?: string[];
+		[dimension: string]:
+			| { score?: number; rationale?: string }
+			| number
+			| string
+			| string[]
+			| null
+			| undefined;
+	};
+	judgeUsage?: { promptTokens?: number; responseTokens?: number };
+	/** Set locally when the call itself failed, so the card can say so. */
+	errorMessage?: string;
+}
+
 interface RoomEffectivenessReportProps {
 	room: RoomStore;
 }
@@ -153,17 +215,33 @@ interface RoomEffectivenessReportProps {
 export const RoomEffectivenessReport = observer(
 	({ room }: RoomEffectivenessReportProps) => {
 		const [data, setData] = useState<EffectivenessOutput | null>(null);
+		const [cost, setCost] = useState<CostOutput | null>(null);
+		const [costError, setCostError] = useState<string | null>(null);
 		const [loading, setLoading] = useState(false);
 		const [error, setError] = useState<string | null>(null);
+
+		// The judge costs a model call, so it is never run on panel open — only when
+		// asked for, per run, and the result is kept keyed by runId.
+		const [judgeByRun, setJudgeByRun] = useState<
+			Record<string, JudgeOutput>
+		>({});
+		const [judgingRunId, setJudgingRunId] = useState<string | null>(null);
 
 		const fetchReport = useCallback(async () => {
 			setLoading(true);
 			setError(null);
 			try {
-				const response = await room.runRoomPixel<[EffectivenessOutput]>(
+				// Both statements go in one round trip. Cost is deliberately not fatal
+				// to the panel: GetModelCost refuses outright when model inference
+				// logging is disabled, and telemetry is still worth showing then.
+				const response = await room.runRoomPixel<
+					[EffectivenessOutput, CostOutput]
+				>(
 					`GetAgentEffectiveness(roomId=${JSON.stringify(
 						room.roomId,
-					)}, includeRuns=[true], limit=[${RUN_LIMIT}]);`,
+					)}, includeRuns=[true], limit=[${RUN_LIMIT}]); GetModelCost(roomId=${JSON.stringify(
+						room.roomId,
+					)});`,
 					false,
 				);
 				const { operationType, output } = response.pixelReturn[0];
@@ -175,6 +253,22 @@ export const RoomEffectivenessReport = observer(
 					);
 				}
 				setData(output as EffectivenessOutput);
+
+				const costReturn = response.pixelReturn[1];
+				if (
+					!costReturn ||
+					costReturn.operationType.indexOf("ERROR") > -1
+				) {
+					setCost(null);
+					setCostError(
+						typeof costReturn?.output === "string"
+							? costReturn.output
+							: "Cost is unavailable",
+					);
+				} else {
+					setCost(costReturn.output as CostOutput);
+					setCostError(null);
+				}
 			} catch (e) {
 				setError(
 					(e as Error).message || "Failed to load agent telemetry",
@@ -184,6 +278,45 @@ export const RoomEffectivenessReport = observer(
 			}
 		}, [room]);
 
+		/**
+		 * Run the LLM judge over one run.
+		 *
+		 * On demand only. AssessAgentEffectiveness sends the run's transcript to a
+		 * model, so doing it for every run on every panel open would spend real tokens
+		 * to redisplay something the deterministic score already covers.
+		 */
+		const assessRun = async (runId: string) => {
+			setJudgingRunId(runId);
+			try {
+				const response = await room.runRoomPixel<[JudgeOutput]>(
+					`AssessAgentEffectiveness(runId=${JSON.stringify(runId)});`,
+					false,
+				);
+				const { operationType, output } = response.pixelReturn[0];
+				if (operationType.indexOf("ERROR") > -1) {
+					throw new Error(
+						typeof output === "string"
+							? output
+							: "Assessment failed",
+					);
+				}
+				setJudgeByRun((prev) => ({
+					...prev,
+					[runId]: output as JudgeOutput,
+				}));
+			} catch (e) {
+				setJudgeByRun((prev) => ({
+					...prev,
+					[runId]: {
+						errorMessage:
+							(e as Error).message || "Assessment failed",
+					},
+				}));
+			} finally {
+				setJudgingRunId(null);
+			}
+		};
+
 		useEffect(() => {
 			void fetchReport();
 		}, [fetchReport]);
@@ -191,6 +324,17 @@ export const RoomEffectivenessReport = observer(
 		const rollup = data?.rollup ?? {};
 		const inference = data?.roomInference ?? {};
 		const runs = data?.runs ?? [];
+		// A partial total is worse than no total if it is not labelled as partial:
+		// an unpriced model contributes nothing, so the number would silently
+		// understate. Say so rather than showing a bare figure.
+		const costHint = costError
+			? costError
+			: cost?.coverage?.complete
+				? undefined
+				: (cost?.coverage?.unpricedModels ?? 0) > 0
+					? `${cost?.coverage?.unpricedModels} model(s) not priced`
+					: "no pricing published";
+
 		const byTool = Object.entries(rollup.byTool ?? {}).sort(
 			(a, b) => (b[1].calls ?? 0) - (a[1].calls ?? 0),
 		);
@@ -337,6 +481,21 @@ export const RoomEffectivenessReport = observer(
 												)}`}
 											/>
 											<Stat
+												label="Cost"
+												value={
+													typeof cost?.totals
+														?.cost === "number"
+														? formatCost(
+																cost.totals
+																	.cost,
+																cost.totals
+																	.currency,
+															)
+														: "—"
+												}
+												hint={costHint}
+											/>
+											<Stat
 												label="Input tokens"
 												value={formatNumber(
 													inference.inputTokens,
@@ -438,6 +597,130 @@ export const RoomEffectivenessReport = observer(
 														)}
 													</span>
 												</div>
+
+												{/*
+												 * The deterministic score below is free -- recomputed from AGENT_RUN and
+												 * MESSAGE. The judge is a model call over the run's transcript, so it is
+												 * opt-in per run rather than something the panel spends on every open.
+												 */}
+												<div className="mt-2 flex items-center gap-2">
+													<Button
+														size="sm"
+														variant="outline"
+														disabled={
+															judgingRunId ===
+																run.runId ||
+															!run.runId
+														}
+														onClick={() =>
+															run.runId &&
+															void assessRun(
+																run.runId,
+															)
+														}
+													>
+														{judgingRunId ===
+														run.runId
+															? "Assessing…"
+															: judgeByRun[
+																		run.runId ??
+																			""
+																	]
+																? "Re-assess"
+																: "Assess with a judge"}
+													</Button>
+													{(() => {
+														const judged =
+															judgeByRun[
+																run.runId ?? ""
+															];
+														const overall =
+															judged?.assessment
+																?.overallScore;
+														return typeof overall ===
+															"number" ? (
+															<Badge variant="secondary">
+																judge{" "}
+																{Math.round(
+																	overall,
+																)}
+															</Badge>
+														) : null;
+													})()}
+												</div>
+												{(() => {
+													const judged =
+														judgeByRun[
+															run.runId ?? ""
+														];
+													if (!judged) return null;
+													if (judged.errorMessage) {
+														return (
+															<p className="mt-1 text-destructive text-xs">
+																{
+																	judged.errorMessage
+																}
+															</p>
+														);
+													}
+													const a =
+														judged.assessment ?? {};
+													return (
+														<div className="mt-1 flex flex-col gap-1">
+															{a.verdict ? (
+																<p className="text-muted-foreground text-xs">
+																	{a.verdict}
+																</p>
+															) : null}
+															{/* Issues and recommendations are the actionable half; the
+															 * per-dimension rationales are long and belong behind a click,
+															 * not in a side panel. */}
+															{(a.topIssues ?? [])
+																.length > 0 ? (
+																<ul className="list-inside list-disc text-amber-600 text-xs dark:text-amber-500">
+																	{(
+																		a.topIssues ??
+																		[]
+																	)
+																		.slice(
+																			0,
+																			3,
+																		)
+																		.map(
+																			(
+																				issue,
+																			) => (
+																				<li
+																					key={
+																						issue
+																					}
+																				>
+																					{
+																						issue
+																					}
+																				</li>
+																			),
+																		)}
+																</ul>
+															) : null}
+															{(
+																a.metricsDisagreements ??
+																[]
+															).length > 0 ? (
+																<p className="text-muted-foreground text-xs italic">
+																	Judge
+																	disagrees
+																	with the
+																	metrics:{" "}
+																	{
+																		(a.metricsDisagreements ??
+																			[])[0]
+																	}
+																</p>
+															) : null}
+														</div>
+													);
+												})()}
 
 												{typeof run.score?.value ===
 												"number" ? (
