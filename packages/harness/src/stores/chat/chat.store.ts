@@ -4,6 +4,7 @@ import type { ThemeMap } from "@semoss/shared";
 import type {
 	AbstractPixelMessage,
 	AgentHook,
+	App,
 	Engine,
 	MCPConfig,
 	PixelMessageTextPart,
@@ -774,6 +775,104 @@ export class ChatStore {
 		} catch (e) {
 			throw e instanceof Error ? e : new Error(String(e));
 		}
+	};
+
+	/**
+	 * CODE projects (apps) the user can open in a room.
+	 *
+	 * Filtered to CODE because that is the project type the app catalog shows
+	 * and the type a coding session is meant to edit.
+	 */
+	listCodeProjects = async (filter?: string): Promise<App[]> => {
+		const clauses = [
+			`projectType=${JSON.stringify(["CODE"])}`,
+			`onlyFavorites=[false]`,
+		];
+		if (filter?.trim()) {
+			clauses.push(`filterWord=${JSON.stringify([filter.trim()])}`);
+		}
+		const { pixelReturn } = await this._actions.run<[App[]]>(
+			`MyProjects(${clauses.join(", ")});`,
+		);
+		const { output, operationType } = pixelReturn[0];
+		if (operationType.indexOf("ERROR") > -1) {
+			throw new Error("Failed to list projects");
+		}
+		return output ?? [];
+	};
+
+	/**
+	 * Create a CODE project and return it, publishing it so it is live.
+	 *
+	 * `projectType=["CODE"]` is not optional. CreateProjectReactor silently
+	 * defaults to INSIGHTS when it is missing, and an INSIGHTS project never
+	 * shows up in the app catalog — the failure is invisible until someone goes
+	 * looking for the app.
+	 *
+	 * CreateProject's own return value does not reliably carry the new id, so
+	 * the id is recovered by re-querying MyProjects and taking the newest match.
+	 */
+	createCodeProject = async (
+		name: string,
+		description?: string,
+	): Promise<App> => {
+		const trimmed = name.trim();
+		if (!trimmed) {
+			throw new Error("A project name is required");
+		}
+
+		await this._actions.run(
+			`CreateProject(project=${JSON.stringify([trimmed])}, projectType=${JSON.stringify(
+				["CODE"],
+			)}, global=[false]);`,
+		);
+
+		const matches = await this.listCodeProjects(trimmed);
+		// Match on either field: project_name is not reliably the name that was
+		// asked for (the seeded platform apps all use project_name "platform"
+		// and keep the real one in project_display_name).
+		const created = [...matches]
+			.filter(
+				(p) =>
+					p.project_display_name === trimmed ||
+					p.project_name === trimmed,
+			)
+			.sort((a, b) =>
+				String(b.project_date_created ?? "").localeCompare(
+					String(a.project_date_created ?? ""),
+				),
+			)[0];
+
+		if (!created?.project_id) {
+			throw new Error(
+				`Created "${trimmed}" but could not resolve its project id`,
+			);
+		}
+
+		if (description?.trim()) {
+			try {
+				await this._actions.run(
+					`SetProjectMetadata(project=${JSON.stringify([created.project_id])}, meta=[${JSON.stringify(
+						{ description: description.trim() },
+					)}]);`,
+				);
+			} catch (e) {
+				// Cosmetic — the project exists and is usable without it.
+				console.error("Failed to set project description", e);
+			}
+		}
+
+		// Publishing is what makes the project's portal reachable. Non-fatal:
+		// the project is still created and editable if this fails.
+		try {
+			await this._actions.run(
+				`PublishProject(project=${JSON.stringify([created.project_id])}, release=[true]);`,
+			);
+		} catch (e) {
+			console.error("Created the project but failed to publish it", e);
+		}
+
+		return created;
 	};
 
 	deleteWorkspace = async (workspaceId: string) => {

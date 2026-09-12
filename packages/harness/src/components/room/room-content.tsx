@@ -721,6 +721,21 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 					sendState={sendState}
 					onStop={room.cancelActiveJob}
 					onCompact={handleCompactMessages}
+					onProjectChange={async (project) => {
+						const next = { ...room.options, project };
+						try {
+							await room.updateRoomOptions(next);
+							// Move the insight's shell working directory onto the
+							// new project now, so the terminal follows the change
+							// without needing a reload.
+							await room.applyProjectContext();
+						} catch (e) {
+							toast.error(
+								(e as Error).message ||
+									"Failed to set the project",
+							);
+						}
+					}}
 					onOpenSettings={handleOpenSettings}
 					excludeCommandIds={[
 						"agent",

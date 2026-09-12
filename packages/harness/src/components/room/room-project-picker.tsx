@@ -1,0 +1,307 @@
+import { FolderIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { observer } from "mobx-react-lite";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "@semoss/i18n";
+import {
+	Button,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	Field,
+	FieldDescription,
+	FieldLabel,
+	Input,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Separator,
+	Skeleton,
+	toast,
+} from "@semoss/ui/next";
+import { useChat } from "@/hooks";
+import type { App } from "@/types";
+
+export interface SelectedProject {
+	project_id: string;
+	project_name?: string;
+}
+
+/**
+ * Label for a project row.
+ *
+ * `project_name` is not the name a user recognises: the seeded platform apps
+ * all carry project_name "platform" and keep their real name in
+ * project_display_name, so listing by project_name renders seven identical
+ * "platform" rows. Prefer the display name, then the raw name, then the id.
+ */
+const projectLabel = (project: {
+	project_display_name?: string;
+	project_name?: string;
+	project_id: string;
+}) =>
+	project.project_display_name?.trim() ||
+	project.project_name?.trim() ||
+	project.project_id;
+
+interface RoomProjectPickerProps {
+	/** Currently scoped project, if any. */
+	value?: SelectedProject;
+
+	/** Called with the new selection, or undefined to clear it. */
+	onChange: (project: SelectedProject | undefined) => void;
+
+	disabled?: boolean;
+}
+
+/**
+ * Picks the SEMOSS project (app) a room works on, or creates a new one.
+ *
+ * This is what keeps a coding session's output inside a real app: with a
+ * project selected the agent's working directory becomes that project's assets
+ * folder, so its edits land in the project's git-backed VFS and show up in the
+ * app catalog. Without one, everything stays in the room folder as scratch.
+ */
+export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
+	({ value, onChange, disabled = false }) => {
+		const { t } = useTranslation(["room", "common"]);
+		const { chat } = useChat();
+
+		const [open, setOpen] = useState(false);
+		const [projects, setProjects] = useState<App[]>([]);
+		const [loading, setLoading] = useState(false);
+		const [search, setSearch] = useState("");
+
+		const [createOpen, setCreateOpen] = useState(false);
+		const [newName, setNewName] = useState("");
+		const [newDescription, setNewDescription] = useState("");
+		const [creating, setCreating] = useState(false);
+
+		const load = useCallback(async () => {
+			setLoading(true);
+			try {
+				setProjects(await chat.listCodeProjects());
+			} catch (e) {
+				toast.error(
+					(e as Error).message || t("room:project.loadFailed"),
+				);
+			} finally {
+				setLoading(false);
+			}
+		}, [chat, t]);
+
+		useEffect(() => {
+			if (open) {
+				void load();
+			}
+		}, [open, load]);
+
+		const filtered = search.trim()
+			? projects.filter((p) =>
+					projectLabel(p)
+						.toLowerCase()
+						.includes(search.trim().toLowerCase()),
+				)
+			: projects;
+
+		const handleCreate = async () => {
+			if (!newName.trim() || creating) {
+				return;
+			}
+			setCreating(true);
+			try {
+				const created = await chat.createCodeProject(
+					newName,
+					newDescription,
+				);
+				onChange({
+					project_id: created.project_id,
+					project_name: projectLabel(created),
+				});
+				toast.success(
+					t("room:project.created", { name: projectLabel(created) }),
+				);
+				setCreateOpen(false);
+				setOpen(false);
+				setNewName("");
+				setNewDescription("");
+			} catch (e) {
+				toast.error(
+					(e as Error).message || t("room:project.createFailed"),
+				);
+			} finally {
+				setCreating(false);
+			}
+		};
+
+		return (
+			<>
+				<Popover open={open} onOpenChange={setOpen}>
+					<PopoverTrigger asChild>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							disabled={disabled}
+							className="gap-1.5"
+						>
+							<FolderIcon />
+							<span className="max-w-40 truncate">
+								{value?.project_name ??
+									value?.project_id ??
+									t("room:project.none")}
+							</span>
+						</Button>
+					</PopoverTrigger>
+
+					<PopoverContent align="start" className="w-80 p-0">
+						<div className="flex items-center gap-2 border-border border-b px-3 py-2">
+							<SearchIcon className="size-4 shrink-0 text-muted-foreground" />
+							<input
+								className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+								placeholder={t(
+									"room:project.searchPlaceholder",
+								)}
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+							/>
+						</div>
+
+						<div className="max-h-64 overflow-y-auto p-1">
+							{loading ? (
+								<div className="space-y-1 p-2">
+									<Skeleton className="h-8 w-full" />
+									<Skeleton className="h-8 w-full" />
+								</div>
+							) : null}
+
+							{!loading && filtered.length === 0 ? (
+								<div className="p-4 text-center text-muted-foreground text-sm">
+									{t("room:project.empty")}
+								</div>
+							) : null}
+
+							{filtered.map((project) => {
+								const isActive =
+									project.project_id === value?.project_id;
+								return (
+									<button
+										key={project.project_id}
+										type="button"
+										className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-muted/60 ${
+											isActive ? "bg-muted/40" : ""
+										}`}
+										onClick={() => {
+											onChange({
+												project_id: project.project_id,
+												project_name:
+													projectLabel(project),
+											});
+											setOpen(false);
+										}}
+									>
+										<FolderIcon className="size-4 shrink-0 text-muted-foreground" />
+										<span className="flex-1 truncate">
+											{projectLabel(project)}
+										</span>
+									</button>
+								);
+							})}
+						</div>
+
+						<Separator />
+						<div className="flex items-center gap-2 p-1">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="flex-1 justify-start"
+								onClick={() => setCreateOpen(true)}
+							>
+								<PlusIcon />
+								{t("room:project.create")}
+							</Button>
+							{value ? (
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={() => {
+										onChange(undefined);
+										setOpen(false);
+									}}
+								>
+									{t("room:project.clear")}
+								</Button>
+							) : null}
+						</div>
+					</PopoverContent>
+				</Popover>
+
+				<Dialog open={createOpen} onOpenChange={setCreateOpen}>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>
+								{t("room:project.createTitle")}
+							</DialogTitle>
+							<DialogDescription>
+								{t("room:project.createDescription")}
+							</DialogDescription>
+						</DialogHeader>
+
+						<div className="flex flex-col gap-4">
+							<Field>
+								<FieldLabel>
+									{t("room:project.nameLabel")}
+								</FieldLabel>
+								<Input
+									value={newName}
+									disabled={creating}
+									placeholder="my-app"
+									onChange={(e) => setNewName(e.target.value)}
+								/>
+								<FieldDescription>
+									{t("room:project.nameHelp")}
+								</FieldDescription>
+							</Field>
+							<Field>
+								<FieldLabel>
+									{t("room:project.descriptionLabel")}
+								</FieldLabel>
+								<Input
+									value={newDescription}
+									disabled={creating}
+									onChange={(e) =>
+										setNewDescription(e.target.value)
+									}
+								/>
+							</Field>
+						</div>
+
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								disabled={creating}
+								onClick={() => setCreateOpen(false)}
+							>
+								{t("common:buttons.cancel")}
+							</Button>
+							<Button
+								type="button"
+								disabled={creating || !newName.trim()}
+								onClick={() => void handleCreate()}
+							>
+								{creating
+									? t("room:project.creating")
+									: t("room:project.create")}
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
+			</>
+		);
+	},
+);

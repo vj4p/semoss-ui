@@ -132,6 +132,20 @@ interface RoomStoreInterface {
 		harnessType?: AgentHarnessType;
 
 		/*
+		 * SEMOSS project (an app) this room works on. When set it is passed to
+		 * RunAgent as paramValues.project, which makes AgentRunner resolve the
+		 * agent's working directory to that project's assets folder instead of
+		 * the room folder — so edits land in the project's git-backed VFS and
+		 * appear in the app catalog. Also applied to the room's insight via
+		 * SetContext, which moves the terminal's working directory there too.
+		 * Absent means the room is scratch: work stays in the room folder.
+		 */
+		project?: {
+			project_id: string;
+			project_name?: string;
+		};
+
+		/*
 		 * Temperature of the model (0–1). Only used when enableTemperature is true.
 		 */
 		temperature?: number;
@@ -632,6 +646,12 @@ export class RoomStore {
 				this._store.root = root;
 			});
 
+			// Bind the insight to the room's project, if it has one, so the
+			// terminal and any relative file work start inside the app rather
+			// than at the chroot root. Fire-and-forget: it must not delay or
+			// block opening the room.
+			void this.applyProjectContext();
+
 			// Fired here, before the workspace/model round trips below, since
 			// neither depends on them — waiting on those was delaying subagent
 			// boxes and live status for no reason.
@@ -826,6 +846,32 @@ export class RoomStore {
 			throw new Error(
 				(e as Error).message || "Error updating room options",
 			);
+		}
+	};
+
+	/**
+	 * Point this room's insight at its selected project.
+	 *
+	 * SetContext is what moves the insight's shell working directory off the
+	 * chroot root and onto the project's assets folder, so the terminal and any
+	 * relative file work operate on the app instead of the jail root. Safe to
+	 * call repeatedly; the backend just re-resolves the context.
+	 *
+	 * Best-effort on purpose — a room without a project, or a project the user
+	 * has since lost access to, should not stop the room from opening.
+	 */
+	applyProjectContext = async (): Promise<void> => {
+		const projectId = this._store.options.project?.project_id;
+		if (!projectId) {
+			return;
+		}
+		try {
+			await this.runRoomPixel(
+				`SetContext(project=${JSON.stringify([projectId])});`,
+				false,
+			);
+		} catch (e) {
+			console.error("Failed to set project context for room", e);
 		}
 	};
 

@@ -36,6 +36,22 @@
 		"toolboxLabel": "Toolboxes",
 		"temperatureLabel": "Temperature"
 	},
+	"project": {
+		"none": "No project",
+		"searchPlaceholder": "Search projects...",
+		"empty": "No CODE projects yet. Create one to keep this session's work in a real app.",
+		"create": "New project",
+		"clear": "Clear",
+		"createTitle": "New project",
+		"createDescription": "Creates a CODE project and publishes it, so the agent's work lands in a real app that shows up in the catalog.",
+		"nameLabel": "Name",
+		"nameHelp": "Used as the project name in the app catalog.",
+		"descriptionLabel": "Description",
+		"creating": "Creating...",
+		"created": "Created {{name}}",
+		"createFailed": "Failed to create the project",
+		"loadFailed": "Failed to load projects"
+	},
 	"harness": {
 		"label": "Agent harness",
 		"description": "Which agent loop runs your messages.",

@@ -563,6 +563,18 @@ export const runAgentMessage = async (
 				harnessType: isAgentHarnessType(room.options.harnessType)
 					? room.options.harnessType
 					: DEFAULT_AGENT_HARNESS_TYPE,
+				// AgentRunner resolves the run's working directory from this:
+				// with a project it uses that project's assets folder, without
+				// one it falls back to the room folder. Sending it is what makes
+				// the agent edit the app itself rather than scratch files, and
+				// it also drives the platform's git-commit hook.
+				...(room.options.project?.project_id
+					? {
+							paramValues: {
+								project: room.options.project.project_id,
+							},
+						}
+					: {}),
 			},
 			room.insightId,
 		);

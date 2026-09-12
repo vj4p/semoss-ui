@@ -603,6 +603,16 @@ export const NewRoomPage = observer(() => {
 											});
 										}
 									}}
+									onProjectChange={(project) => {
+										// New-room flow: only local until the
+										// room is created, at which point
+										// createRoom persists options and the
+										// room applies SetContext on load.
+										tempRoomStore.setOptions({
+											...tempRoomStore.options,
+											project,
+										});
+									}}
 									onPrompt={async (prompt, files) => {
 										await createRoom(prompt, files);
 

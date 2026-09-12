@@ -69,6 +69,7 @@ import type { Engine, MCPConfig, Workspace } from "@/types";
 import { isKnowledgeMcp } from "@/utility/mcp-utils";
 import { PromptOptimizer } from "../../components/prompt/PromptOptimizer";
 import { RoomContextUsageIndicator } from "./room-context-usage-indicator";
+import { RoomProjectPicker, type SelectedProject } from "./room-project-picker";
 
 type WorkspaceRef = Pick<Workspace, "workspace_id"> &
 	Partial<Pick<Workspace, "name">>;
@@ -193,6 +194,13 @@ interface RoomInputProps {
 	onSwitchToAgentHarness?: () => void;
 
 	/**
+	 * When provided, agent-mode rooms show a project picker in the composer and
+	 * this fires with the new scope. Opting in by passing it is the signal the
+	 * caller persists the choice and applies it to the run.
+	 */
+	onProjectChange?: (project: SelectedProject | undefined) => void;
+
+	/**
 	 * Shows an X button on the agent-mode chip to leave agent harness mode.
 	 * Only passed on the new-room page — once a room exists its harness type
 	 * is a persisted, committed choice, not something to back out of inline.
@@ -226,6 +234,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 		onPrompt = () => null,
 		onMcpChange,
 		onWorkspaceChange,
+		onProjectChange,
 		hasOutstandingTools = false,
 		sendState = "send",
 		onStop,
@@ -978,6 +987,19 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 												/>
 											)}
 										</div>
+										{/*
+										 * Agent mode only: the project scope is
+										 * what makes the run edit a real app
+										 * rather than room scratch space.
+										 */}
+										{room.mode === "agent" &&
+										onProjectChange ? (
+											<RoomProjectPicker
+												value={options.project}
+												disabled={isLoading}
+												onChange={onProjectChange}
+											/>
+										) : null}
 										<RoomContextUsageIndicator
 											// -ms-1 to make spacing look more consistent due to ghost icons
 											className="-ms-1"
