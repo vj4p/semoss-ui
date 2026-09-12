@@ -188,5 +188,28 @@
 		"packEnabled": "{{name}} enabled",
 		"packDisabled": "{{name}} disabled",
 		"packFailed": "Could not update the room's tools"
+	},
+	"changes": {
+		"title": "Changes",
+		"noProject": "Select a project for this room to review its history.",
+		"branches": "Branches",
+		"noBranches": "No local branches yet.",
+		"current": "current",
+		"checkout": "Check out",
+		"merge": "Merge",
+		"merging": "Merging…",
+		"commits": "Recent commits",
+		"noCommits": "No commits yet.",
+		"noMessage": "(no message)",
+		"noFiles": "No file changes in this commit.",
+		"binary": "Binary file — no diff shown.",
+		"truncated": "Diff truncated.",
+		"loadFailed": "Could not read the project's git history",
+		"diffFailed": "Could not load the diff",
+		"checkedOut": "Now on {{branch}}",
+		"checkoutFailed": "Could not check out that branch",
+		"merged": "Merged {{branch}} ({{status}})",
+		"mergeConflicts": "Merge left {{count}} conflicted file(s) — resolve them, then commit",
+		"mergeFailed": "Could not merge that branch"
 	}
 }

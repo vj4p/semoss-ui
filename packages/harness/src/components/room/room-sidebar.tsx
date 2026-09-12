@@ -3,6 +3,7 @@ import {
 	ClockIcon,
 	FolderTreeIcon,
 	GaugeIcon,
+	GitBranchIcon,
 	HammerIcon,
 	HistoryIcon,
 	MonitorXIcon,
@@ -38,6 +39,7 @@ import {
 import type { RoomStore } from "@/stores";
 import { RoomAuditLogReport } from "./room-audit-log-report";
 import { RoomCapabilities } from "./room-capabilities";
+import { RoomChanges } from "./room-changes";
 import { RoomConfiguration } from "./room-configuration";
 import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
@@ -307,6 +309,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<PlugIcon className="size-4 text-foreground" />
 									);
+								} else if (component === "room-changes") {
+									renderValues.leading = (
+										<GitBranchIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -378,6 +384,8 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									return <RoomScheduledRuns room={room} />;
 								} else if (component === "room-capabilities") {
 									return <RoomCapabilities room={room} />;
+								} else if (component === "room-changes") {
+									return <RoomChanges room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {

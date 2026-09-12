@@ -1,6 +1,7 @@
 import {
 	ClockIcon,
 	GaugeIcon,
+	GitBranchIcon,
 	HistoryIcon,
 	MoveDownIcon,
 	MoveUpIcon,
@@ -181,6 +182,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Capabilities",
 			component: "room-capabilities",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open the review panel — branches, commits, diffs, and merge.
+	 */
+	const handleOpenChanges = useCallback(() => {
+		room.addSidebarNode("room-changes", {
+			type: "tab",
+			name: "Changes",
+			component: "room-changes",
 			config: {},
 			enableClose: true,
 		});
@@ -755,6 +769,18 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										<span className="flex-1">
 											Capabilities
 										</span>
+									</DropdownMenuItem>
+								)}
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenChanges();
+											onOpenChange(false);
+										}}
+									>
+										<GitBranchIcon />
+										<span className="flex-1">Changes</span>
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
