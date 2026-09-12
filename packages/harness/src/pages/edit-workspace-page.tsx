@@ -391,7 +391,7 @@ export const EditWorkspacePage = observer(() => {
 						/>
 					</section>
 
-					{/* Automations (CONFIG_JSON.hooks) */}
+					{/* Triggers (CONFIG_JSON.hooks) */}
 					<section className="flex flex-col gap-3">
 						<h2 className="flex items-center gap-2 font-semibold text-foreground text-lg">
 							<ZapIcon className="size-5" />
