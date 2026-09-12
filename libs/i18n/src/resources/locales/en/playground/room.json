@@ -187,7 +187,8 @@
 		"needsEngine": "Attach a {{types}} engine for this to be useful.",
 		"packEnabled": "{{name}} enabled",
 		"packDisabled": "{{name}} disabled",
-		"packFailed": "Could not update the room's tools"
+		"packFailed": "Could not update the room's tools",
+		"functions": "Functions (search, email, REST)"
 	},
 	"changes": {
 		"title": "Changes",

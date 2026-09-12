@@ -26,6 +26,9 @@ const ENGINE_KINDS = [
 	{ type: "DATABASE", labelKey: "capabilities.databases" },
 	{ type: "VECTOR", labelKey: "capabilities.knowledgeStores" },
 	{ type: "STORAGE", labelKey: "capabilities.storage" },
+	// A FUNCTION engine *is* a tool — web search, send-mail, OCR, arbitrary REST —
+	// so attaching one both names it in the prompt and generates its tool below.
+	{ type: "FUNCTION", labelKey: "capabilities.functions" },
 ] as const;
 
 /**
@@ -129,9 +132,43 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 			}
 		};
 
+		/**
+		 * Generate the room tool for a newly attached FUNCTION engine.
+		 *
+		 * Attaching an engine as a dependency only *names* it in the Selected Engines
+		 * prompt. For a database or a vector store that is the right amount — the
+		 * query tools come from a pack. But a function engine is itself a single
+		 * callable thing, so naming it without exposing it leaves the model able to see
+		 * a search engine it cannot call.
+		 *
+		 * `MakeDefaultRoomToolsForEngine` is the platform's own generator for this: it
+		 * rewrites the generic `ExecuteFunctionEngine` tool to present that function's
+		 * declared parameters and pins the engine id so the model cannot retarget it.
+		 * It stamps a different generator than the capability packs do, so the two sets
+		 * of tools coexist in the room's toolbox rather than overwriting each other.
+		 */
+		const generateFunctionTool = async (engine: Engine) => {
+			try {
+				await insight.actions.run(
+					`MakeDefaultRoomToolsForEngine(engine=[${JSON.stringify(
+						engine.engine_id,
+					)}]);`,
+				);
+			} catch (e) {
+				// The dependency is saved either way; the tool can be regenerated.
+				console.error(
+					"Could not generate the function engine's tool",
+					e,
+				);
+			}
+		};
+
 		const attach = (engine: Engine) => {
 			if (dependencies.some((d) => d.engine_id === engine.engine_id)) {
 				return;
+			}
+			if (engine.engine_type === "FUNCTION") {
+				void generateFunctionTool(engine);
 			}
 			void saveDependencies([
 				...dependencies,
