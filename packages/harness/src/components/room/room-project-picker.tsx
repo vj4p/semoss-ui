@@ -1,4 +1,10 @@
-import { FolderIcon, PlusIcon, SearchIcon } from "lucide-react";
+import {
+	ExternalLinkIcon,
+	FolderIcon,
+	LinkIcon,
+	PlusIcon,
+	SearchIcon,
+} from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
@@ -23,6 +29,7 @@ import {
 } from "@semoss/ui/next";
 import { useChat } from "@/hooks";
 import type { App } from "@/types";
+import { copyToClipboard, platformAppUrl, portalUrl } from "@/utility";
 
 export interface SelectedProject {
 	project_id: string;
@@ -45,6 +52,16 @@ const projectLabel = (project: {
 	project.project_display_name?.trim() ||
 	project.project_name?.trim() ||
 	project.project_id;
+
+/**
+ * Whether the user may write to this project.
+ *
+ * `user_permission` is the numeric RBAC level, lowest is most privileged:
+ * 1 owner, 2 edit, 3 read-only. Absent is treated as not editable — better to
+ * skip a scaffold than to write somewhere unexpected.
+ */
+const isEditable = (project: { user_permission?: number }) =>
+	typeof project.user_permission === "number" && project.user_permission <= 2;
 
 interface RoomProjectPickerProps {
 	/** Currently scoped project, if any. */
@@ -200,6 +217,27 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 													projectLabel(project),
 											});
 											setOpen(false);
+											// Projects created before this
+											// existed have no AGENTS.md, so an
+											// agent scoped to one still can't
+											// tell that portals/ is the served
+											// folder. Add it on selection too;
+											// it never overwrites an existing
+											// one. Not awaited — selecting a
+											// project shouldn't wait on it.
+											//
+											// Only where the user can actually
+											// edit: the seeded platform__* apps
+											// are in this list read-only, and
+											// writing to someone else's project
+											// on a mere selection would be
+											// rude even though it would fail.
+											if (isEditable(project)) {
+												void chat.scaffoldProjectForAgents(
+													project.project_id,
+													projectLabel(project),
+												);
+											}
 										}}
 									>
 										<FolderIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -212,6 +250,56 @@ export const RoomProjectPicker: React.FC<RoomProjectPickerProps> = observer(
 						</div>
 
 						<Separator />
+
+						{/*
+						 * The app's own URL, straight from the id. An agent that
+						 * just built the app usually cannot produce this — the
+						 * backend has no configured public base URL to tell it,
+						 * and asking a model for a link it was never given gets
+						 * you a container `file://` path. The browser already
+						 * knows its origin, so offer the link here instead of
+						 * depending on the conversation for it.
+						 */}
+						{value ? (
+							<div className="flex items-center gap-2 p-1">
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="flex-1 justify-start"
+									onClick={() => {
+										const url =
+											platformAppUrl(value.project_id) ??
+											portalUrl(value.project_id);
+										window.open(
+											url,
+											"_blank",
+											"noopener,noreferrer",
+										);
+									}}
+								>
+									<ExternalLinkIcon />
+									{t("room:project.openApp")}
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={() => {
+										void copyToClipboard(
+											platformAppUrl(value.project_id) ??
+												portalUrl(value.project_id),
+										);
+										toast.success(
+											t("room:project.linkCopied"),
+										);
+									}}
+								>
+									<LinkIcon />
+								</Button>
+							</div>
+						) : null}
+
 						<div className="flex items-center gap-2 p-1">
 							<Button
 								type="button"

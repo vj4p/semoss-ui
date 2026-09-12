@@ -50,7 +50,9 @@
 		"creating": "Creating...",
 		"created": "Created {{name}}",
 		"createFailed": "Failed to create the project",
-		"loadFailed": "Failed to load projects"
+		"loadFailed": "Failed to load projects",
+		"openApp": "Open app",
+		"linkCopied": "App link copied"
 	},
 	"harness": {
 		"label": "Agent harness",

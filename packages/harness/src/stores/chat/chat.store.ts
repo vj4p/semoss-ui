@@ -11,7 +11,7 @@ import type {
 	PixelMessageToolCallPart,
 	Workspace,
 } from "@/types";
-import { normalizeTimestamp } from "@/utility";
+import { normalizeTimestamp, projectAgentsMd } from "@/utility";
 import { RoomStore } from "../room";
 
 const DEFAUlT_MODEL_ID = import.meta.env.VITE_DEFAUlT_MODEL_ID || "";
@@ -862,6 +862,8 @@ export class ChatStore {
 			}
 		}
 
+		await this.scaffoldProjectForAgents(created.project_id, trimmed);
+
 		// Publishing is what makes the project's portal reachable. Non-fatal:
 		// the project is still created and editable if this fails.
 		try {
@@ -873,6 +875,69 @@ export class ChatStore {
 		}
 
 		return created;
+	};
+
+	/**
+	 * Give a CODE project the two things an agent cannot discover for itself: an
+	 * `AGENTS.md` saying that `portals/` is the only served directory and what
+	 * URL the finished app has, and the `portals/` folder itself.
+	 *
+	 * `AgentsMdLoader` reads `AGENTS.md` out of the agent's working directory
+	 * into the system prompt, and for a project-scoped room that working
+	 * directory is this assets folder — so this is the one hook that can teach an
+	 * agent a project's own conventions without touching its instructions or the
+	 * harness prompt. Without it an agent writes `index.html` to the assets root,
+	 * reports the app finished, and leaves something no URL can open.
+	 *
+	 * Runs on selection as well as creation, because most projects already exist
+	 * and would otherwise never get it. **Never overwrites**: a project that
+	 * already has an `AGENTS.md` has its own conventions, possibly hand-written,
+	 * and they win.
+	 *
+	 * Entirely best-effort. A project the user can read but not edit will reject
+	 * the writes, which is fine — scoping a room to it still works.
+	 */
+	scaffoldProjectForAgents = async (
+		projectId: string,
+		projectName: string,
+	): Promise<void> => {
+		try {
+			const { pixelReturn } = await this._actions.run<
+				[{ fileName?: string; name?: string }[]]
+			>(`BrowseAppAssets(project=${JSON.stringify([projectId])});`);
+			const entries = pixelReturn[0]?.output;
+			if (!Array.isArray(entries)) {
+				return;
+			}
+			const names = new Set(
+				entries
+					.map((e) => (e?.fileName ?? e?.name ?? "").trim())
+					.filter(Boolean),
+			);
+
+			// CLAUDE.md counts: AgentsMdLoader reads either name, so a project
+			// carrying one is already configured.
+			if (!names.has("AGENTS.md") && !names.has("CLAUDE.md")) {
+				await this._actions.run(
+					`SaveAppAssets(project=${JSON.stringify([projectId])}, filePath=${JSON.stringify(
+						["AGENTS.md"],
+					)}, content=["<encode>${projectAgentsMd(
+						projectId,
+						projectName,
+					)}</encode>"], comment=["Scaffold project conventions for agents"]);`,
+				);
+			}
+
+			if (!names.has("portals")) {
+				await this._actions.run(
+					`SaveAppAssets(project=${JSON.stringify([projectId])}, filePath=${JSON.stringify(
+						["portals/.gitkeep"],
+					)}, content=["<encode></encode>"], comment=["Create the served portals folder"]);`,
+				);
+			}
+		} catch (e) {
+			console.error("Could not scaffold the project for agents", e);
+		}
 	};
 
 	deleteWorkspace = async (workspaceId: string) => {
