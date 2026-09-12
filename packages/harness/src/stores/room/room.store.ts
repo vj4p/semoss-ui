@@ -4,6 +4,7 @@ import {
 	console as getPixelConsole,
 	runPixel,
 	runPixelAsync,
+	stopAgentRun,
 	uploadInsight,
 } from "@semoss/sdk/react";
 import { type FileMode, FlexLayout, type ThemeMap } from "@semoss/shared";
@@ -80,6 +81,12 @@ interface RoomStoreInterface {
 	 * Set during the constructor and never changes
 	 */
 	insightId: string;
+
+	/**
+	 * The agent run currently in flight for this room, if any. Set when a run
+	 * starts and cleared when it settles, so Stop knows what to cancel.
+	 */
+	activeAgentRunId?: string;
 
 	/**
 	 *  Track if the room is loading
@@ -320,6 +327,9 @@ export class RoomStore {
 	 */
 	private cancellingTools = false;
 
+	/** A StopAgentRun is in flight. */
+	private cancellingAgentRun = false;
+
 	/**
 	 * Whether there's something the user can still stop: a cancellable streaming
 	 * call (e.g. AskPlayground / the post-tool response), or a turn parked on
@@ -328,6 +338,10 @@ export class RoomStore {
 	get canCancel() {
 		return (
 			this.streamJob.canCancel ||
+			// An agent run is interruptible: StopAgentRun asks the backend to
+			// interrupt the worker thread, which checks Thread.isInterrupted()
+			// between turns and polls every 100ms during a parallel tool batch.
+			Boolean(this.activeAgentRunId && !this.cancellingAgentRun) ||
 			(!this.cancellingTools &&
 				Boolean(this.latestResponseMessage?.hasUnfinishedTools))
 		);
@@ -335,8 +349,62 @@ export class RoomStore {
 
 	/** A stop has been issued and it's still unwinding. */
 	get isCancelling() {
-		return this.streamJob.isCancelling || this.cancellingTools;
+		return (
+			this.streamJob.isCancelling ||
+			this.cancellingTools ||
+			this.cancellingAgentRun
+		);
 	}
+
+	/** The agent run this room is currently watching, if any. */
+	get activeAgentRunId(): string | undefined {
+		return this._store.activeAgentRunId;
+	}
+
+	/**
+	 * Remember which agent run is in flight, so Stop has something to cancel.
+	 *
+	 * Called with the run id when a run starts and with undefined when it ends —
+	 * cleared either way, because a Stop aimed at a finished run is worse than no
+	 * Stop at all.
+	 */
+	setActiveAgentRunId = (runId: string | undefined) => {
+		runInAction(() => {
+			this._store.activeAgentRunId = runId;
+		});
+	};
+
+	/**
+	 * Ask the backend to stop the in-flight agent run.
+	 *
+	 * Agent runs were treated as uninterruptible here, and the composer showed a
+	 * plain spinner on the reasoning that a Stop button "would look actionable but
+	 * do nothing". That was never true: StopAgentRun has always existed, and the
+	 * harness loop cooperates with it.
+	 *
+	 * Best-effort by design. The run may finish on its own between the click and
+	 * the call, in which case the backend reports an already-terminal run and there
+	 * is nothing to report to the user.
+	 */
+	cancelActiveAgentRun = async (): Promise<void> => {
+		const runId = this._store.activeAgentRunId;
+		if (!runId || this.cancellingAgentRun) {
+			return;
+		}
+		runInAction(() => {
+			this.cancellingAgentRun = true;
+		});
+		try {
+			await stopAgentRun(runId, this._store.insightId);
+		} catch (e) {
+			console.error("Failed to stop the agent run", e);
+		} finally {
+			runInAction(() => {
+				this.cancellingAgentRun = false;
+				this._store.activeAgentRunId = undefined;
+			});
+		}
+	};
 
 	/**
 	 * Get the error of the room
@@ -1740,6 +1808,14 @@ export class RoomStore {
 	 * button.
 	 */
 	cancelActiveJob = async (): Promise<void> => {
+		// Agent runs first. In agent mode there is no streaming pixel job to stop —
+		// the turn is a durable run on the server — so this is the only branch that
+		// can end it, and the composer's Stop button routes here.
+		if (this._store.activeAgentRunId) {
+			await this.cancelActiveAgentRun();
+			return;
+		}
+
 		if (this.streamJob.canCancel) {
 			await this.streamJob.stop();
 			return;

@@ -579,6 +579,7 @@ export const runAgentMessage = async (
 			room.insightId,
 		);
 		agentsByRunId.set(handle.runId, handle);
+		room.setActiveAgentRunId(handle.runId);
 
 		await watchAgentRun(handle, responseMessage, inputMessage);
 	} catch (e) {
@@ -592,6 +593,9 @@ export const runAgentMessage = async (
 			responseMessage.isThinking = false;
 		});
 		room.setIsLoading(false);
+		// The run is over either way, so the Stop button must stop offering to
+		// cancel it. Left set, a later cancel would target a finished run.
+		room.setActiveAgentRunId(undefined);
 	}
 };
 

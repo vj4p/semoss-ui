@@ -473,16 +473,17 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 		room.latestResponseMessage.isThinking ||
 		isAutoExecutingTools;
 
-	// Agent-run turns can't actually be interrupted server-side yet, so show a
-	// plain spinner instead of a Stop button that would look actionable but do
-	// nothing.
+	// Agent runs are interruptible. This used to show a plain spinner in agent
+	// mode, on the reasoning that a Stop button "would look actionable but do
+	// nothing" — but StopAgentRun has always existed and the harness loop
+	// cooperates with it, checking Thread.isInterrupted() between turns and polling
+	// every 100ms during a parallel tool batch. The room now tracks the in-flight
+	// run id, so there is something concrete to cancel.
 	const sendState: SendButtonState = room.isCancelling
 		? "loading"
-		: room.mode === "agent" && showLoadingState
-			? "loading"
-			: room.canCancel || showLoadingState
-				? "stop"
-				: "send";
+		: room.canCancel || showLoadingState
+			? "stop"
+			: "send";
 
 	return (
 		<div
