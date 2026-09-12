@@ -4,6 +4,7 @@ import {
 	FileIcon,
 	FileTextIcon,
 	HelpCircle,
+	InboxIcon,
 	Loader2Icon,
 	MapIcon,
 	MessagesSquareIcon,
@@ -530,6 +531,33 @@ export const GlobalNav = observer(() => {
 										>
 											<MessagesSquareIcon />
 											{t("nav.allChats.label")}
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+
+								{/*
+								 * Top-level, not per-room: a paused run is
+								 * invisible unless you happen to have that room
+								 * open, and scheduled runs park with nobody
+								 * watching.
+								 */}
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										asChild
+										isActive={
+											!!matchPath("/inbox", pathname)
+										}
+										tooltip={{
+											children: "Inbox",
+											hidden: false,
+										}}
+									>
+										<Link
+											to={"/inbox"}
+											aria-label={"inbox"}
+										>
+											<InboxIcon />
+											Inbox
 										</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>

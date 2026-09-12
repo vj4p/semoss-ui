@@ -6,6 +6,7 @@ import { ChatsPage } from "./chats-page";
 import { EditWorkspacePage } from "./edit-workspace-page";
 import { EmbedPage } from "./embed-page";
 import { ErrorPage } from "./error-page";
+import { InboxPage } from "./inbox-page";
 import { InitializedLayout } from "./initialized-layout";
 import { KnowledgeDetailPage } from "./knowledge-detail-page";
 import { LoginPage } from "./login-page";
@@ -44,6 +45,10 @@ const router = createHashRouter([
 									{
 										path: "chats",
 										element: <ChatsPage />,
+									},
+									{
+										path: "inbox",
+										element: <InboxPage />,
 									},
 									{
 										path: "embed/*",
