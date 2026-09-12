@@ -44,7 +44,9 @@ export interface ScheduledRun {
 	jobName: string;
 	cronExpression: string;
 	previousFireTime?: string;
+	/** Absent when the trigger is paused or mid-run — see listScheduledRuns. */
 	nextFireTime?: string;
+	executing: boolean;
 	paused: boolean;
 }
 
@@ -660,7 +662,11 @@ export class RoomStore {
 			// terminal and any relative file work start inside the app rather
 			// than at the chroot root. Fire-and-forget: it must not delay or
 			// block opening the room.
-			void this.applyProjectContext();
+			//
+			// The id comes from newOptions rather than the store because
+			// setOptions runs much later in this method, after the model round
+			// trips below.
+			void this.applyProjectContext(newOptions.project?.project_id);
 
 			// Fired here, before the workspace/model round trips below, since
 			// neither depends on them — waiting on those was delaying subagent
@@ -869,9 +875,17 @@ export class RoomStore {
 	 *
 	 * Best-effort on purpose — a room without a project, or a project the user
 	 * has since lost access to, should not stop the room from opening.
+	 *
+	 * @param explicitProjectId project to bind, for callers that already have it
+	 *   in hand. `initialize` does: it reads the options out of the pixel
+	 *   response long before it commits them with setOptions, so reading the
+	 *   store here would see the previous (usually empty) options and silently
+	 *   skip the SetContext — which is exactly the bug that left the terminal in
+	 *   the room folder on a reload while an explicit SetContext worked fine.
 	 */
-	applyProjectContext = async (): Promise<void> => {
-		const projectId = this._store.options.project?.project_id;
+	applyProjectContext = async (explicitProjectId?: string): Promise<void> => {
+		const projectId =
+			explicitProjectId ?? this._store.options.project?.project_id;
 		if (!projectId) {
 			return;
 		}
@@ -894,6 +908,13 @@ export class RoomStore {
 	 *
 	 * ListAllJobs keys each entry "{projectId}.{jobId}" and returns a map, not
 	 * an array, so it is flattened here.
+	 *
+	 * NEXT_FIRE_TIME doubles as a status column: the backend writes the literal
+	 * "INACTIVE" for a paused trigger and "EXECUTING" while one is mid-run, and
+	 * only otherwise a formatted timestamp. It does **not** return the trigger
+	 * state itself — SchedulerDatabaseUtility computes it to decide between those
+	 * branches but never puts it in the map. So "INACTIVE" is the only available
+	 * signal for paused, and neither sentinel should be rendered as a time.
 	 */
 	listScheduledRuns = async (): Promise<ScheduledRun[]> => {
 		const projectId = this._store.options.project?.project_id;
@@ -907,18 +928,20 @@ export class RoomStore {
 		if (operationType.indexOf("ERROR") > -1) {
 			throw new Error("Failed to list scheduled runs");
 		}
-		return Object.values(output ?? {}).map((job) => ({
-			jobId: String(job.jobId ?? ""),
-			jobName: String(job.jobName ?? ""),
-			cronExpression: String(job.cronExpression ?? ""),
-			previousFireTime: job.PREV_FIRE_TIME
-				? String(job.PREV_FIRE_TIME)
-				: undefined,
-			nextFireTime: job.NEXT_FIRE_TIME
-				? String(job.NEXT_FIRE_TIME)
-				: undefined,
-			paused: String(job.TRIGGER_STATE ?? "").toUpperCase() === "PAUSED",
-		}));
+		return Object.values(output ?? {}).map((job) => {
+			const next = String(job.NEXT_FIRE_TIME ?? "").trim();
+			const isSentinel = next === "INACTIVE" || next === "EXECUTING";
+			const prev = String(job.PREV_FIRE_TIME ?? "").trim();
+			return {
+				jobId: String(job.jobId ?? ""),
+				jobName: String(job.jobName ?? ""),
+				cronExpression: String(job.cronExpression ?? ""),
+				previousFireTime: prev && prev !== "N/A" ? prev : undefined,
+				nextFireTime: !next || isSentinel ? undefined : next,
+				executing: next === "EXECUTING",
+				paused: next === "INACTIVE",
+			};
+		});
 	};
 
 	/**

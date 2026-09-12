@@ -217,22 +217,27 @@ export const RoomScheduledRuns: React.FC<RoomScheduledRunsProps> = observer(
 											Paused
 										</Badge>
 									) : null}
+									{job.executing ? (
+										<Badge variant="secondary">
+											Running
+										</Badge>
+									) : null}
 								</div>
 
 								<div className="mt-1 font-mono text-muted-foreground text-xs">
 									{job.cronExpression}
 								</div>
 								<div className="mt-1 text-muted-foreground text-xs">
-									{job.nextFireTime
-										? `Next: ${job.nextFireTime}`
-										: null}
-									{job.nextFireTime && job.previousFireTime
-										? " · "
-										: null}
-									{job.previousFireTime &&
-									job.previousFireTime !== "N/A"
-										? `Last: ${job.previousFireTime}`
-										: null}
+									{[
+										job.nextFireTime
+											? `Next: ${job.nextFireTime}`
+											: null,
+										job.previousFireTime
+											? `Last: ${job.previousFireTime}`
+											: null,
+									]
+										.filter(Boolean)
+										.join(" · ")}
 								</div>
 
 								<div className="mt-2 flex items-center gap-1">
