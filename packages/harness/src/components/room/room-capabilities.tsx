@@ -1,4 +1,4 @@
-import { AlertTriangleIcon, Loader2Icon, PlugIcon, XIcon } from "lucide-react";
+import { AlertTriangleIcon, Loader2Icon, XIcon } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
@@ -169,29 +169,28 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 		/** Attached engine types, for the "needs an engine" hint on a pack. */
 		const attachedTypes = new Set(dependencies.map((d) => d.engine_type));
 
-		if (!projectId) {
-			return (
-				<div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-muted-foreground text-sm">
-					<PlugIcon className="size-5" />
-					<p>{t("capabilities.noProject")}</p>
-				</div>
-			);
-		}
-
 		return (
 			<ScrollArea className="h-full">
 				<div className="flex flex-col gap-6 p-4">
+					{/*
+					 * Only the engines half needs a project — attachment is a project
+					 * dependency. Packs are per-room and several (Browser, Frames) have
+					 * nothing to do with a project at all, so gating the whole panel on
+					 * one made them unreachable in a scratch room.
+					 */}
 					<section className="flex flex-col gap-3">
 						<div>
 							<h3 className="font-medium text-sm">
 								{t("capabilities.enginesTitle")}
 							</h3>
 							<p className="text-muted-foreground text-xs">
-								{t("capabilities.enginesHelp")}
+								{projectId
+									? t("capabilities.enginesHelp")
+									: t("capabilities.noProject")}
 							</p>
 						</div>
 
-						{isLoading ? (
+						{!projectId ? null : isLoading ? (
 							<Loader2Icon className="size-4 animate-spin text-muted-foreground" />
 						) : (
 							<div className="flex flex-col gap-4">

@@ -156,6 +156,40 @@ export const CAPABILITY_PACKS: CapabilityPack[] = [
 			{ name: "DeleteFromStorage", execution: "ask" },
 		],
 	},
+	{
+		id: "browser",
+		label: "Browser",
+		description:
+			"Drive a real headless browser: open a page, look at it, click and type.",
+		reactors: [
+			// Session mints the browser. Cheap on its own — a blank page — and
+			// everything else needs the id it returns.
+			{ name: "Session" },
+			// Observation is free of consequence, so it runs unattended. This is most
+			// of what an agent does: look, decide, look again.
+			{ name: "Screenshot" },
+			{ name: "ProbeElement" },
+			{ name: "ExtractElementsDataForLLM" },
+			{ name: "CheckNetworkIdle" },
+			{ name: "GetAllSteps" },
+			// Step is the only reactor that acts on a page, and it asks first.
+			//
+			// The reason is the shared BrowserContext: a user's Playwright sessions
+			// reuse one context, so its cookies carry whatever that user is logged
+			// into. A click or a keystroke can therefore act *as them* on a real site.
+			// The SSRF guard stops an agent reaching internal hosts, but nothing stops
+			// it pressing a button on a page the user is authenticated to.
+			//
+			// This does cost an approval per interaction, which makes a long flow
+			// tedious. If the deployment only ever visits sites nobody is signed in
+			// to, dropping this to auto is a one-word change — but it should be a
+			// decision, not a default.
+			{ name: "Step", execution: "ask" },
+			// Saves a recording into a project, and replays one against live pages.
+			{ name: "SaveAll", execution: "ask" },
+			{ name: "ReplayStep", execution: "ask" },
+		],
+	},
 ];
 
 const PACKS_BY_ID = new Map(CAPABILITY_PACKS.map((p) => [p.id, p]));
