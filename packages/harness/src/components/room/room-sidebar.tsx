@@ -1,5 +1,6 @@
 import {
 	BotIcon,
+	ClockIcon,
 	FolderTreeIcon,
 	GaugeIcon,
 	HammerIcon,
@@ -39,6 +40,7 @@ import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
 import { RoomFileExplorer } from "./room-file-explorer";
 import { RoomRunHistory } from "./room-run-history";
+import { RoomScheduledRuns } from "./room-scheduled-runs";
 import { RoomSubagent } from "./room-subagent";
 import { RoomTerminal } from "./room-terminal";
 import { RoomTool } from "./room-tool";
@@ -287,6 +289,12 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<HistoryIcon className="size-4 text-foreground" />
 									);
+								} else if (
+									component === "room-scheduled-runs"
+								) {
+									renderValues.leading = (
+										<ClockIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -352,6 +360,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									return <RoomTerminal room={room} />;
 								} else if (component === "room-run-history") {
 									return <RoomRunHistory room={room} />;
+								} else if (
+									component === "room-scheduled-runs"
+								) {
+									return <RoomScheduledRuns room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {

@@ -1,3 +1,3 @@
-import { RoomStore } from "./room.store";
+import { RoomStore, type ScheduledRun } from "./room.store";
 
-export { RoomStore };
+export { RoomStore, type ScheduledRun };

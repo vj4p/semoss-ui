@@ -38,6 +38,16 @@ import {
 	type StreamOptions,
 } from "./stream-job-controller";
 
+/** One row from ListAllJobs, flattened. */
+export interface ScheduledRun {
+	jobId: string;
+	jobName: string;
+	cronExpression: string;
+	previousFireTime?: string;
+	nextFireTime?: string;
+	paused: boolean;
+}
+
 interface RoomStoreInterface {
 	/**
 	 * ID of the room
@@ -872,6 +882,124 @@ export class RoomStore {
 			);
 		} catch (e) {
 			console.error("Failed to set project context for room", e);
+		}
+	};
+
+	/**
+	 * Scheduled runs
+	 */
+
+	/**
+	 * Cron jobs owned by this room's project.
+	 *
+	 * ListAllJobs keys each entry "{projectId}.{jobId}" and returns a map, not
+	 * an array, so it is flattened here.
+	 */
+	listScheduledRuns = async (): Promise<ScheduledRun[]> => {
+		const projectId = this._store.options.project?.project_id;
+		if (!projectId) {
+			return [];
+		}
+		const { pixelReturn } = await this.runRoomPixel<
+			[Record<string, Record<string, unknown>>]
+		>(`ListAllJobs(project=${JSON.stringify([projectId])});`, false);
+		const { output, operationType } = pixelReturn[0];
+		if (operationType.indexOf("ERROR") > -1) {
+			throw new Error("Failed to list scheduled runs");
+		}
+		return Object.values(output ?? {}).map((job) => ({
+			jobId: String(job.jobId ?? ""),
+			jobName: String(job.jobName ?? ""),
+			cronExpression: String(job.cronExpression ?? ""),
+			previousFireTime: job.PREV_FIRE_TIME
+				? String(job.PREV_FIRE_TIME)
+				: undefined,
+			nextFireTime: job.NEXT_FIRE_TIME
+				? String(job.NEXT_FIRE_TIME)
+				: undefined,
+			paused: String(job.TRIGGER_STATE ?? "").toUpperCase() === "PAUSED",
+		}));
+	};
+
+	/**
+	 * Schedule this room's agent to re-run `command` on a cron.
+	 *
+	 * The recipe is a RunAgent call against this room, so a firing appends to
+	 * this conversation rather than starting somewhere invisible. It must be
+	 * URI-encoded: ScheduleJob runs decodeURIComponent on it (not <encode>).
+	 *
+	 * jobGroup is the project id — the scheduler uses it both as the Quartz
+	 * group and as the thing it permission-checks, so a room with no project
+	 * cannot schedule. Jobs run as the creating user and survive restarts.
+	 */
+	scheduleRun = async (params: {
+		jobName: string;
+		cronExpression: string;
+		command: string;
+		cronTz?: string;
+	}): Promise<void> => {
+		const projectId = this._store.options.project?.project_id;
+		if (!projectId) {
+			throw new Error("Select a project before scheduling a run");
+		}
+
+		const clauses = [
+			`roomId=${JSON.stringify([this._store.roomId])}`,
+			`command=${JSON.stringify([params.command])}`,
+			this._store.model?.engine_id
+				? `engine=${JSON.stringify([this._store.model.engine_id])}`
+				: null,
+			`harnessType=${JSON.stringify(
+				this._store.options.harnessType ?? "semoss",
+			)}`,
+			`paramValues=${JSON.stringify({ project: projectId })}`,
+		].filter(Boolean);
+		const recipe = encodeURIComponent(`RunAgent(${clauses.join(", ")});`);
+
+		const tz =
+			params.cronTz ||
+			Intl.DateTimeFormat().resolvedOptions().timeZone ||
+			"UTC";
+
+		const { pixelReturn } = await this.runRoomPixel(
+			`ScheduleJob(jobName=${JSON.stringify([params.jobName])}, jobGroup=${JSON.stringify(
+				[projectId],
+			)}, cronExpression=${JSON.stringify([params.cronExpression])}, cronTz=${JSON.stringify(
+				[tz],
+			)}, recipe=${JSON.stringify([recipe])}, triggerNow=[false]);`,
+			false,
+		);
+		if (pixelReturn[0].operationType.indexOf("ERROR") > -1) {
+			throw new Error(
+				String(pixelReturn[0].output) || "Failed to schedule the run",
+			);
+		}
+	};
+
+	/** Pause, resume, run-now, or delete a scheduled run. */
+	updateScheduledRun = async (
+		jobId: string,
+		action: "pause" | "resume" | "run" | "delete",
+	): Promise<void> => {
+		const projectId = this._store.options.project?.project_id;
+		if (!projectId) {
+			throw new Error("This room has no project");
+		}
+		const pixel = {
+			pause: "PauseJobTrigger",
+			resume: "ResumeJobTrigger",
+			run: "ExecuteScheduledJob",
+			delete: "RemoveJobFromDB",
+		}[action];
+
+		const { pixelReturn } = await this.runRoomPixel(
+			`${pixel}(jobId=${JSON.stringify([jobId])}, jobGroup=${JSON.stringify([projectId])});`,
+			false,
+		);
+		if (pixelReturn[0].operationType.indexOf("ERROR") > -1) {
+			throw new Error(
+				String(pixelReturn[0].output) || `Failed to ${action}`,
+			);
 		}
 	};
 

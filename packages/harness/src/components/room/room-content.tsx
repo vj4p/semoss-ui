@@ -1,4 +1,5 @@
 import {
+	ClockIcon,
 	GaugeIcon,
 	HistoryIcon,
 	MoveDownIcon,
@@ -139,6 +140,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Run history",
 			component: "room-run-history",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open this room's recurring scheduled runs in the right side panel.
+	 */
+	const handleOpenScheduledRuns = useCallback(() => {
+		room.addSidebarNode("room-scheduled-runs", {
+			type: "tab",
+			name: "Scheduled runs",
+			component: "room-scheduled-runs",
 			config: {},
 			enableClose: true,
 		});
@@ -682,6 +696,20 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										<HistoryIcon />
 										<span className="flex-1">
 											Run history
+										</span>
+									</DropdownMenuItem>
+								)}
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenScheduledRuns();
+											onOpenChange(false);
+										}}
+									>
+										<ClockIcon />
+										<span className="flex-1">
+											Scheduled runs
 										</span>
 									</DropdownMenuItem>
 								)}
