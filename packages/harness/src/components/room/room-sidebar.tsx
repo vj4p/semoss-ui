@@ -3,6 +3,7 @@ import {
 	FolderTreeIcon,
 	GaugeIcon,
 	HammerIcon,
+	HistoryIcon,
 	MonitorXIcon,
 	PanelBottomIcon,
 	Settings2Icon,
@@ -37,6 +38,7 @@ import { RoomConfiguration } from "./room-configuration";
 import { RoomEffectivenessReport } from "./room-effectiveness-report";
 import { RoomFileEditor } from "./room-file-editor";
 import { RoomFileExplorer } from "./room-file-explorer";
+import { RoomRunHistory } from "./room-run-history";
 import { RoomSubagent } from "./room-subagent";
 import { RoomTerminal } from "./room-terminal";
 import { RoomTool } from "./room-tool";
@@ -281,6 +283,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<TerminalIcon className="size-4 text-foreground" />
 									);
+								} else if (component === "room-run-history") {
+									renderValues.leading = (
+										<HistoryIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -344,6 +350,8 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									);
 								} else if (component === "room-terminal") {
 									return <RoomTerminal room={room} />;
+								} else if (component === "room-run-history") {
+									return <RoomRunHistory room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {

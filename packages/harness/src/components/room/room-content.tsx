@@ -1,5 +1,6 @@
 import {
 	GaugeIcon,
+	HistoryIcon,
 	MoveDownIcon,
 	MoveUpIcon,
 	ScrollTextIcon,
@@ -125,6 +126,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Terminal",
 			component: "room-terminal",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open this room's past agent runs in the right side panel.
+	 */
+	const handleOpenRunHistory = useCallback(() => {
+		room.addSidebarNode("room-run-history", {
+			type: "tab",
+			name: "Run history",
+			component: "room-run-history",
 			config: {},
 			enableClose: true,
 		});
@@ -657,6 +671,20 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 									<TerminalIcon />
 									<span className="flex-1">Terminal</span>
 								</DropdownMenuItem>
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenRunHistory();
+											onOpenChange(false);
+										}}
+									>
+										<HistoryIcon />
+										<span className="flex-1">
+											Run history
+										</span>
+									</DropdownMenuItem>
+								)}
 								{room.mode === "agent" && (
 									<DropdownMenuItem
 										onSelect={(e) => {
