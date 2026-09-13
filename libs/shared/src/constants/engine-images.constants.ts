@@ -87,6 +87,7 @@ export const ENGINE_IMAGES: Record<string, EngineImageEntry[]> = {
 		{ name: "OPENAI_TRANSCRIBE", icon: "OPEN_AI.svg" },
 		{ name: "POP3", icon: "POP3.svg" },
 		{ name: "REST", icon: "REST-API.svg" },
+		{ name: "SEARXNG_SEARCH", icon: "SEARXNG_SEARCH.svg" },
 		{ name: "SERVICE_NOW", icon: "SERVICE_NOW.svg" },
 		{ name: "SMTP", icon: "SMTP.svg" },
 		{ name: "EXCHANGE_SMTP", icon: "EXCHANGE_SMTP.svg" },

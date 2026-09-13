@@ -1,0 +1,22 @@
+<!--
+  Icon for the SEARXNG_SEARCH function type.
+
+  Deliberately not the SearXNG project's own logo: that mark belongs to the
+  upstream project and shipping it would imply an endorsement this integration
+  does not have. This is a neutral glyph for the thing the connector actually is
+  — a search you host yourself — drawn as a magnifier over a server rack.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="Self-hosted search">
+  <rect width="32" height="32" rx="7" fill="#3050C8"/>
+  <!-- the rack it runs on -->
+  <rect x="7" y="7.5" width="12" height="4.4" rx="1.3" fill="#fff" fill-opacity="0.42"/>
+  <circle cx="9.7" cy="9.7" r="0.85" fill="#fff"/>
+  <rect x="7" y="14.1" width="12" height="4.4" rx="1.3" fill="#fff" fill-opacity="0.42"/>
+  <circle cx="9.7" cy="16.3" r="0.85" fill="#fff"/>
+  <rect x="7" y="20.7" width="12" height="4.4" rx="1.3" fill="#fff" fill-opacity="0.42"/>
+  <circle cx="9.7" cy="22.9" r="0.85" fill="#fff"/>
+  <!-- the query over it -->
+  <circle cx="20.4" cy="15.3" r="5.9" fill="#3050C8"/>
+  <circle cx="20.4" cy="15.3" r="4.5" stroke="#fff" stroke-width="2.1"/>
+  <path d="M23.8 18.8 L27.4 22.4" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

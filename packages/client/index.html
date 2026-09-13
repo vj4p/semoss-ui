@@ -2,6 +2,16 @@
 <html>
 
 <head>
+    <!--
+        @semoss/sdk reads this for the backend module path. Env.MODULE
+        defaults to "", which sends every request to the page origin
+        (/packages/client/dist/...) instead of the API, so the app boots,
+        fires pixels, gets redirects back and never renders. The platform
+        rewrites this tag in place when it needs a different route prefix —
+        it is keyed by id — but shipping it here means a plain rebuild
+        cannot leave the dist without it.
+    -->
+    <script id="semoss-env" type="application/json">{"MODULE":"/Monolith"}</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-cache" />

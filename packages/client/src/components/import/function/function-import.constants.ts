@@ -14,6 +14,7 @@ import IMAP from "@/assets/img/IMAP.svg";
 import POP3 from "@/assets/img/POP3.svg";
 import PYTHON from "@/assets/img/PYTHON.svg";
 import RESTAPI from "@/assets/img/REST-API.svg";
+import SEARXNG_SEARCH from "@/assets/img/SEARXNG_SEARCH.svg";
 import SERVICE_NOW from "@/assets/img/SERVICE_NOW.svg";
 import SMTP from "@/assets/img/SMTP.svg";
 
@@ -898,6 +899,182 @@ export const FUNCTION_CONNECTIONS = {
 					required: false,
 					helperText:
 						"Leave empty to use the built in search parameters: query, limit, page, country, freshness, and safeSearch.",
+					category: "Function Metadata",
+				},
+				{
+					key: "FUNCTION_REQUIRED_PARAMETERS",
+					label: "Function Required Parameters",
+					value: [],
+					type: "string-list",
+					disabled: false,
+					required: false,
+					helperText:
+						"List the names of parameters above that must be provided when calling this function.",
+					category: "Function Metadata",
+				},
+			],
+		},
+		{
+			name: "SearXNG Web Search",
+			disable: false,
+			icon: SEARXNG_SEARCH,
+			description:
+				"Web search from a SearXNG instance you host. No API key and no account: it queries other engines and returns the aggregate, so searches never leave a host you control. Returns the same title, url, and snippet shape as the other search functions.",
+			link: "https://docs.searxng.org/admin/settings/settings_search.html",
+			fields: [
+				{
+					key: "FUNCTION_TYPE",
+					label: "Function Type",
+					value: "SEARXNG_SEARCH",
+					type: "text",
+					disabled: true,
+					hidden: true,
+					required: true,
+					category: "General",
+				},
+				{
+					key: "NAME",
+					label: "Catalog Name",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: true,
+					rules: {
+						pattern: {
+							value: /^[\w\-\s]+$/,
+							message:
+								"Catalog names can only contain alphanumeric characters and dashes.",
+						},
+						custom: {
+							value: 'CheckEngineName ( "[VALUE]") ;',
+							message:
+								"This Catalog name has already been used, please try another.",
+						},
+					},
+					category: "General",
+				},
+				{
+					key: "ENDPOINT",
+					label: "Instance URL",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: true,
+					helperText:
+						"Base URL of your SearXNG instance, ie http://searxng.internal:8282. The /search path is added for you. The instance must have the JSON format enabled in its settings.yml.",
+					category: "General",
+				},
+				{
+					key: "COUNT",
+					label: "Default Result Count",
+					value: "8",
+					type: "number",
+					disabled: false,
+					required: false,
+					helperText:
+						"Results returned when the caller does not ask for a specific number. A single search is capped at 20.",
+					category: "Settings",
+				},
+				{
+					key: "ENGINES",
+					label: "Upstream Engines",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: false,
+					helperText:
+						"Comma separated list of the engines SearXNG should ask, ie google,duckduckgo,wikipedia. Leave blank to use whatever the instance has enabled.",
+					category: "Settings",
+				},
+				{
+					key: "CATEGORIES",
+					label: "Categories",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: false,
+					helperText:
+						"Comma separated categories to restrict to, ie general,news. Leave blank to search all of them.",
+					category: "Settings",
+				},
+				{
+					key: "LANGUAGE",
+					label: "Language",
+					value: "all",
+					type: "text",
+					disabled: false,
+					required: false,
+					helperText:
+						"SearXNG language filter, ie en or en-US. Use all for no preference.",
+					category: "Settings",
+				},
+				{
+					key: "SAFE_SEARCH",
+					label: "Safe Search",
+					value: "1",
+					type: "select",
+					options: [
+						{
+							display: "off",
+							value: "0",
+						},
+						{
+							display: "moderate",
+							value: "1",
+						},
+						{
+							display: "strict",
+							value: "2",
+						},
+					],
+					disabled: false,
+					required: false,
+					helperText:
+						"How aggressively adult content is filtered out. SearXNG takes this as a number, so the value sent is 0, 1, or 2.",
+					category: "Settings",
+				},
+				{
+					key: "SNIPPET_LENGTH",
+					label: "Snippet Character Limit",
+					value: "400",
+					type: "number",
+					disabled: false,
+					required: false,
+					helperText:
+						"Trims each result snippet to this many characters so a wide search cannot fill up a model's context. Set 0 to return the full snippet.",
+					category: "Settings",
+				},
+				{
+					key: "FUNCTION_NAME",
+					label: "Function Name",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: true,
+					helperText:
+						"Becomes the MCP tool name, so name it for what it does, ie web_search.",
+					category: "Function Metadata",
+				},
+				{
+					key: "FUNCTION_DESCRIPTION",
+					label: "Function Description",
+					value: "",
+					type: "text",
+					disabled: false,
+					required: false,
+					helperText:
+						"Leave blank to use the built in description of what a web search returns.",
+					category: "Function Metadata",
+				},
+				{
+					key: "FUNCTION_PARAMETERS",
+					label: "Function Parameters",
+					value: [],
+					type: "parameter-list",
+					disabled: false,
+					required: false,
+					helperText:
+						"Leave empty to use the built in search parameters: query, limit, and page.",
 					category: "Function Metadata",
 				},
 				{
