@@ -73,14 +73,18 @@ const getToolState = (
 			if (isAskExecutionMode(tool.json._meta?.SMSS_MCP_EXECUTION)) {
 				return {
 					icon: <HammerIcon className="size-5" />,
-					iconClassName: "bg-primary/10 text-primary",
+					iconClassName: "bg-warning/10 text-warning",
 					subtext: tool.json.description,
-					badge: null,
+					badge: {
+						text: t("status.needsApproval"),
+						variant: "muted" as const,
+					},
 
 					actionType: "menu" as const,
 					background: "bg-background" as const,
 					showHoverAccent: true,
 					showCancelInMenu: true,
+					needsApproval: true,
 				};
 			}
 			// queued
@@ -257,6 +261,7 @@ export const ResponseMessageTool: React.FC<ResponseMessageToolProps> = observer(
 				className={cn(
 					"flex flex-col rounded-lg border border-border",
 					toolState.background,
+					toolState.needsApproval && "border-warning",
 					isActive && "border-primary",
 					toolState.showHoverAccent && "hover:bg-accent",
 				)}
