@@ -7,7 +7,8 @@
 		"loadingTool": "Loading tool…",
 		"waitingForArguments": "Waiting for arguments…",
 		"running": "Running",
-		"waitingForInput": "Waiting for input"
+		"waitingForInput": "Waiting for input",
+		"needsApproval": "Needs approval"
 	},
 	"actions": {
 		"cancel": "Cancel",
@@ -55,6 +56,12 @@
 		"title": "Subagent",
 		"notFound": "Subagent not found",
 		"noResult": "No response yet"
+	},
+	"plan": {
+		"title": "Plan",
+		"loading": "Reading the plan…",
+		"empty": "No todo items.",
+		"progress": "{{done}} of {{total}} done"
 	},
 	"extension": {
 		"required": "Browser Extension Required",

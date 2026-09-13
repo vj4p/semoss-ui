@@ -7,8 +7,12 @@ import { AgentUserInputCard, Skeleton, toast } from "@semoss/ui/next";
 import type { RoomStore } from "@/stores";
 import { decideAgentToolAction } from "@/stores/message/agent-harness";
 import { isAskExecutionMode } from "@/utility/mcp-utils";
+import { PlanView } from "./plan-view";
 import { ToolsDefaultView } from "./tools-default-view";
 import { ToolsServerView } from "./tools-server-view";
+
+/** Todo tools get a checklist instead of the generic inputs/output form. */
+const PLAN_TOOL_NAMES = new Set(["TodoWrite", "TodoRead"]);
 
 const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL
 	? import.meta.env.VITE_PLATFORM_URL
@@ -305,10 +309,12 @@ export const ToolsView = observer(
 				{!url &&
 					!isLoading &&
 					liveTool &&
-					(isRequestUserInputAction({
-						toolName: liveTool.json.name,
-						toolMeta: liveTool.json._meta,
-					}) ? (
+					(PLAN_TOOL_NAMES.has(liveTool.json.name) ? (
+						<PlanView tool={liveTool} />
+					) : isRequestUserInputAction({
+							toolName: liveTool.json.name,
+							toolMeta: liveTool.json._meta,
+						}) ? (
 						(() => {
 							const request = parseUserInputRequest({
 								toolArgs: liveTool.json.arguments,
