@@ -41,6 +41,7 @@ import { useChat, useGracefulErrors } from "@/hooks";
 import { ResponseMessageStore, type RoomStore } from "@/stores";
 import { decideAgentToolAction } from "@/stores/message/agent-harness";
 import { RoomCompactionIndicator } from "./room-compaction-indicator";
+import { RoomReachStrip } from "./room-reach-strip";
 import { RoomSuggestions } from "./room-suggestions";
 
 const ROOM_CONFIGURATION_ID = "CONFIGURATION";
@@ -645,6 +646,7 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 				)}
 			</div>
 			<div className="mx-auto flex w-full max-w-[1120px] shrink-0 flex-col px-4 py-4 sm:px-8 lg:px-16">
+				{room.mode === "agent" && <RoomReachStrip room={room} />}
 				<RoomInput
 					predefinedPrompts={room.options.predefinedPrompts}
 					className="max-h-56 min-h-24"

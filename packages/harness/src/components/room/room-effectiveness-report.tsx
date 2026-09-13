@@ -15,6 +15,7 @@ import {
 	TableRow,
 } from "@semoss/ui/next";
 import type { RoomStore } from "@/stores";
+import { type CostOutput, formatCost } from "@/utility";
 
 /** Shapes returned by GetAgentEffectiveness (reactor/agent/metrics). */
 interface ScoreBlock {
@@ -97,18 +98,6 @@ const formatPercent = (value?: number | null) =>
 		? `${Math.round(value * 100)}%`
 		: "—";
 
-/**
- * Money, at a scale that stays legible for an agent run.
- *
- * Runs on a cheap model cost fractions of a cent, so two decimal places would
- * render almost everything as "$0.00". Four gives a usable figure without
- * pretending to more precision than the rates carry.
- */
-const formatCost = (value: number, currency = "USD") => {
-	const symbol = currency === "USD" ? "$" : `${currency} `;
-	return `${symbol}${value.toFixed(value >= 1 ? 2 : 4)}`;
-};
-
 const formatDuration = (ms?: number | null) => {
 	if (typeof ms !== "number" || !Number.isFinite(ms)) {
 		return "—";
@@ -150,27 +139,6 @@ const Stat = ({
 		) : null}
 	</div>
 );
-
-/**
- * Shape returned by GetModelCost. `cost` is null when no model in scope had
- * published pricing — see ModelCostCalculator: an unpriced model is reported as
- * unpriced rather than as free, so null must render as "not priced" and never as
- * zero.
- */
-interface CostOutput {
-	totals?: {
-		cost?: number | null;
-		currency?: string;
-		inputTokens?: number;
-		outputTokens?: number;
-		cacheReadTokens?: number;
-	};
-	coverage?: {
-		pricedModels?: number;
-		unpricedModels?: number;
-		complete?: boolean;
-	};
-}
 
 /**
  * Shape returned by AssessAgentEffectiveness (the LLM-judge companion).

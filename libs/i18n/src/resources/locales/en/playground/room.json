@@ -182,6 +182,7 @@
 		"engineSaveFailed": "Could not save the project's engines",
 		"packsTitle": "Capability packs",
 		"packsHelp": "Each pack adds a set of SEMOSS tools to this room. Tools that change things outside this project ask before running.",
+		"refreshPacks": "Refresh packs",
 		"noPacks": "No capability packs are available on this instance.",
 		"toolCount": "{{count}} tools",
 		"askCount": "{{count}} ask first",
@@ -213,5 +214,13 @@
 		"merged": "Merged {{branch}} ({{status}})",
 		"mergeConflicts": "Merge left {{count}} conflicted file(s) — resolve them, then commit",
 		"mergeFailed": "Could not merge that branch"
+	},
+	"reach": {
+		"label": "Reach",
+		"addPack": "pack",
+		"toolSummary": "{{count}} tools",
+		"askSummary": "{{count}} ask first",
+		"dirtyFiles": "{{count}} files",
+		"refresh": "Refresh run status"
 	}
 }

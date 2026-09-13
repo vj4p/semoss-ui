@@ -1,4 +1,9 @@
-import { AlertTriangleIcon, Loader2Icon, XIcon } from "lucide-react";
+import {
+	AlertTriangleIcon,
+	Loader2Icon,
+	RefreshCwIcon,
+	XIcon,
+} from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
@@ -12,14 +17,10 @@ import {
 	Switch,
 	toast,
 } from "@semoss/ui/next";
+import { useRoomPacks } from "@/hooks";
 import type { RoomStore } from "@/stores";
 import type { Engine, ProjectDependency } from "@/types";
-import {
-	buildCapabilityPack,
-	type CapabilityPack,
-	isPackProject,
-	type PackTool,
-} from "@/utility";
+import type { CapabilityPack } from "@/utility";
 
 interface RoomCapabilitiesProps {
 	/** Room whose project and tool set are being configured. */
@@ -35,120 +36,6 @@ const ENGINE_KINDS = [
 	// so attaching one both names it in the prompt and generates its tool below.
 	{ type: "FUNCTION", labelKey: "capabilities.functions" },
 ] as const;
-
-/**
- * One MCP-tagged project as `META | MyProjects` returns it.
- *
- * `project_name` is not the pack's name — every seeded platform project is named
- * `platform` — so only the id and description are of use here.
- */
-interface McpProjectRow {
-	project_id?: string;
-	description?: string;
-}
-
-/**
- * Minimal slice of the insight the pack readers need.
- *
- * Untyped output on purpose: these batch a variable number of statements, so the
- * tuple type `run` is usually given cannot describe the result, and each reader
- * narrows its own entries.
- */
-type PixelRunner = {
-	actions: {
-		run: (
-			pixel: string,
-		) => Promise<{ pixelReturn: { output?: unknown }[] }>;
-	};
-};
-
-/**
- * Read every pack's tools in one call, keyed by pack id.
- *
- * The results come back positionally, in the order the statements were sent, which
- * is what maps them back to their pack — the tool payload itself does not name the
- * project it came from.
- *
- * @param ids - pack project ids to read.
- * @return tools per pack; empty when the batch could not be read.
- */
-const batchReadPackTools = async (
-	insight: PixelRunner,
-	ids: readonly string[],
-): Promise<Map<string, PackTool[]>> => {
-	const byPack = new Map<string, PackTool[]>();
-	try {
-		const { pixelReturn } = await insight.actions.run(
-			ids
-				.map((id) => `GetMCPTools(project=[${JSON.stringify(id)}]);`)
-				.join(""),
-		);
-		ids.forEach((id, index) => {
-			const output = pixelReturn[index]?.output as
-				| { tools?: PackTool[] }
-				| PackTool[]
-				| undefined;
-			byPack.set(
-				id,
-				Array.isArray(output) ? output : (output?.tools ?? []),
-			);
-		});
-	} catch (e) {
-		console.error("Could not read the packs' tools", e);
-	}
-	return byPack;
-};
-
-/**
- * The frontmatter description is phrased for skill selection — "Use when you need to
- * read a database's schema, ... Exposes these as tools you call directly: ..." — which
- * is right for the model choosing a skill and wrong as a line of UI. Both wrappers are
- * stripped to recover the plain sentence underneath: the tail duplicates the tool-count
- * badge next to it, and the lead-in is not addressed to the person reading the panel.
- *
- * Neither strip is required to match. A pack whose description is not in this shape is
- * shown as written rather than mangled.
- */
-const toDisplayDescription = (frontmatter: string): string => {
-	const withoutTools = frontmatter.split(" Exposes these as tools")[0];
-	const withoutLeadIn = withoutTools.replace(/^Use when you need to /, "");
-	return withoutLeadIn.charAt(0).toUpperCase() + withoutLeadIn.slice(1);
-};
-
-/**
- * Read every pack's description in one call, keyed by pack id.
- *
- * @param ids - pack project ids to read.
- * @return description per pack; empty when the batch could not be read.
- */
-const batchReadPackDescriptions = async (
-	insight: PixelRunner,
-	ids: readonly string[],
-): Promise<Map<string, string>> => {
-	const byPack = new Map<string, string>();
-	try {
-		const { pixelReturn } = await insight.actions.run(
-			ids
-				.map(
-					(id) =>
-						`RunMCPTool(project=[${JSON.stringify(id)}], function=["ListSkillFiles"], paramValues=[{}]);`,
-				)
-				.join(""),
-		);
-		ids.forEach((id, index) => {
-			const output = pixelReturn[index]?.output as
-				| { description?: string }[]
-				| undefined;
-			const described = output?.find((file) => file.description);
-			if (described?.description) {
-				byPack.set(id, toDisplayDescription(described.description));
-			}
-		});
-	} catch (e) {
-		console.error("Could not read the packs' descriptions", e);
-	}
-	return byPack;
-};
 
 /**
  * `SetProjectDependencies` replaces the whole list and expects `{id, type}`
@@ -202,79 +89,13 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 		const [isLoading, setIsLoading] = useState(false);
 		const [savingEngine, setSavingEngine] = useState(false);
 		const [pendingPack, setPendingPack] = useState<string | null>(null);
-		const [packs, setPacks] = useState<CapabilityPack[]>([]);
-		const [packsLoading, setPacksLoading] = useState(false);
-
-		/**
-		 * Read the available packs off the platform.
-		 *
-		 * Three round trips, not one per pack. `MyProjects` filtered to the `MCP` tag
-		 * gives the ids, and doubles as the access check — a pack the user cannot read
-		 * is simply not returned. The other two batch one statement per pack into a
-		 * single call each:
-		 *
-		 * - `GetMCPTools` for the tools and their approval modes.
-		 * - `ListSkillFiles`, through the pack's own toolbox, for the description.
-		 *   `MyProjects` cannot supply it: a project description is a `PROJECTMETA`
-		 *   row, and no seeded platform project has one, because setting it needs edit
-		 *   rights that system projects deliberately grant to nobody. The pack's
-		 *   SKILL.md frontmatter is the real source, and `SkillMCP` already parses it.
-		 *   (`ListSkills` looks wrong for this and is: it scans for `<name>/SKILL.md`
-		 *   subfolders and does not see the project's own.)
-		 *
-		 * Each batch is tolerated separately, so a failure costs one dimension rather
-		 * than the panel — no descriptions, or no counts, but still the list. That is
-		 * the reason they are not one call: `actions.run` rejects if *any* statement in
-		 * a batch errored, so combining them would let a single unreadable pack blank
-		 * everything.
-		 */
-		const loadPacks = useCallback(async () => {
-			setPacksLoading(true);
-			try {
-				const { pixelReturn } = await insight.actions.run<
-					[McpProjectRow[] | { data?: McpProjectRow[] }]
-				>(
-					`META | MyProjects(metaKeys=["tag","description"], metaFilters=[{"tag":["MCP"]}], limit=[100], offset=[0]);`,
-				);
-				const output = pixelReturn[0]?.output;
-				const rows = Array.isArray(output)
-					? output
-					: (output?.data ?? []);
-				const ids = rows
-					.map((row) => row.project_id)
-					.filter((id): id is string => isPackProject(id));
-
-				if (ids.length === 0) {
-					setPacks([]);
-					return;
-				}
-
-				const [toolsByPack, describedByPack] = await Promise.all([
-					batchReadPackTools(insight, ids),
-					batchReadPackDescriptions(insight, ids),
-				]);
-
-				const resolved = ids
-					.map((id) =>
-						buildCapabilityPack(
-							id,
-							describedByPack.get(id) ?? "",
-							toolsByPack.get(id) ?? [],
-						),
-					)
-					.sort((a, b) => a.label.localeCompare(b.label));
-				setPacks(resolved);
-			} catch (e) {
-				console.error("Failed to load capability packs", e);
-				setPacks([]);
-			} finally {
-				setPacksLoading(false);
-			}
-		}, [insight]);
-
-		useEffect(() => {
-			void loadPacks();
-		}, [loadPacks]);
+		// Shared with the composer's reach strip, so the platform is read for packs
+		// in exactly one place.
+		const {
+			packs,
+			loading: packsLoading,
+			reload: reloadPacks,
+		} = useRoomPacks();
 
 		const loadDependencies = useCallback(async () => {
 			if (!projectId) {
@@ -492,13 +313,30 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 					</section>
 
 					<section className="flex flex-col gap-3">
-						<div>
-							<h3 className="font-medium text-sm">
-								{t("capabilities.packsTitle")}
-							</h3>
-							<p className="text-muted-foreground text-xs">
-								{t("capabilities.packsHelp")}
-							</p>
+						<div className="flex items-start justify-between gap-2">
+							<div>
+								<h3 className="font-medium text-sm">
+									{t("capabilities.packsTitle")}
+								</h3>
+								<p className="text-muted-foreground text-xs">
+									{t("capabilities.packsHelp")}
+								</p>
+							</div>
+							<Button
+								variant="ghost"
+								size="icon"
+								disabled={packsLoading}
+								aria-label={t("capabilities.refreshPacks")}
+								onClick={() => void reloadPacks()}
+							>
+								<RefreshCwIcon
+									className={
+										packsLoading
+											? "size-4 animate-spin"
+											: "size-4"
+									}
+								/>
+							</Button>
 						</div>
 
 						<div className="flex flex-col gap-3">
