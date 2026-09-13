@@ -172,7 +172,7 @@
 		"noItemsAvailable": "No knowledge or toolboxes available"
 	},
 	"capabilities": {
-		"noProject": "Select a project for this room to attach engines and enable capability packs.",
+		"noProject": "Select a project for this room to attach engines. Capability packs work without one.",
 		"enginesTitle": "Engines",
 		"enginesHelp": "Attached engines are named in the agent's system prompt, with their ids, so it knows what it may use.",
 		"databases": "Databases",
