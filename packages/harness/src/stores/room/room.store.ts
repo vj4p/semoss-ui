@@ -533,6 +533,15 @@ export class RoomStore {
 	}
 
 	/**
+	 * Every tool call in this room, in call order. String-keyed insertion
+	 * order is guaranteed by the spec, and each call is inserted exactly once
+	 * as it is created, so this needs no separate ordering of its own.
+	 */
+	get tools() {
+		return Object.values(this._store.tools);
+	}
+
+	/**
 	 * Last response message - avoids INPUT_TOOL_EXEC and STREAMING_PLACEHOLDER_ID messages
 	 */
 	get latestResponseMessage(): ResponseMessageStore {

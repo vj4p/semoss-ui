@@ -222,5 +222,9 @@
 		"askSummary": "{{count}} ask first",
 		"dirtyFiles": "{{count}} files",
 		"refresh": "Refresh run status"
+	},
+	"activity": {
+		"title": "Activity",
+		"empty": "No tool calls yet."
 	}
 }

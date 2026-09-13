@@ -1,4 +1,5 @@
 import {
+	ActivityIcon,
 	ClockIcon,
 	GaugeIcon,
 	GitBranchIcon,
@@ -169,6 +170,19 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 			type: "tab",
 			name: "Telemetry",
 			component: "agent-effectiveness-report",
+			config: {},
+			enableClose: true,
+		});
+	}, [room]);
+
+	/**
+	 * Open the activity panel — every tool call in this room, one line each.
+	 */
+	const handleOpenActivity = useCallback(() => {
+		room.addSidebarNode("room-activity", {
+			type: "tab",
+			name: "Activity",
+			component: "room-activity",
 			config: {},
 			enableClose: true,
 		});
@@ -757,6 +771,18 @@ export const RoomContent: React.FC<RoomContentProps> = observer(({ room }) => {
 										<span className="flex-1">
 											Telemetry
 										</span>
+									</DropdownMenuItem>
+								)}
+								{room.mode === "agent" && (
+									<DropdownMenuItem
+										onSelect={(e) => {
+											e.preventDefault();
+											handleOpenActivity();
+											onOpenChange(false);
+										}}
+									>
+										<ActivityIcon />
+										<span className="flex-1">Activity</span>
 									</DropdownMenuItem>
 								)}
 								{room.mode === "agent" && (

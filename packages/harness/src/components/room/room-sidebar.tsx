@@ -1,4 +1,5 @@
 import {
+	ActivityIcon,
 	BotIcon,
 	ClockIcon,
 	FolderTreeIcon,
@@ -39,6 +40,7 @@ import {
 	TooltipTrigger,
 } from "@semoss/ui/next";
 import type { RoomStore } from "@/stores";
+import { RoomActivity } from "./room-activity";
 import { RoomAuditLogReport } from "./room-audit-log-report";
 import { RoomCapabilities } from "./room-capabilities";
 import { RoomChanges } from "./room-changes";
@@ -339,6 +341,10 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									renderValues.leading = (
 										<GitBranchIcon className="size-4 text-foreground" />
 									);
+								} else if (component === "room-activity") {
+									renderValues.leading = (
+										<ActivityIcon className="size-4 text-foreground" />
+									);
 								}
 							}}
 							onAction={(action) => {
@@ -412,6 +418,8 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									return <RoomCapabilities room={room} />;
 								} else if (component === "room-changes") {
 									return <RoomChanges room={room} />;
+								} else if (component === "room-activity") {
+									return <RoomActivity room={room} />;
 								} else if (component === "room-file-editor") {
 									const editorConfig = node.getConfig() as
 										| {
