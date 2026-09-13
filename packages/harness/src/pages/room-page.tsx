@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { InsightProvider } from "@semoss/sdk/react";
 import {
+	type ImperativePanelHandle,
 	ResizableHandle,
 	ResizablePanel,
 	ResizablePanelGroup,
@@ -35,6 +36,8 @@ export const RoomPage = observer(() => {
 	 */
 	const [room, setRoom] = useState<RoomStore | null>(null);
 	const selectedModelRef = useRef<Engine>(chat.models.selected);
+	const contentPanelRef = useRef<ImperativePanelHandle>(null);
+	const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
 
 	/**
 	 * Library hooks
@@ -138,6 +141,20 @@ export const RoomPage = observer(() => {
 		};
 	}, [navbarActions, setNavbarActions]);
 
+	// Resize the two panels when workbench mode flips while the sidebar is
+	// already open. `defaultSize` on the JSX below only takes effect the
+	// moment the sidebar panel (re)mounts, so a toggle needs this imperative
+	// resize instead, or the split just sits at whatever it opened at. Gated
+	// on `isOpen`: with the sidebar closed there is only one panel in the
+	// group, and asking react-resizable-panels to resize a lone panel throws
+	// ("Previous layout not found for panel index -1").
+	useEffect(() => {
+		if (!room || !room.sidebar.isOpen) return;
+		const sidebarSize = room.sidebar.wide ? 70 : 50;
+		sidebarPanelRef.current?.resize(sidebarSize);
+		contentPanelRef.current?.resize(100 - sidebarSize);
+	}, [room, room?.sidebar.wide, room?.sidebar.isOpen]);
+
 	// if there is no room, return null
 	if (!room) {
 		return (
@@ -158,7 +175,12 @@ export const RoomPage = observer(() => {
 					direction="horizontal"
 					className="w-full flex-1 overflow-hidden"
 				>
-					<ResizablePanel className="h-full w-full flex-1 overflow-hidden">
+					<ResizablePanel
+						ref={contentPanelRef}
+						className="h-full w-full flex-1 overflow-hidden"
+						defaultSize={room.sidebar.wide ? 30 : undefined}
+						minSize={20}
+					>
 						<FileDragProvider>
 							<RoomContent room={room} />
 						</FileDragProvider>
@@ -167,8 +189,9 @@ export const RoomPage = observer(() => {
 						<>
 							<ResizableHandle />
 							<ResizablePanel
+								ref={sidebarPanelRef}
 								className={"relative p-2"}
-								defaultSize={50}
+								defaultSize={room.sidebar.wide ? 70 : 50}
 								minSize={20}
 							>
 								<RoomSidebar room={room} />

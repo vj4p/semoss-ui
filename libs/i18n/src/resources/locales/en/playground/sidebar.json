@@ -51,6 +51,8 @@
 		"openInline": "Open in-line",
 		"minimize": "Minimize",
 		"maximize": "Maximize",
+		"expandWorkbench": "Expand workbench",
+		"collapseWorkbench": "Collapse workbench",
 		"close": "Close"
 	},
 	"toasts": {

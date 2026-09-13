@@ -216,6 +216,14 @@ interface RoomStoreInterface {
 		isOpen: boolean;
 
 		/**
+		 * Track whether the sidebar is the dominant panel — the "workbench"
+		 * layout, where whatever it's showing (a live preview, a diff, a
+		 * terminal) is the main object and the conversation narrows to a dock
+		 * beside it, rather than the sidebar being the secondary panel.
+		 */
+		wide: boolean;
+
+		/**
 		 * FlexLayout model
 		 */
 		model: FlexLayout.Model;
@@ -263,6 +271,7 @@ export class RoomStore {
 		},
 		sidebar: {
 			isOpen: false,
+			wide: false,
 			fileKeys: {},
 			model: FlexLayout.Model.fromJson({
 				global: {
@@ -1434,6 +1443,13 @@ export class RoomStore {
 	 */
 	closeSidebar = async (): Promise<void> => {
 		this._store.sidebar.isOpen = false;
+	};
+
+	/**
+	 * Toggle the workbench layout — see `sidebar.wide`.
+	 */
+	setSidebarWide = (wide: boolean): void => {
+		this._store.sidebar.wide = wide;
 	};
 
 	/**

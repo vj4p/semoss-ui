@@ -8,6 +8,8 @@ import {
 	HistoryIcon,
 	MonitorXIcon,
 	PanelBottomIcon,
+	PanelRightCloseIcon,
+	PanelRightOpenIcon,
 	PlugIcon,
 	Settings2Icon,
 	TerminalIcon,
@@ -217,6 +219,30 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 								}
 
 								renderValues.buttons.push(
+									<Tooltip key="wide">
+										<TooltipTrigger asChild>
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												onClick={() => {
+													room.setSidebarWide(
+														!room.sidebar.wide,
+													);
+												}}
+											>
+												{room.sidebar.wide ? (
+													<PanelRightCloseIcon />
+												) : (
+													<PanelRightOpenIcon />
+												)}
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>
+											{room.sidebar.wide
+												? t("actions.collapseWorkbench")
+												: t("actions.expandWorkbench")}
+										</TooltipContent>
+									</Tooltip>,
 									<Tooltip key="maximize">
 										<TooltipTrigger asChild>
 											<Button
