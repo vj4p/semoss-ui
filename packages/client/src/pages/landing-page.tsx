@@ -8,6 +8,8 @@ import BI from "@/assets/img/BI.png";
 import BIDark from "@/assets/img/BI-dark.png";
 import DevBanner from "@/assets/img/DevBanner.png";
 import DevBannerDark from "@/assets/img/DevBanner-dark.png";
+import Harness from "@/assets/img/Harness.svg";
+import HarnessDark from "@/assets/img/Harness-dark.svg";
 import Playwright from "@/assets/img/Playwright.svg";
 import PlaywrightDark from "@/assets/img/Playwright-dark.svg";
 import Terminal from "@/assets/img/Terminal.png";
@@ -142,6 +144,14 @@ export const LandingPage: React.FC = () => {
 							href="../../playground/dist/"
 							img={DevBanner}
 							darkImg={DevBannerDark}
+						/>
+
+						<SystemAppCard
+							name="Harness"
+							description="Run coding agents against your projects, review their changes, and track what they cost"
+							href="../../harness/dist/"
+							img={Harness}
+							darkImg={HarnessDark}
 						/>
 
 						<SystemAppCard

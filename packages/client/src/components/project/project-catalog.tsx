@@ -104,6 +104,13 @@ const SYSTEM_APPS: {
 		href: "../../browser-automation/dist/",
 	},
 	{
+		id: "harness-system-app",
+		name: "Harness",
+		description:
+			"Run coding agents against your projects, review their changes, and track what they cost",
+		href: "../../harness/dist/",
+	},
+	{
 		id: "playground-system-app",
 		name: "Playground",
 		description:
