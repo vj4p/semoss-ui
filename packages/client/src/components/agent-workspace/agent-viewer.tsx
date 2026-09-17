@@ -21,6 +21,8 @@ type GetWorkspaceResponse = {
 		model_id?: string;
 		harness_type?: string;
 		use_default_agent_tools?: boolean;
+		greeting?: string;
+		greeting_enabled?: boolean;
 		tool_policy?: {
 			default_tools?: {
 				disabled?: string[];
@@ -58,6 +60,8 @@ function toFormValues(response: GetWorkspaceResponse): AgentFormValues {
 		harnessType: response.config_json?.harness_type ?? "",
 		useDefaultAgentTools:
 			response.config_json?.use_default_agent_tools ?? true,
+		greeting: response.config_json?.greeting ?? "",
+		greetingEnabled: response.config_json?.greeting_enabled ?? false,
 		disabledDefaultTools:
 			response.config_json?.tool_policy?.default_tools?.disabled ?? [],
 		maxTurns: response.config_json?.budgets?.max_turns?.toString() ?? "",

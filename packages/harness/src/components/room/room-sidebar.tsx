@@ -430,9 +430,18 @@ export const RoomSidebar: React.FC<RoomSidebarProps> = observer(({ room }) => {
 									const editorPath = editorConfig?.path ?? "";
 									const editorRefreshKey =
 										editorConfig?.refreshKey ?? 0;
+									// openFileEditorSidebarNode's forceRefresh bumps
+									// sidebar.fileKeys, not the tab's refreshKey, so the
+									// key has to read fileKeys or force-refresh silently
+									// does nothing. It belongs here rather than inside
+									// RoomFileEditor because the state to discard now
+									// lives in that component's own hooks, which only a
+									// remount of it resets.
+									const editorFileKey =
+										room.sidebar.fileKeys[editorPath] ?? 0;
 									return (
 										<RoomFileEditor
-											key={`${node.getId()}:${editorPath}:${editorRefreshKey}`}
+											key={`${node.getId()}:${editorPath}:${editorRefreshKey}:${editorFileKey}`}
 											node={node}
 											room={room}
 										/>

@@ -1,11 +1,13 @@
+import type { ConfigEnv } from "vite";
 import { resolve } from "node:path";
 import {
 	createViteConfig,
 	DEV_SERVER_PORTS,
 	localeManualChunks,
 } from "@semoss/config";
+import { aiSdkStubAlias, scopePptxViewerCssPlugin } from "@semoss/panels/vite";
 
-export default createViteConfig({
+const baseConfig = createViteConfig({
 	rootDir: import.meta.dirname,
 	port: DEV_SERVER_PORTS.harness,
 	manualChunks: localeManualChunks,
@@ -21,6 +23,11 @@ export default createViteConfig({
 				"../../libs/shared/node_modules/monaco-editor/esm/vs/editor/editor.api",
 			),
 		},
+		// pptx-react-viewer declares "ai" as an optional peer for a chat panel
+		// this app never renders, but the bundler still resolves its named
+		// imports, so the build fails outright without the stub. Same reason
+		// client, playground and terminal carry it.
+		aiSdkStubAlias,
 	],
 	define: (env, isProduction) => ({
 		"import.meta.env.ACCESS_KEY": isProduction
@@ -38,3 +45,12 @@ export default createViteConfig({
 		setupFiles: "./vitest.setup.ts",
 	},
 });
+
+// This app renders the pptx viewer (file previews and message attachments), so
+// it needs the viewer's CSS scoped the same way playground does — the library
+// ships unscoped global styles that otherwise leak into the whole app.
+export default (env: ConfigEnv) => {
+	const config = baseConfig(env);
+	config.plugins = [scopePptxViewerCssPlugin, ...(config.plugins ?? [])];
+	return config;
+};
