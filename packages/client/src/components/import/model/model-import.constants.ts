@@ -2334,6 +2334,131 @@ export const IMPORTABLE_MODELS = {
 						},
 					],
 				},
+				{
+					model_types: ["embedding"],
+					fields: [
+						{
+							key: "NAME",
+							label: "Catalog Name",
+							type: "text",
+							required: true,
+							category: "General",
+							rules: {
+								pattern: {
+									value: /^[\w\-\s]+$/,
+									message:
+										"Catalog names can only contain alphanumeric characters and dashes.",
+								},
+								custom_rules: {
+									value: 'CheckEngineName ( "[VALUE]") ;',
+									message:
+										"This Catalog name has already been used, please try another.",
+								},
+							},
+						},
+						{
+							key: "TAG",
+							label: "Tag",
+							type: "text",
+							disabled: true,
+							required: true,
+							value: "embeddings",
+							category: "General",
+						},
+						{
+							key: "MODEL_TYPE",
+							label: "Model Type",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "TEXT_GENERATION",
+							category: "General",
+						},
+						{
+							key: "MODEL_BRAND",
+							label: "Model Brand",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "OLLAMA",
+							category: "General",
+						},
+						{
+							key: "MODEL",
+							label: "Model Name",
+							type: "text",
+							disabled: false,
+							required: true,
+							category: "General",
+							helperText:
+								"The exact embedding model tag pulled on that Ollama server, e.g. qwen3-embedding:8b or nomic-embed-text - see `ollama list`.",
+						},
+						{
+							key: "VAR_NAME",
+							label: "Variable Name",
+							type: "hidden",
+							required: true,
+							disabled: true,
+							value: "myModel",
+							category: "General",
+						},
+						{
+							key: "ENDPOINT",
+							label: "Endpoint",
+							type: "url",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"Ollama's OpenAI-compatible endpoint, e.g. http://<host>:11434/v1 - must include the /v1 suffix.",
+						},
+						{
+							key: "OPEN_AI_KEY",
+							label: "API Key",
+							type: "password",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"Ollama does not validate this - any non-empty value works, e.g. 'ollama'.",
+						},
+						{
+							key: "MAX_TOKENS",
+							label: "Max Tokens Per Batch",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Max Tokens must be a positive integer",
+								},
+							},
+							category: "Settings",
+							helperText:
+								"Token budget the embedder batches against - a longer list of inputs is split into batches of at most this many tokens.",
+						},
+						{
+							key: "KEEP_INPUT_OUTPUT",
+							label: "Record Questions and Responses",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "INIT_MODEL_ENGINE",
+							label: "Init Script",
+							type: "text",
+							required: true,
+							disabled: false,
+							helperText:
+								'Embedding models need OpenAiEmbedder. The chat client has no embeddings support, so using it fails at call time with "This model does not support embeddings."',
+							default:
+								"from genai_client import OpenAiEmbedder;${VAR_NAME} = OpenAiEmbedder(model_name = '${MODEL}', api_key = '${OPEN_AI_KEY}', base_url = '${ENDPOINT}')",
+							category: "Settings",
+						},
+					],
+				},
 			],
 		},
 		{
@@ -3617,6 +3742,16 @@ export const MODEL_VERSIONS: ModelVersionsByProvider = {
 			description:
 				"Connect to any model served by a reachable Ollama instance, using Ollama's OpenAI-compatible API.",
 			formConfig: OTHER_MODEL_FORM_CONFIG_BY_PROVIDER.Ollama,
+		},
+		{
+			name: "ollama-embedding-model",
+			display: "Ollama Embedding Model",
+			icon: ollamaLogo,
+			modelBrand: "OLLAMA",
+			embedding: true,
+			link: "https://github.com/ollama/ollama/blob/main/docs/api.md#generate-embeddings",
+			description:
+				"Connect an embedding model served by a reachable Ollama instance, for vector databases and semantic search.",
 		},
 	],
 	Perplexity: [
