@@ -24,8 +24,15 @@ import { InputMessageStore } from "./input-message.store";
 import { ResponseMessageStore } from "./response-message.store";
 
 /**
- * Agent harness types sent to the backend RunAgent reactor. Must stay in sync
- * with AgentHarnessRegistry's static block — resolve() throws
+ * Harness names that shipped with this build.
+ *
+ * This is the compile-time union `harnessType` is typed against, and the
+ * fallback a picker uses when the backend cannot be reached. It is NOT the list
+ * a picker should render: `GetAgentHarnesses` is, via `useAgentHarnesses`, since
+ * a deployment can register its own harness at startup and the backend decides
+ * which are offered (`IAgentHarness.isSelectable`).
+ *
+ * Still must not contain a name AgentHarnessRegistry lacks - resolve() throws
  * IllegalArgumentException on any other nonblank value.
  */
 export const AGENT_HARNESS_TYPES = [

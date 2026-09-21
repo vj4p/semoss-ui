@@ -48,6 +48,7 @@ import { useChat, useGlobalBreadcrumbs, useRoot } from "@/hooks";
 import { RoomStore } from "@/stores";
 import {
 	AGENT_HARNESS_TYPES,
+	type AgentHarnessType,
 	DEFAULT_AGENT_HARNESS_TYPE,
 } from "@/stores/message/agent-harness";
 import type { MCPConfig, Prompt, Workspace } from "@/types";
@@ -85,8 +86,21 @@ const DropHighlight = ({
  *
  * @component
  */
+import { useAgentHarnesses } from "@semoss/shared";
+
+/**
+ * Offered if GetAgentHarnesses cannot be reached. Names only: this app loads the
+ * `room` i18n namespace, so labels resolve from translations.
+ */
+const HARNESS_FALLBACK = AGENT_HARNESS_TYPES.map((name) => ({ name }));
+
 export const NewRoomPage = observer(() => {
 	const { t } = useTranslation(["room", "workspace", "common", "chat"]);
+	// Offered harnesses come from AgentHarnessRegistry via GetAgentHarnesses;
+	// AGENT_HARNESS_TYPES is only the fallback if that call fails.
+	const { harnesses } = useAgentHarnesses({
+		fallback: HARNESS_FALLBACK,
+	});
 	const { root } = useRoot();
 	const { theme: colorMode } = useTheme();
 
@@ -696,7 +710,7 @@ export const NewRoomPage = observer(() => {
 															</DropdownMenuSubTrigger>
 															<DropdownMenuPortal>
 																<DropdownMenuSubContent>
-																	{AGENT_HARNESS_TYPES.map(
+																	{harnesses.map(
 																		(
 																			harness,
 																		) => {
@@ -707,18 +721,18 @@ export const NewRoomPage = observer(() => {
 																					.options
 																					.harnessType ??
 																					DEFAULT_AGENT_HARNESS_TYPE) ===
-																					harness;
+																					harness.name;
 
 																			return (
 																				<DropdownMenuItem
 																					key={
-																						harness
+																						harness.name
 																					}
 																					onSelect={() => {
 																						tempRoomStore.setOptions(
 																							{
 																								harnessType:
-																									harness,
+																									harness.name as AgentHarnessType,
 																							},
 																						);
 																						setMode(
@@ -730,9 +744,9 @@ export const NewRoomPage = observer(() => {
 																					}}
 																				>
 																					<span className="flex-1">
-																						{t(
-																							`room:harness.types.${harness}.label`,
-																						)}
+																						{
+																							harness.label
+																						}
 																					</span>
 																					{isActive ? (
 																						<div className="px-1">

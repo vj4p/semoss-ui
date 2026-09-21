@@ -36,6 +36,60 @@ import { runPixel } from "./base";
  * @returns The submitted run's id, room id, and initial status (always
  * "SUBMITTED") — not a full snapshot.
  */
+/**
+ * One agent harness this instance can run, as `GetAgentHarnesses` returns it.
+ */
+export interface AgentHarnessDescriptor {
+	/** Registry key, and the value `RunAgent` expects as `harnessType`. */
+	name: string;
+	/** Human-readable label for pickers and status lines. */
+	displayName: string;
+	/** One sentence on what the harness is. May be empty. */
+	description: string;
+	/**
+	 * Where the harness gets its tools. `PLATFORM` harnesses use the room's MCP
+	 * toolboxes and capability packs; `HARNESS_NATIVE` ones bring their own, so
+	 * switching changes which tools exist.
+	 */
+	toolSource: "PLATFORM" | "HARNESS_NATIVE" | "UNSPECIFIED";
+	/** Whether the harness accepts current-turn media attachments. */
+	supportsMediaInput: boolean;
+	/**
+	 * Whether a picker should offer it. Registered does not imply offered.
+	 * Optional because a backend predating this field omits it; absent means
+	 * "offer it".
+	 */
+	isSelectable?: boolean;
+	/** True for the harness used when none is requested. */
+	isDefault: boolean;
+}
+
+/**
+ * The harnesses registered on this instance, default first.
+ *
+ * <p>Read from `AgentHarnessRegistry` rather than compiled in, because a
+ * deployment can register its own harness at startup - any list baked into a
+ * frontend is wrong the moment that happens, and it was previously duplicated
+ * across packages that then drifted.
+ *
+ * Callers wanting a picker should filter on `isSelectable`.
+ *
+ * @param insightId - optional insight to run against
+ * @return the registered harnesses; never rejects, see below
+ */
+export const getAgentHarnesses = async (
+	insightId?: string,
+): Promise<AgentHarnessDescriptor[]> => {
+	const response = await runPixel<[AgentHarnessDescriptor[]]>(
+		"GetAgentHarnesses();",
+		insightId,
+	);
+	if (response.errors.length > 0) {
+		throw new Error(response.errors.join(""));
+	}
+	return response.pixelReturn[0].output;
+};
+
 export const runAgent = async (
 	params: {
 		roomId: string;

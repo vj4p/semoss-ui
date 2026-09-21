@@ -3,7 +3,11 @@ import { observer } from "mobx-react-lite";
 import type { MouseEvent } from "react";
 import { useState } from "react";
 import { useTranslation } from "@semoss/i18n";
-import { EngineSelect, type MCPConfig } from "@semoss/shared";
+import {
+	EngineSelect,
+	type MCPConfig,
+	useAgentHarnesses,
+} from "@semoss/shared";
 import {
 	Badge,
 	Button,
@@ -62,6 +66,12 @@ interface RoomOptionsFormProps {
 	harnessEditable?: boolean;
 }
 
+/**
+ * Offered if GetAgentHarnesses cannot be reached. Names only: this app loads the
+ * `room` i18n namespace, so labels resolve from translations.
+ */
+const HARNESS_FALLBACK = AGENT_HARNESS_TYPES.map((name) => ({ name }));
+
 export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 	({
 		model,
@@ -72,6 +82,11 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 		harnessEditable = false,
 	}) => {
 		const { t } = useTranslation(["room", "common"]);
+		// Offered harnesses come from AgentHarnessRegistry via GetAgentHarnesses.
+		// AGENT_HARNESS_TYPES is only the fallback if that call fails.
+		const { harnesses } = useAgentHarnesses({
+			fallback: HARNESS_FALLBACK,
+		});
 		const { root } = useRoot();
 		const { chat } = useChat();
 
@@ -171,14 +186,12 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{AGENT_HARNESS_TYPES.map((type) => (
+											{harnesses.map((harness) => (
 												<SelectItem
-													key={type}
-													value={type}
+													key={harness.name}
+													value={harness.name}
 												>
-													{t(
-														`room:harness.types.${type}.label`,
-													)}
+													{harness.label}
 												</SelectItem>
 											))}
 										</SelectContent>
