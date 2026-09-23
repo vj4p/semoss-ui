@@ -4,11 +4,13 @@
  * <h4>Why this is a projection and not a second state machine</h4>
  *
  * The original plan said `AgentRunItemEvent -> Line[]`, which would have meant
- * re-implementing the event folding the SDK already does. `AgentStore` exposes
- * `applyAgentRunItemEvent`, a pure, idempotent, already-tested reducer that
+ * re-implementing the event folding the SDK already does. The SDK's
+ * `applyAgentRunItemEvent` is a pure, idempotent, already-tested reducer that
  * turns events into `AgentRunItemsState` and correctly handles the two ways
- * text arrives (incremental deltas, or all at once on item.started). So the
- * composition is:
+ * text arrives (incremental deltas, or all at once on item.started). It is
+ * deliberately not public, and does not need to be: `AgentStore.watch` hands
+ * the accumulated state to `onEvent`, and `subscription.getItems()` returns it
+ * on demand. So the composition is:
  *
  *   events --(SDK's applyAgentRunItemEvent)--> AgentRunItemsState --(here)--> Line[]
  *
@@ -17,10 +19,7 @@
  * a bug in event folding has exactly one place to be.
  */
 
-import type {
-	AgentRunItem,
-	AgentRunItemsState,
-} from "../../libs/sdk/src/types";
+import type { AgentRunItem, AgentRunItemsState } from "@semoss/sdk";
 import type { ItemStatus, Line } from "./line";
 
 /** The backend's marker when a tool result hit MAX_LIVE_TOOL_RESULT_CHARS (12,000). */

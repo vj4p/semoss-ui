@@ -1,29 +1,33 @@
 /**
- * Phase 0 spike — does the agent event model actually support a terminal UI?
+ * The transcript projection, and its two renderings.
  *
- * The gate is threefold and all three must hold:
+ * Originally the Phase 0 spike: the throwaway that asked whether the agent event
+ * model could drive a terminal UI at all. It answered yes, so the code it was
+ * testing became `@semoss/agent-core` and the tests came with it. Three things
+ * they hold down:
  *
  *  1. TYPES. The projection compiles against the real `AgentRunItem` union with
  *     a `never` exhaustiveness check, and the fixture compiles as a real
- *     `AgentRunItemEvent[]`. If the model had a shape the console cannot
- *     express, this would not build.
- *  2. COMPOSITION. Folding is the SDK's, not ours. This drives the fixture
- *     through the very reducer `AgentStore.watch` uses internally, so the
- *     console inherits its ordering, dedup and delta handling rather than
- *     reimplementing them.
- *  3. LEGIBILITY. The formatted output has to read like a terminal session.
- *     That is a human judgement, so the spike prints it.
+ *     `AgentRunItemEvent[]`. A fifth item kind added upstream breaks the build
+ *     here rather than silently vanishing from the transcript.
+ *  2. COMPOSITION. Folding is the SDK's, not ours. These drive the fixture
+ *     through the very reducer `AgentStore.watch` uses internally, so any host
+ *     inherits its ordering, dedup and delta handling rather than reimplementing
+ *     them.
+ *  3. ONE MODEL, TWO HOSTS. The same `Line[]` renders to plain text and to ANSI
+ *     with no difference in content. That is the claim SEMOSS Code rests on: a
+ *     CLI is a second renderer, not a second implementation.
  */
 
 import { describe, expect, it } from "vitest";
+import type { AgentRunItemsState } from "@semoss/sdk";
 import {
 	applyAgentRunItemEvent,
 	createAgentRunItemsState,
-} from "../../libs/sdk/src/stores/agent/agent.store";
-import type { AgentRunItemsState } from "../../libs/sdk/src/types";
-import { FIXTURE, PROMPT } from "./fixture";
-import { formatTranscript, stripAnsi } from "./format";
+} from "../../../sdk/src/stores/agent/agent.store";
+import { formatTranscript, stripAnsi } from "../format/ansi";
 import { toTranscript } from "./transcript";
+import { FIXTURE, PROMPT } from "./transcript.fixture";
 
 /**
  * Replay the fixture exactly as `AgentStore.watch` does: sort by `sequence`,
@@ -42,7 +46,7 @@ const foldFixture = (): AgentRunItemsState => {
 	return state;
 };
 
-describe("Phase 0 spike: agent events -> terminal transcript", () => {
+describe("agent items -> terminal transcript", () => {
 	it("folds every item kind the backend emits", () => {
 		const state = foldFixture();
 		const kinds = state.itemOrder.map((id) => state.itemsById[id]?.kind);
@@ -146,7 +150,7 @@ describe("Phase 0 spike: agent events -> terminal transcript", () => {
 		// raw string length, which silently shortened every coloured row.
 		expect(ansi.map(stripAnsi)).toEqual(plain);
 
-		// The judgement call this spike exists to make.
+		// The judgement call: does it read like a terminal session?
 		console.log(`\n${ansi.join("\n")}\n`);
 	});
 

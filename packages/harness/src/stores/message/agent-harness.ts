@@ -1,9 +1,14 @@
 import { runInAction } from "mobx";
+import {
+	DEFAULT_AGENT_HARNESS_TYPE,
+	watchAgentRun as driveAgentRun,
+	getOrCreateAgent,
+	isAgentHarnessType,
+	registerAgent,
+} from "@semoss/agent-core";
 import type {
 	AgentRunItemEvent,
 	AgentRunItemsState,
-	AgentRunSnapshot,
-	AgentRunStatusValue,
 	PendingAgentAction,
 } from "@semoss/sdk";
 import { AgentStore, getSubagentRuns } from "@semoss/sdk";
@@ -23,60 +28,16 @@ import type { ToolStore } from "../tool/tool.store";
 import { InputMessageStore } from "./input-message.store";
 import { ResponseMessageStore } from "./response-message.store";
 
-/**
- * Harness names that shipped with this build.
- *
- * This is the compile-time union `harnessType` is typed against, and the
- * fallback a picker uses when the backend cannot be reached. It is NOT the list
- * a picker should render: `GetAgentHarnesses` is, via `useAgentHarnesses`, since
- * a deployment can register its own harness at startup and the backend decides
- * which are offered (`IAgentHarness.isSelectable`).
- *
- * Still must not contain a name AgentHarnessRegistry lacks - resolve() throws
- * IllegalArgumentException on any other nonblank value.
- */
-export const AGENT_HARNESS_TYPES = [
-	"semoss",
-	"claude_code",
-	"github_copilot_py",
-] as const;
-
-export type AgentHarnessType = (typeof AGENT_HARNESS_TYPES)[number];
-
-/** Mirrors AgentHarnessRegistry.DEFAULT_HARNESS. */
-export const DEFAULT_AGENT_HARNESS_TYPE: AgentHarnessType = "semoss";
-
-export const isAgentHarnessType = (
-	value: string | undefined,
-): value is AgentHarnessType =>
-	!!value && (AGENT_HARNESS_TYPES as readonly string[]).includes(value);
-
-/**
- * Live AgentStores keyed by runId, so a decision made from the tool UI (which
- * only has the pendingAction, not the run's watcher) can poke the SAME
- * instance that's polling it, and reconnectAgentRun never mounts a second,
- * destructive poller on a run runAgentMessage (or an earlier reconnect) is
- * already watching.
- */
-const agentsByRunId = new Map<string, AgentStore>();
-
-/**
- * Get the live AgentStore for a run if one is already being watched,
- * otherwise create (and register) a fresh, not-yet-watched one.
- */
-const getOrCreateAgent = (
-	roomId: string,
-	insightId: string,
-	runId: string,
-): AgentStore => {
-	const existing = agentsByRunId.get(runId);
-	if (existing) {
-		return existing;
-	}
-	const agent = new AgentStore(roomId, insightId, runId);
-	agentsByRunId.set(runId, agent);
-	return agent;
-};
+// The harness-type union, the run registry and the watch-to-terminal driver now
+// live in @semoss/agent-core, because SEMOSS Code needs the same three and a
+// second copy of "which statuses end a run" is exactly the kind of thing that
+// drifts. Re-exported so this app's existing import paths keep working.
+export {
+	AGENT_HARNESS_TYPES,
+	type AgentHarnessType,
+	DEFAULT_AGENT_HARNESS_TYPE,
+	isAgentHarnessType,
+} from "@semoss/agent-core";
 
 /**
  * QUEUED and INPUT_REQUIRED have no branch — they leave the tool at
@@ -422,80 +383,47 @@ const watchAgentRun = (
 	responseMessage: ResponseMessageStore,
 	inputMessage: InputMessageStore | null,
 ): Promise<void> =>
-	new Promise<void>((resolve, reject) => {
-		const settleTerminal = (snapshot: AgentRunSnapshot) => {
-			const status: AgentRunStatusValue = snapshot.status;
-			if (
-				status !== "COMPLETED" &&
-				status !== "FAILED" &&
-				status !== "CANCELLED"
-			) {
-				return;
-			}
-			agent.stop();
-			if (status !== "COMPLETED") {
-				reject(
-					new Error(
-						snapshot.errorMessage ||
-							`The agent run did not complete: ${status}`,
-					),
+	driveAgentRun(agent, {
+		onEvent: (event, items) => {
+			runInAction(() => {
+				applyAgentRunItem(responseMessage, event, items);
+			});
+		},
+		onSnapshot: (snapshot) => {
+			runInAction(() => {
+				syncPendingActions(responseMessage, snapshot.pendingActions);
+			});
+		},
+		onReconcile: (snapshot) => {
+			runInAction(() => {
+				if (inputMessage && snapshot.inputMessageId) {
+					inputMessage.id = snapshot.inputMessageId;
+				}
+				if (snapshot.finalOutputMessageId) {
+					responseMessage.id = snapshot.finalOutputMessageId;
+				}
+
+				// if nothing streamed as visible text, fall back to finalText
+				const hasStreamedText = responseMessage.parts.some(
+					(part) => part.type === "TEXT" && part.text,
 				);
-				return;
-			}
-			resolve();
-		};
+				if (!hasStreamedText && snapshot.finalText) {
+					responseMessage.savePart({
+						type: "TEXT",
+						text: snapshot.finalText,
+						uiText: snapshot.finalText,
+					});
+				}
 
-		agent.watch({
-			onEvent: (event, items) => {
-				runInAction(() => {
-					applyAgentRunItem(responseMessage, event, items);
-				});
-			},
-			onSnapshot: (snapshot) => {
-				runInAction(() => {
-					syncPendingActions(
-						responseMessage,
-						snapshot.pendingActions,
-					);
-				});
-			},
-			onReconcile: (snapshot) => {
-				runInAction(() => {
-					if (inputMessage && snapshot.inputMessageId) {
-						inputMessage.id = snapshot.inputMessageId;
-					}
-					if (snapshot.finalOutputMessageId) {
-						responseMessage.id = snapshot.finalOutputMessageId;
-					}
-
-					// if nothing streamed as visible text, fall back to finalText
-					const hasStreamedText = responseMessage.parts.some(
-						(part) => part.type === "TEXT" && part.text,
-					);
-					if (!hasStreamedText && snapshot.finalText) {
-						responseMessage.savePart({
-							type: "TEXT",
-							text: snapshot.finalText,
-							uiText: snapshot.finalText,
-						});
-					}
-
-					syncPendingActions(
-						responseMessage,
-						snapshot.pendingActions,
-					);
-				});
-				settleTerminal(snapshot);
-			},
-			onError: (e) => {
-				console.error("Agent run stream error", e);
-			},
-		});
-	}).finally(() => {
-		if (agentsByRunId.get(agent.runId) === agent) {
-			agentsByRunId.delete(agent.runId);
-		}
-	});
+				syncPendingActions(responseMessage, snapshot.pendingActions);
+			});
+		},
+		onError: (e) => {
+			console.error("Agent run stream error", e);
+		},
+		// driveAgentRun resolves with the terminal snapshot; every caller here
+		// only cares that the run ended, so it is discarded.
+	}).then(() => undefined);
 
 /**
  * Run a user message through the server-side agent harness (RunAgent).
@@ -585,7 +513,7 @@ export const runAgentMessage = async (
 			},
 			room.insightId,
 		);
-		agentsByRunId.set(handle.runId, handle);
+		registerAgent(handle);
 		room.setActiveAgentRunId(handle.runId);
 
 		await watchAgentRun(handle, responseMessage, inputMessage);

@@ -25,9 +25,16 @@
  *   completed, and started + completed in one shot with the full text
  *   (`completeActiveMessage` when there was no active streaming message).
  * - the truncation suffix is `AgentStreamItems.truncate`'s literal marker.
+ *
+ * <h4>What this does not establish</h4>
+ *
+ * That a live backend populates these fields the way the code reads them. The
+ * shapes come from the producer, so a mismatch would be a bug in the producer
+ * rather than here — but nothing below has been round-tripped against a running
+ * server. Worth capturing one real run once there is a host to drive it from.
  */
 
-import type { AgentRunItemEvent } from "../../libs/sdk/src/types";
+import type { AgentRunItemEvent } from "@semoss/sdk";
 
 const RUN = "run-7f3c91";
 const T = "2026-09-21T14:22:08.114Z";

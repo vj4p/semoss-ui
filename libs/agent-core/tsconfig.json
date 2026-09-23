@@ -1,0 +1,34 @@
+{
+	"compilerOptions": {
+		/* "dom" is here reluctantly. Nothing in this library may reach for
+		   window, document or fetch — but @semoss/sdk is consumed at source and
+		   legitimately does, so omitting the lib reports 49 errors in the SDK's
+		   own files and none in ours. The rule is enforced at runtime instead:
+		   the suite runs with environment "node", so lib code that touched the
+		   DOM would throw rather than quietly work in a browser and fail in a
+		   CLI. */
+		"lib": ["ES2022", "dom"],
+		"target": "es6",
+
+		/* Modules */
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"allowSyntheticDefaultImports": true,
+
+		/* Skip */
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+
+		/* Strict on purpose, unlike libs/shared. This code is new, so there is
+		   no legacy to grandfather in, and it is consumed by packages that do
+		   typecheck strictly. */
+		"strict": true,
+
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["src"],
+	"exclude": ["dist", "node_modules"]
+}

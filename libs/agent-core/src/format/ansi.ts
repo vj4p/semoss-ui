@@ -1,17 +1,17 @@
 /**
  * Render a transcript to a terminal.
  *
- * This is the CLI host's whole presentation layer, and it exists in the spike
- * to prove the claim the architecture rests on: that `Line[]` is renderable
- * twice from one projection. If this file needs a field the browser host would
- * not want, or vice versa, then `Line` is leaking presentation and the CLI
- * really would be a rewrite.
+ * This is the CLI host's whole presentation layer, and it doubles as the proof
+ * of the claim the architecture rests on: that `Line[]` is renderable twice from
+ * one projection. If this file needs a field the browser host would not want, or
+ * vice versa, then `Line` is leaking presentation and the CLI really would be a
+ * rewrite.
  *
  * It is also the honest preview. A screenshot of a monospace React component
  * would only prove CSS; plain ANSI on a real terminal is the thing itself.
  */
 
-import { type Emphasis, type Line, STATUS_GLYPH } from "./line";
+import { type Emphasis, type Line, STATUS_GLYPH } from "../transcript/line";
 
 /** The browser host maps Emphasis to Tailwind tokens; here it is SGR codes. */
 const SGR: Record<Emphasis, string> = {
@@ -65,8 +65,8 @@ export const stripAnsi = (text: string): string => text.replace(ANSI_SGR, "");
  * Alignment MUST be computed on this and never on `String.length`. An SGR
  * sequence is 4-5 invisible characters, so padding by raw length shortens every
  * coloured row by exactly as much colour as it carries - which makes the status
- * column wander, and makes the coloured and plain renders disagree. The spike's
- * strip-and-compare assertion exists to catch precisely this.
+ * column wander, and makes the coloured and plain renders disagree. That bug was
+ * real, and `expect(ansi.map(stripAnsi)).toEqual(plain)` is what caught it.
  */
 const visibleWidth = (text: string): number => stripAnsi(text).length;
 

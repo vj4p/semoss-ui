@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@lexical/react": "^0.39.0",
+		"@semoss/agent-core": "workspace:*",
 		"@semoss/i18n": "workspace:*",
 		"@semoss/panels": "workspace:*",
 		"@semoss/sdk": "workspace:*",
