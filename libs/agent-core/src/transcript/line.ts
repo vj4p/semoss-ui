@@ -6,8 +6,8 @@
  * names or JSX here is what would make the CLI a rewrite rather than a second
  * host, so nothing in this file may reference React, the DOM, or a colour.
  *
- * Revised against the real SDK types and the backend emitter — see NOTES.md for
- * the four places the original design sketch was wrong.
+ * Revised against the real SDK types and the backend emitter, which the
+ * original design sketch had wrong in four places. Each variant says where.
  */
 
 /**
@@ -53,7 +53,11 @@ export type Line =
 	| { kind: "reasoning"; text: string; collapsed: boolean }
 	| {
 			kind: "tool";
-			/** Display name: `title` when the backend resolved one, else `name`. */
+			/**
+			 * Display name: `title` when the backend resolved one, else the tool's
+			 * own name from `metadata.SMSS_ORIGINAL_TOOL_NAME`, else `name`. See
+			 * `toolLabel`.
+			 */
 			label: string;
 			status: ItemStatus;
 			/** One-line argument digest, for the `⏵ Bash  git log --oneline` idiom. */
@@ -85,6 +89,12 @@ export type Line =
 	  }
 	/** A structural marker: harness switch, a gap, end of run. */
 	| { kind: "divider"; label?: string; emphasis?: Emphasis };
+
+/** A line of one run of text, the shape most of what a console says takes. */
+export const textLine = (text: string, emphasis?: Emphasis): Line => ({
+	kind: "text",
+	segments: [emphasis === undefined ? { text } : { text, emphasis }],
+});
 
 /**
  * Status glyphs, in the terminal tradition of one column carrying state.

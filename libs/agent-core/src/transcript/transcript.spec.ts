@@ -20,13 +20,13 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { AgentRunItemsState } from "@semoss/sdk";
+import type { AgentRunItem, AgentRunItemsState } from "@semoss/sdk";
 import {
 	applyAgentRunItemEvent,
 	createAgentRunItemsState,
 } from "../../../sdk/src/stores/agent/agent.store";
 import { formatTranscript, stripAnsi } from "../format/ansi";
-import { toTranscript } from "./transcript";
+import { lineForItem, toTranscript } from "./transcript";
 import { FIXTURE, PROMPT } from "./transcript.fixture";
 
 /**
@@ -126,11 +126,22 @@ describe("agent items -> terminal transcript", () => {
 		const lines = toTranscript(foldFixture(), { droppedEvents: 37 });
 		expect(lines.at(-1)).toMatchObject({
 			kind: "divider",
-			label: "37 earlier events dropped from the live feed",
+			label: "Earlier events were dropped from the live feed (37).",
 		});
 		expect(
 			toTranscript(foldFixture(), { droppedEvents: 0 }).at(-1)?.kind,
 		).not.toBe("divider");
+	});
+
+	it("asks the host to translate the dropped-events label", () => {
+		const lines = toTranscript(foldFixture(), {
+			droppedEvents: 3,
+			translate: (key, params) => `${key}|${params?.n}`,
+		});
+		expect(lines.at(-1)).toMatchObject({
+			kind: "divider",
+			label: "transcript.droppedEvents|3",
+		});
 	});
 
 	it("renders the same transcript twice: plain text and ANSI", () => {
@@ -164,5 +175,55 @@ describe("agent items -> terminal transcript", () => {
 			colour: false,
 		});
 		expect(a).toEqual(b);
+	});
+});
+
+describe("lineForItem", () => {
+	const tool = (
+		extra: Partial<Extract<AgentRunItem, { kind: "tool" }>>,
+	): AgentRunItem => ({
+		id: "call-1",
+		kind: "tool",
+		name: "a1f3c9e2_WebSearch",
+		arguments: {},
+		status: "RUNNING",
+		...extra,
+	});
+
+	const label = (item: AgentRunItem) =>
+		(lineForItem(item) as { label?: string }).label;
+
+	it("names a room MCP tool by its own name, not the routing alias", () => {
+		expect(
+			label(tool({ metadata: { SMSS_ORIGINAL_TOOL_NAME: "WebSearch" } })),
+		).toBe("WebSearch");
+	});
+
+	it("prefers a resolved title, and falls back to the raw name", () => {
+		expect(
+			label(
+				tool({
+					title: "Web search",
+					metadata: { SMSS_ORIGINAL_TOOL_NAME: "WebSearch" },
+				}),
+			),
+		).toBe("Web search");
+		expect(
+			label(tool({ metadata: { SMSS_ORIGINAL_TOOL_NAME: " " } })),
+		).toBe("a1f3c9e2_WebSearch");
+	});
+
+	it("draws a placeholder for an item kind newer than this build", () => {
+		// The compiler rules this out; a newer backend does not.
+		const future = { id: "x", kind: "hologram" } as unknown as AgentRunItem;
+		expect(lineForItem(future)).toEqual({
+			kind: "text",
+			segments: [
+				{
+					text: "This item cannot be shown here (hologram).",
+					emphasis: "dim",
+				},
+			],
+		});
 	});
 });

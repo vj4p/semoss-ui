@@ -20,6 +20,7 @@
  */
 
 import type { AgentRunItem, AgentRunItemsState } from "@semoss/sdk";
+import { type Translate, translateEnglish } from "../i18n/messages";
 import type { ItemStatus, Line } from "./line";
 
 /** The backend's marker when a tool result hit MAX_LIVE_TOOL_RESULT_CHARS (12,000). */
@@ -96,14 +97,42 @@ const subagentLabel = (item: Extract<AgentRunItem, { kind: "subagent" }>) =>
 	item.alias ?? `subagent ${item.childRunId.slice(0, 8)}`;
 
 /**
+ * The name to show for a tool call.
+ *
+ * `name` alone is not it. A room's MCP tools reach the model renamed to
+ * `a<engine-id>_<tool>` so two engines' tools cannot collide, and the backend
+ * records the tool's own name in `metadata.SMSS_ORIGINAL_TOOL_NAME`. The
+ * fallback order is the one the SDK documents on `title`, and the one the
+ * harness's `ToolStore.displayName` uses.
+ */
+export const toolLabel = (item: Extract<AgentRunItem, { kind: "tool" }>) => {
+	const original = item.metadata?.SMSS_ORIGINAL_TOOL_NAME;
+	return (
+		item.title ||
+		(typeof original === "string" && original.trim() !== ""
+			? original
+			: "") ||
+		item.name
+	);
+};
+
+/**
  * Turn one item into its transcript line.
  *
  * The `never` branch is the point of the exercise: this switch is exhaustive
- * over the real `AgentRunItem` union, so if the backend ever adds a fifth item
+ * over the real `AgentRunItem` union, so if the SDK's union gains a fifth item
  * kind, this stops compiling instead of silently dropping it from the
  * transcript.
+ *
+ * At run time the branch can still be reached, by a backend newer than this
+ * build. It draws a placeholder rather than throwing, for the reason the
+ * missing-entry skip below gives: losing one line beats blanking the
+ * transcript.
  */
-const lineForItem = (item: AgentRunItem): Line => {
+export const lineForItem = (
+	item: AgentRunItem,
+	translate: Translate = translateEnglish,
+): Line => {
 	switch (item.kind) {
 		case "message":
 			return { kind: "text", segments: [{ text: item.text }] };
@@ -117,7 +146,7 @@ const lineForItem = (item: AgentRunItem): Line => {
 			const output = item.output;
 			return {
 				kind: "tool",
-				label: item.title ?? item.name,
+				label: toolLabel(item),
 				status: item.status satisfies ItemStatus,
 				detail: digestArguments(item.arguments),
 				durationMs: item.durationMs,
@@ -138,10 +167,18 @@ const lineForItem = (item: AgentRunItem): Line => {
 			};
 
 		default: {
-			const unreachable: never = item;
-			throw new Error(
-				`unhandled agent item kind: ${JSON.stringify(unreachable)}`,
-			);
+			const unknown: never = item;
+			return {
+				kind: "text",
+				segments: [
+					{
+						text: translate("transcript.unknownItem", {
+							kind: String((unknown as { kind?: unknown }).kind),
+						}),
+						emphasis: "dim",
+					},
+				],
+			};
 		}
 	}
 };
@@ -152,14 +189,24 @@ const lineForItem = (item: AgentRunItem): Line => {
  * @param state    the SDK's accumulated items-state for one run
  * @param options.prompt        the human's input, which the stream never
  *                              carries (see the `prompt` Line variant)
- * @param options.droppedEvents `meta.droppedEvents` from the last poll
+ * @param options.droppedEvents how many events the backend evicted before
+ *                              this client drained them. `meta.droppedEvents`
+ *                              counts one drain only, so a host must pass the
+ *                              total it has accumulated across polls
+ * @param options.translate     the host's translation of the lines this
+ *                              projection writes itself; English when omitted
  * @return the transcript, append-only and safe to re-render from scratch
  */
 export const toTranscript = (
 	state: AgentRunItemsState,
-	options: { prompt?: string; droppedEvents?: number } = {},
+	options: {
+		prompt?: string;
+		droppedEvents?: number;
+		translate?: Translate;
+	} = {},
 ): Line[] => {
 	const lines: Line[] = [];
+	const translate = options.translate ?? translateEnglish;
 
 	if (options.prompt !== undefined) {
 		lines.push({ kind: "prompt", text: options.prompt });
@@ -172,7 +219,7 @@ export const toTranscript = (
 		// can reach. Skip rather than throw: losing one line beats blanking the
 		// whole transcript.
 		if (item !== undefined) {
-			lines.push(lineForItem(item));
+			lines.push(lineForItem(item, translate));
 		}
 	}
 
@@ -184,7 +231,9 @@ export const toTranscript = (
 	if (options.droppedEvents !== undefined && options.droppedEvents > 0) {
 		lines.push({
 			kind: "divider",
-			label: `${options.droppedEvents} earlier events dropped from the live feed`,
+			label: translate("transcript.droppedEvents", {
+				n: options.droppedEvents,
+			}),
 			emphasis: "error",
 		});
 	}
