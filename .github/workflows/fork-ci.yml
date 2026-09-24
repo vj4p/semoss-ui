@@ -1,0 +1,94 @@
+# CI for this fork of semoss-ui. Upstream's ci-pnpm-maven.yml cannot run here: it
+# targets SEMOSS's own CodeBuild runner and needs SEMOSS secrets, so it is
+# disabled on the fork. This workflow builds and tests what the fork adds, on a
+# GitHub-hosted runner: @semoss/agent-core, @semoss/code, and @semoss/harness,
+# which consumes agent-core. The job runs only in a fork, so it stays inert if
+# this file ever reaches the upstream repository.
+name: Fork CI
+
+on:
+    push:
+        branches:
+            - dev
+            - main
+    pull_request:
+        branches:
+            - dev
+            - main
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: fork-ci-${{ github.ref }}
+    cancel-in-progress: true
+
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    build_and_test:
+        if: ${{ github.event.repository.fork }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install workspace dependencies
+              run: pnpm install --frozen-lockfile --ignore-scripts
+
+            - name: Check formatting and lint
+              run: pnpm exec biome ci libs/agent-core packages/code
+
+            - name: Build code and harness, and the libraries they use
+              run: pnpm exec turbo run build --filter=@semoss/code --filter=@semoss/harness
+
+            - name: Type-check agent-core
+              run: pnpm --filter @semoss/agent-core type-check
+
+            - name: Type-check code
+              working-directory: packages/code
+              # libs/shared is consumed as source, so its upstream type errors
+              # are reported here too. Only errors outside it fail the job.
+              run: |
+                  set +e
+                  pnpm exec tsc --noEmit --pretty false > "$RUNNER_TEMP/code-tsc.txt" 2>&1
+                  status=$?
+                  set -e
+                  # Match libs/shared in the file path only: a message can name a
+                  # libs/shared type while the error itself is in this package.
+                  in_shared='^[^ (]*libs/shared/[^ (]*\([0-9]+,[0-9]+\): error TS'
+                  ours=$(grep -E 'error TS[0-9]+' "$RUNNER_TEMP/code-tsc.txt" | grep -vE "$in_shared" || true)
+                  shared=$(grep -cE "$in_shared" "$RUNNER_TEMP/code-tsc.txt" || true)
+                  if [ -n "$ours" ]; then
+                      echo "$ours"
+                      echo "::error::tsc reports type errors outside libs/shared"
+                      exit 1
+                  fi
+                  if [ "$status" -ne 0 ] && [ "$shared" -eq 0 ]; then
+                      cat "$RUNNER_TEMP/code-tsc.txt"
+                      echo "::error::tsc failed without reporting a type error"
+                      exit 1
+                  fi
+                  echo "No type errors outside libs/shared; libs/shared has $shared."
+
+            - name: Test agent-core
+              run: pnpm --filter @semoss/agent-core test
+
+            - name: Test code
+              run: pnpm --filter @semoss/code test
+
+            - name: Test harness
+              run: pnpm --filter @semoss/harness test
