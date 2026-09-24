@@ -20,6 +20,9 @@ Libraries (`libs/*`, publishable):
 - `@semoss/workbench` → Multi-panel dock shell (depends on ui only — deliberately
   domain-agnostic, so it can never import sdk, shared or i18n)
 - `@semoss/panels` → File panels for the dock (depends on i18n, sdk, shared, ui, workbench)
+- `@semoss/agent-core` → Agent session core for SEMOSS Code: run watching, transcript
+  lines, commands, keymap, input history (depends on sdk only — no React and no DOM, so
+  that a CLI host can drive the same session)
 
 The dock and the panels are two layers, in one direction:
 `@semoss/ui ← @semoss/workbench ← @semoss/panels → @semoss/shared → @semoss/sdk`.
@@ -29,6 +32,8 @@ Applications (`packages/*`, not published):
 - `@semoss/playground` → Chat (depends on i18n, panels, sdk, shared, ui, workbench)
 - `@semoss/terminal` → Embedded terminal (depends on i18n, panels, sdk, shared, ui, workbench)
 - `@semoss/auditlog-package` → Audit log dashboard (depends on i18n, sdk, shared, ui)
+- `@semoss/code` → SEMOSS Code, the terminal-style agent console (depends on agent-core,
+  i18n, sdk, shared, ui)
 - `@semoss/cli` → CLI tooling (depends on sdk)
 
 **Every host that mounts a dock or a file panel** imports
@@ -47,12 +52,14 @@ semoss/
 │   ├── shared/     # @semoss/shared - Shared utilities
 │   ├── renderer/   # @semoss/renderer - Visualization components
 │   ├── workbench/  # @semoss/workbench - Multi-panel dock shell
-│   └── panels/     # @semoss/panels - File panels for the dock
+│   ├── panels/     # @semoss/panels - File panels for the dock
+│   └── agent-core/ # @semoss/agent-core - Agent session core (SEMOSS Code)
 ├── packages/       # Applications (not published)
 │   ├── client/                     # @semoss/client - Main web application
 │   ├── playground/                 # @semoss/playground - Chat
 │   ├── terminal/                   # @semoss/terminal - Embedded terminal app
 │   ├── auditlog/                   # @semoss/auditlog-package - Audit log dashboard
+│   ├── code/                       # @semoss/code - SEMOSS Code, terminal-style agent console
 │   ├── browser-automation/         # @semoss/browser-automation - Browser automation harness
 │   ├── chrome-extension/           # Chrome extension for browser automation
 │   ├── vscode-extension/           # semoss-vscode - VSCode extension
@@ -341,5 +348,6 @@ pnpm test           # Verify tests pass
 - [packages/playground/AGENTS.md](./packages/playground/AGENTS.md) - Playground (chat) app specifics
 - [packages/terminal/AGENTS.md](./packages/terminal/AGENTS.md) - Embedded terminal app specifics
 - [packages/auditlog/AGENTS.md](./packages/auditlog/AGENTS.md) - Audit log dashboard app specifics
+- [packages/code/AGENTS.md](./packages/code/AGENTS.md) - SEMOSS Code console specifics
 - [packages/browser-automation/AGENTS.md](./packages/browser-automation/AGENTS.md) - Browser automation harness specifics
 - [packages/cli/AGENTS.md](./packages/cli/AGENTS.md) - CLI tooling specifics

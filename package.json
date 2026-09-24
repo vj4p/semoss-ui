@@ -9,6 +9,7 @@
     "dev:playground": "turbo run dev --filter=@semoss/playground...",
     "dev:terminal": "turbo run dev --filter=@semoss/terminal...",
     "dev:harness": "turbo run dev --filter=@semoss/harness...",
+    "dev:code": "turbo run dev --filter=@semoss/code...",
     "build": "turbo run build",
     "build:dev": "turbo run build:dev",
     "test": "turbo run test",
