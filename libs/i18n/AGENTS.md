@@ -16,7 +16,7 @@ This document provides context for AI coding assistants working with the SEMOSS 
 Languages are **loaded lazily, one per language at a time** — the locale JSON is **not** bundled into the app's main chunk. This keeps first paint light and means adding languages/namespaces never grows the initial bundle.
 
 How it works:
-- Each app exports a `LazyResources` config (`resources/client.ts`, `resources/playground.ts`, `resources/terminal.ts`) — a map of `namespace → (language) => import("./locales/${language}/.../ns.json")`. There are **no static `import x from "./locales/..."` lines** anymore.
+- Each app exports a `LazyResources` config (`resources/client.ts`, `resources/playground.ts`, `resources/terminal.ts`, `resources/auditlog.ts`, `resources/code.ts`) — a map of `namespace → (language) => import("./locales/${language}/.../ns.json")`. There are **no static `import x from "./locales/..."` lines** anymore.
 - `builder.ts` registers a tiny i18next **backend** that calls those loaders on demand — at init for the active language, and again on `i18n.changeLanguage()`.
 - Each app's `vite.config.ts` has a `manualChunks` rule that groups every file under `locales/<lng>/` into a single `locale-<lng>` chunk, so loading/switching a language is **one request**.
 - Apps `await i18nBuilder.ready` in `main.tsx` before the first render so the active language is present (no flash of raw keys).
@@ -51,20 +51,25 @@ libs/i18n/
         ├── playground.ts              # Playground lazy loader map
         ├── terminal.ts                # Terminal lazy loader map
         ├── client.ts                  # Client lazy loader map
+        ├── auditlog.ts                # Audit log lazy loader map
+        ├── code.ts                    # SEMOSS Code lazy loader map
         └── locales/
             ├── en/                    # English translations
             │   ├── common.json        # Core: buttons, labels, actions
             │   ├── validation.json    # Core: form validations
             │   ├── notifications.json # Core: notification templates
-            │   └── playground/        # Playground-specific
-            │       ├── chat.json
-            │       ├── room.json
-            │       ├── sidebar.json
-            │       ├── knowledge.json
-            │       ├── workspace.json
-            │       └── mcp.json
+            │   ├── playground/        # Playground-specific
+            │   │   ├── chat.json
+            │   │   ├── room.json
+            │   │   ├── sidebar.json
+            │   │   ├── knowledge.json
+            │   │   ├── workspace.json
+            │   │   └── mcp.json
+            │   └── code/              # SEMOSS Code
+            │       └── code.json
             ├── es/                    # Spanish (same structure)
             ├── fr/                    # French (same structure)
+            ├── nl/                    # Dutch (same structure)
             ├── hi/                    # Hindi (same structure)
             ├── ar/                    # Arabic (same structure)
             └── ja/                    # Japanese (same structure)
@@ -81,6 +86,11 @@ Each package consumes translations differently:
 
 - **Client**: Will use `clientResources` (template ready)
   - Includes: core + client-specific namespaces (to be added)
+
+- **SEMOSS Code**: Uses `codeResources`
+  - Includes: core + the single `code` namespace (`code/code.json`)
+  - The words the `@semoss/agent-core` session writes into the transcript live under `code:core.*`. Their English source of truth is `libs/agent-core/src/i18n/messages.ts`; a parity test in `packages/code` checks every language against it (keys, placeholders, command tokens, and each language's CLDR plural forms)
+  - In Arabic, command tokens (`:help`, `:{{name}}`, `{{usage}}`) are wrapped in U+2066/U+2069 bidi isolates so a right-to-left line does not render `:help` as `help:`. Keep them when editing; the parity test fails without them
 
 ### Translation Namespaces
 
@@ -228,7 +238,7 @@ The `README.md` is the source of truth for developers. Keep it accurate.
 ### Be Cautious With
 
 - **`builder.ts`** - The dynamic-import backend + i18next setup affects all packages
-- **`playground.ts` / `terminal.ts` / `client.ts`** - Lazy loader maps for specific packages
+- **`playground.ts` / `terminal.ts` / `client.ts` / `auditlog.ts` / `code.ts`** - Lazy loader maps for specific packages
 - **`index.ts`** - Main export file, affects all consumers
 - **`vite.config.ts` `manualChunks`** - The `locale-<lng>` grouping lives in each app's config
 - **File/directory renames** - Must update the `load` paths in the package loader maps
@@ -239,6 +249,7 @@ The `README.md` is the source of truth for developers. Keep it accurate.
    - Used in multiple packages? → Add to `locales/*/common.json` (core)
    - Playground-specific? → Add to `locales/*/playground/*.json`
    - Client-specific? → Create `locales/*/client/*.json` and update `client.ts`
+   - SEMOSS Code? → Add to `locales/*/code/code.json` (words from `@semoss/agent-core` go under `core.*`, mirroring its `messages.ts`)
 
 2. **Add to all languages**:
    - `locales/en/...` - English (original)

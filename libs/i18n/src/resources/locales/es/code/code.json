@@ -1,0 +1,145 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "Cargando SEMOSS Code…",
+	"error": {
+		"title": "Algo salió mal",
+		"description": "SEMOSS Code encontró un error del que no pudo recuperarse. Recargar la página suele solucionarlo.",
+		"reload": "Recargar"
+	},
+	"catalog": {
+		"loading": "Cargando los arneses y los modelos…",
+		"failed": "No se pudieron cargar los modelos",
+		"retry": "Reintentar"
+	},
+	"room": {
+		"opening": "Abriendo la sala…",
+		"openFailed": "No se pudo abrir la sala",
+		"startNew": "Empezar una sala nueva"
+	},
+	"transcript": {
+		"label": "Transcripción",
+		"firstRun": "Escribe una indicación y pulsa Enter para ejecutar el agente. Escribe :help para ver los comandos y las teclas."
+	},
+	"line": {
+		"tool": "Herramienta",
+		"subagent": "Subagente",
+		"reasoning": "Razonamiento",
+		"outputLines_one": "{{count}} línea de salida",
+		"outputLines_many": "{{count}} de líneas de salida",
+		"outputLines_other": "{{count}} líneas de salida",
+		"truncated": "truncada"
+	},
+	"itemStatus": {
+		"QUEUED": "en cola",
+		"SUBMITTED": "enviado",
+		"RUNNING": "en ejecución",
+		"INPUT_REQUIRED": "esperando tu respuesta",
+		"COMPLETED": "completado",
+		"FAILED": "fallido",
+		"REJECTED": "rechazado",
+		"CANCELLED": "cancelado"
+	},
+	"status": {
+		"room": "Sala",
+		"newRoom": "sala nueva",
+		"harness": "Arnés",
+		"model": "Modelo",
+		"none": "ninguno",
+		"ready": "listo",
+		"starting": "iniciando",
+		"running": "en ejecución",
+		"waiting": "esperando tu respuesta",
+		"stopping": "deteniendo"
+	},
+	"input": {
+		"label": "Indicación o comando",
+		"placeholder": "Escribe una indicación, o :help"
+	},
+	"action": {
+		"send": "Enviar",
+		"stop": "Detener",
+		"approve": "Aprobar",
+		"deny": "Denegar"
+	},
+	"question": {
+		"invalid": "El agente hizo una pregunta que esta consola no puede mostrar. Descártala para que la ejecución continúe.",
+		"dismiss": "Descartar"
+	},
+	"announce": {
+		"completed": "La ejecución terminó."
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "Se descartaron eventos anteriores del flujo en directo ({{n}}).",
+			"unknownItem": "Este elemento no se puede mostrar aquí ({{kind}})."
+		},
+		"run": {
+			"failed": "La ejecución falló: {{message}}",
+			"failedUnknown": "La ejecución falló. El servidor no indicó el motivo.",
+			"cancelled": "Ejecución cancelada.",
+			"lost": "Se perdió el contacto con esta ejecución. Es posible que siga en curso en el servidor.",
+			"startFailed": "No se pudo iniciar la ejecución: {{message}}",
+			"awaitingApproval": "{{tool}} está esperando aprobación.",
+			"approvalHint": "Escribe :approve para permitirla o :deny para rechazarla.",
+			"awaitingAnswer": "El agente espera tu respuesta.",
+			"stopping": "Deteniendo…",
+			"reconnecting": "No se puede conectar con el servidor. Reintentando… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "arnés → {{name}}",
+			"modelChanged": "modelo → {{name}}",
+			"busy": "Hay una ejecución en curso. Espera a que termine o escribe :stop.",
+			"noModel": "No hay ningún modelo disponible. Un modelo aparece aquí cuando tiene la etiqueta text-generation.",
+			"noHarness": "No hay ningún arnés de agente disponible.",
+			"unknownHarness": "No hay ningún arnés llamado \"{{name}}\". Escribe :harness para ver la lista.",
+			"unknownModel": "No hay ningún modelo llamado \"{{name}}\". Escribe :model para ver la lista.",
+			"harnessList": "Arneses",
+			"modelList": "Modelos",
+			"current": "actual",
+			"switchHarnessHint": "Escribe :harness seguido de un nombre para cambiar.",
+			"switchModelHint": "Escribe :model seguido de un nombre o un id para cambiar.",
+			"nothingRunning": "No hay nada en ejecución.",
+			"stopFailed": "No se pudo detener la ejecución: {{message}}",
+			"nothingPending": "No hay nada esperando aprobación.",
+			"answerInForm": "El agente hizo una pregunta. Respóndela en el formulario o escribe :deny para descartarla.",
+			"approved": "Aprobado: {{tool}}.",
+			"denied": "Denegado: {{tool}}.",
+			"decisionFailed": "No se pudo enviar la decisión: {{message}}",
+			"saveFailed": "No se pudo guardar la configuración de la sala: {{message}}",
+			"newRoom": "Sala nueva. Se guarda cuando envías la primera indicación.",
+			"nothingToExport": "Todavía no hay ninguna ejecución que exportar.",
+			"exported": "Se exportaron los eventos de la ejecución {{runId}}."
+		},
+		"command": {
+			"unknown": "Comando desconocido :{{name}}. Escribe :help para ver los comandos.",
+			"didYouMean": "Comando desconocido :{{name}}. ¿Quisiste decir :{{suggestion}}?",
+			"missingName": "Escribe el nombre de un comando después de los dos puntos, o :help para ver los comandos.",
+			"usage": "Uso: {{usage}}",
+			"failed": ":{{name}} falló: {{message}}",
+			"help": "Mostrar los comandos y las teclas",
+			"harness": "Mostrar los arneses o cambiar a uno",
+			"model": "Mostrar los modelos o cambiar a uno",
+			"new": "Empezar una sala nueva",
+			"stop": "Detener el agente en ejecución",
+			"clear": "Limpiar la pantalla (la sala conserva su historial)",
+			"approve": "Permitir la llamada a herramienta en espera",
+			"deny": "Rechazar la llamada a herramienta en espera",
+			"export": "Guardar los eventos sin procesar de la última ejecución como JSON"
+		},
+		"help": {
+			"commands": "Comandos",
+			"keys": "Teclas",
+			"literalColon": "Para enviar una indicación que empiece con dos puntos, escribe los dos puntos dos veces."
+		},
+		"key": {
+			"submit": "Enviar la indicación",
+			"newline": "Nueva línea",
+			"historyPrev": "Indicación anterior",
+			"historyNext": "Indicación siguiente",
+			"interrupt": "Detener el agente en ejecución",
+			"clearInput": "Borrar la entrada",
+			"clearViewport": "Limpiar la pantalla",
+			"cycleHarness": "Siguiente arnés"
+		}
+	}
+}

@@ -1,0 +1,148 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "جارٍ تحميل SEMOSS Code…",
+	"error": {
+		"title": "حدث خطأ ما",
+		"description": "واجه SEMOSS Code خطأً تعذّر عليه التعافي منه. عادةً ما تحل إعادة تحميل الصفحة المشكلة.",
+		"reload": "إعادة التحميل"
+	},
+	"catalog": {
+		"loading": "جارٍ تحميل أطر التشغيل والنماذج…",
+		"failed": "تعذّر تحميل النماذج",
+		"retry": "إعادة المحاولة"
+	},
+	"room": {
+		"opening": "جارٍ فتح الغرفة…",
+		"openFailed": "تعذّر فتح الغرفة",
+		"startNew": "بدء غرفة جديدة"
+	},
+	"transcript": {
+		"label": "سجل الجلسة",
+		"firstRun": "اكتب موجهًا واضغط Enter لتشغيل الوكيل. اكتب \u2066:help\u2069 لعرض الأوامر والمفاتيح."
+	},
+	"line": {
+		"tool": "أداة",
+		"subagent": "وكيل فرعي",
+		"reasoning": "الاستدلال",
+		"outputLines_zero": "لا توجد أسطر في المخرجات",
+		"outputLines_one": "سطر واحد من المخرجات",
+		"outputLines_two": "سطران من المخرجات",
+		"outputLines_few": "{{count}} أسطر من المخرجات",
+		"outputLines_many": "{{count}} سطرًا من المخرجات",
+		"outputLines_other": "{{count}} سطر من المخرجات",
+		"truncated": "مقتطعة"
+	},
+	"itemStatus": {
+		"QUEUED": "في قائمة الانتظار",
+		"SUBMITTED": "مُرسَل",
+		"RUNNING": "قيد التشغيل",
+		"INPUT_REQUIRED": "في انتظارك",
+		"COMPLETED": "مكتمل",
+		"FAILED": "فشل",
+		"REJECTED": "مرفوض",
+		"CANCELLED": "ملغى"
+	},
+	"status": {
+		"room": "الغرفة",
+		"newRoom": "غرفة جديدة",
+		"harness": "إطار التشغيل",
+		"model": "النموذج",
+		"none": "لا يوجد",
+		"ready": "جاهز",
+		"starting": "جارٍ البدء",
+		"running": "قيد التشغيل",
+		"waiting": "في انتظارك",
+		"stopping": "جارٍ الإيقاف"
+	},
+	"input": {
+		"label": "موجه أو أمر",
+		"placeholder": "اكتب موجهًا، أو \u2066:help\u2069"
+	},
+	"action": {
+		"send": "إرسال",
+		"stop": "إيقاف",
+		"approve": "موافقة",
+		"deny": "رفض"
+	},
+	"question": {
+		"invalid": "طرح الوكيل سؤالًا لا تستطيع وحدة التحكم هذه عرضه. تجاهله ليستمر التشغيل.",
+		"dismiss": "تجاهل"
+	},
+	"announce": {
+		"completed": "انتهى التشغيل."
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "أُسقطت أحداث سابقة من البث المباشر ({{n}}).",
+			"unknownItem": "لا يمكن عرض هذا العنصر هنا ({{kind}})."
+		},
+		"run": {
+			"failed": "فشل التشغيل: {{message}}",
+			"failedUnknown": "فشل التشغيل. لم يذكر الخادم السبب.",
+			"cancelled": "أُلغي التشغيل.",
+			"lost": "انقطع الاتصال بهذا التشغيل. قد يكون لا يزال قيد التشغيل على الخادم.",
+			"startFailed": "تعذّر بدء التشغيل: {{message}}",
+			"awaitingApproval": "في انتظار الموافقة على {{tool}}.",
+			"approvalHint": "اكتب \u2066:approve\u2069 للسماح به، أو \u2066:deny\u2069 لرفضه.",
+			"awaitingAnswer": "الوكيل ينتظر إدخالك.",
+			"stopping": "جارٍ الإيقاف…",
+			"reconnecting": "تعذّر الوصول إلى الخادم. جارٍ إعادة المحاولة… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "إطار التشغيل ← {{name}}",
+			"modelChanged": "النموذج ← {{name}}",
+			"busy": "هناك تشغيل قيد التنفيذ. انتظر حتى ينتهي، أو اكتب \u2066:stop\u2069.",
+			"noModel": "لا يتوفر أي نموذج. يظهر النموذج هنا بعد وسمه بالوسم text-generation.",
+			"noHarness": "لا يتوفر أي إطار تشغيل للوكيل.",
+			"unknownHarness": "لا يوجد إطار تشغيل باسم \"{{name}}\". اكتب \u2066:harness\u2069 لعرض القائمة.",
+			"unknownModel": "لا يوجد نموذج باسم \"{{name}}\". اكتب \u2066:model\u2069 لعرض القائمة.",
+			"harnessList": "أطر التشغيل",
+			"modelList": "النماذج",
+			"current": "الحالي",
+			"switchHarnessHint": "اكتب \u2066:harness\u2069 متبوعًا باسم للتبديل.",
+			"switchModelHint": "اكتب \u2066:model\u2069 متبوعًا باسم أو معرّف للتبديل.",
+			"nothingRunning": "لا يوجد شيء قيد التشغيل.",
+			"stopFailed": "تعذّر إيقاف التشغيل: {{message}}",
+			"nothingPending": "لا يوجد شيء في انتظار الموافقة.",
+			"answerInForm": "طرح الوكيل سؤالًا. أجب عنه في الاستمارة، أو اكتب \u2066:deny\u2069 لتجاهله.",
+			"approved": "تمت الموافقة على {{tool}}.",
+			"denied": "تم رفض {{tool}}.",
+			"decisionFailed": "تعذّر إرسال القرار: {{message}}",
+			"saveFailed": "تعذّر حفظ إعدادات الغرفة: {{message}}",
+			"newRoom": "غرفة جديدة. تُحفظ عند إرسال أول موجه.",
+			"nothingToExport": "لا يوجد تشغيل لتصديره بعد.",
+			"exported": "تم تصدير أحداث التشغيل {{runId}}."
+		},
+		"command": {
+			"unknown": "أمر غير معروف \u2066:{{name}}\u2069. اكتب \u2066:help\u2069 لعرض الأوامر.",
+			"didYouMean": "أمر غير معروف \u2066:{{name}}\u2069. هل تقصد \u2066:{{suggestion}}\u2069؟",
+			"missingName": "اكتب اسم أمر بعد النقطتين، أو \u2066:help\u2069 لعرض الأوامر.",
+			"usage": "الاستخدام: \u2066{{usage}}\u2069",
+			"failed": "فشل \u2066:{{name}}\u2069: {{message}}",
+			"help": "عرض الأوامر والمفاتيح",
+			"harness": "عرض أطر التشغيل، أو التبديل إلى أحدها",
+			"model": "عرض النماذج، أو التبديل إلى أحدها",
+			"new": "بدء غرفة جديدة",
+			"stop": "إيقاف الوكيل قيد التشغيل",
+			"clear": "مسح الشاشة (تحتفظ الغرفة بسجلها)",
+			"approve": "السماح باستدعاء الأداة المنتظر",
+			"deny": "رفض استدعاء الأداة المنتظر",
+			"export": "حفظ الأحداث الأولية لآخر تشغيل بصيغة JSON"
+		},
+		"help": {
+			"commands": "الأوامر",
+			"keys": "المفاتيح",
+			"literalColon": "لإرسال موجه يبدأ بنقطتين، اكتب النقطتين مرتين."
+		},
+		"key": {
+			"submit": "إرسال الموجه",
+			"newline": "سطر جديد",
+			"historyPrev": "الموجه السابق",
+			"historyNext": "الموجه التالي",
+			"interrupt": "إيقاف الوكيل قيد التشغيل",
+			"clearInput": "مسح الإدخال",
+			"clearViewport": "مسح الشاشة",
+			"cycleHarness": "إطار التشغيل التالي"
+		}
+	}
+}

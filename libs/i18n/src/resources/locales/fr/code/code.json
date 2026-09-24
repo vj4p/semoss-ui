@@ -1,0 +1,145 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "Chargement de SEMOSS Code…",
+	"error": {
+		"title": "Un problème est survenu",
+		"description": "SEMOSS Code a rencontré une erreur irrécupérable. Recharger la page suffit généralement à la corriger.",
+		"reload": "Recharger"
+	},
+	"catalog": {
+		"loading": "Chargement des harnais et des modèles…",
+		"failed": "Impossible de charger les modèles",
+		"retry": "Réessayer"
+	},
+	"room": {
+		"opening": "Ouverture de la salle…",
+		"openFailed": "Impossible d'ouvrir la salle",
+		"startNew": "Démarrer une nouvelle salle"
+	},
+	"transcript": {
+		"label": "Transcription",
+		"firstRun": "Tapez une invite et appuyez sur Entrée pour lancer l'agent. Tapez :help pour lister les commandes et les touches."
+	},
+	"line": {
+		"tool": "Outil",
+		"subagent": "Sous-agent",
+		"reasoning": "Raisonnement",
+		"outputLines_one": "{{count}} ligne de sortie",
+		"outputLines_many": "{{count}} de lignes de sortie",
+		"outputLines_other": "{{count}} lignes de sortie",
+		"truncated": "tronquée"
+	},
+	"itemStatus": {
+		"QUEUED": "en file d'attente",
+		"SUBMITTED": "soumis",
+		"RUNNING": "en cours",
+		"INPUT_REQUIRED": "en attente de votre réponse",
+		"COMPLETED": "terminé",
+		"FAILED": "échoué",
+		"REJECTED": "refusé",
+		"CANCELLED": "annulé"
+	},
+	"status": {
+		"room": "Salle",
+		"newRoom": "nouvelle salle",
+		"harness": "Harnais",
+		"model": "Modèle",
+		"none": "aucun",
+		"ready": "prêt",
+		"starting": "démarrage",
+		"running": "en cours",
+		"waiting": "en attente de votre réponse",
+		"stopping": "arrêt en cours"
+	},
+	"input": {
+		"label": "Invite ou commande",
+		"placeholder": "Tapez une invite, ou :help"
+	},
+	"action": {
+		"send": "Envoyer",
+		"stop": "Arrêter",
+		"approve": "Approuver",
+		"deny": "Refuser"
+	},
+	"question": {
+		"invalid": "L'agent a posé une question que cette console ne peut pas afficher. Ignorez-la pour que l'exécution continue.",
+		"dismiss": "Ignorer"
+	},
+	"announce": {
+		"completed": "L'exécution est terminée."
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "Des événements antérieurs ont été retirés du flux en direct ({{n}}).",
+			"unknownItem": "Cet élément ne peut pas être affiché ici ({{kind}})."
+		},
+		"run": {
+			"failed": "L'exécution a échoué : {{message}}",
+			"failedUnknown": "L'exécution a échoué. Le serveur n'a donné aucune raison.",
+			"cancelled": "Exécution annulée.",
+			"lost": "Contact perdu avec cette exécution. Elle est peut-être toujours en cours sur le serveur.",
+			"startFailed": "Impossible de démarrer l'exécution : {{message}}",
+			"awaitingApproval": "{{tool}} attend une approbation.",
+			"approvalHint": "Tapez :approve pour l'autoriser, ou :deny pour le refuser.",
+			"awaitingAnswer": "L'agent attend votre réponse.",
+			"stopping": "Arrêt en cours…",
+			"reconnecting": "Impossible de joindre le serveur. Nouvelle tentative… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "harnais → {{name}}",
+			"modelChanged": "modèle → {{name}}",
+			"busy": "Une exécution est en cours. Attendez qu'elle se termine, ou tapez :stop.",
+			"noModel": "Aucun modèle n'est disponible. Un modèle apparaît ici dès qu'il porte l'étiquette text-generation.",
+			"noHarness": "Aucun harnais d'agent n'est disponible.",
+			"unknownHarness": "Aucun harnais nommé « {{name}} ». Tapez :harness pour les lister.",
+			"unknownModel": "Aucun modèle nommé « {{name}} ». Tapez :model pour les lister.",
+			"harnessList": "Harnais",
+			"modelList": "Modèles",
+			"current": "actuel",
+			"switchHarnessHint": "Tapez :harness suivi d'un nom pour changer.",
+			"switchModelHint": "Tapez :model suivi d'un nom ou d'un id pour changer.",
+			"nothingRunning": "Rien n'est en cours d'exécution.",
+			"stopFailed": "Impossible d'arrêter l'exécution : {{message}}",
+			"nothingPending": "Rien n'attend d'approbation.",
+			"answerInForm": "L'agent a posé une question. Répondez-y dans le formulaire, ou tapez :deny pour l'ignorer.",
+			"approved": "{{tool}} approuvé.",
+			"denied": "{{tool}} refusé.",
+			"decisionFailed": "Impossible d'envoyer la décision : {{message}}",
+			"saveFailed": "Impossible d'enregistrer les paramètres de la salle : {{message}}",
+			"newRoom": "Nouvelle salle. Elle est enregistrée à l'envoi de la première invite.",
+			"nothingToExport": "Aucune exécution à exporter pour l'instant.",
+			"exported": "Événements de l'exécution {{runId}} exportés."
+		},
+		"command": {
+			"unknown": "Commande inconnue :{{name}}. Tapez :help pour lister les commandes.",
+			"didYouMean": "Commande inconnue :{{name}}. Vouliez-vous dire :{{suggestion}} ?",
+			"missingName": "Tapez un nom de commande après les deux-points, ou :help pour lister les commandes.",
+			"usage": "Utilisation : {{usage}}",
+			"failed": "Échec de :{{name}} : {{message}}",
+			"help": "Lister les commandes et les touches",
+			"harness": "Afficher les harnais, ou passer à l'un d'eux",
+			"model": "Afficher les modèles, ou passer à l'un d'eux",
+			"new": "Démarrer une nouvelle salle",
+			"stop": "Arrêter l'agent en cours d'exécution",
+			"clear": "Effacer l'écran (la salle conserve son historique)",
+			"approve": "Autoriser l'appel d'outil en attente",
+			"deny": "Refuser l'appel d'outil en attente",
+			"export": "Enregistrer les événements bruts de la dernière exécution au format JSON"
+		},
+		"help": {
+			"commands": "Commandes",
+			"keys": "Touches",
+			"literalColon": "Pour envoyer une invite qui commence par deux-points, tapez deux fois les deux-points."
+		},
+		"key": {
+			"submit": "Envoyer l'invite",
+			"newline": "Nouvelle ligne",
+			"historyPrev": "Invite précédente",
+			"historyNext": "Invite suivante",
+			"interrupt": "Arrêter l'agent en cours d'exécution",
+			"clearInput": "Effacer la saisie",
+			"clearViewport": "Effacer l'écran",
+			"cycleHarness": "Harnais suivant"
+		}
+	}
+}

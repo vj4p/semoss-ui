@@ -1,0 +1,144 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "SEMOSS Code laden…",
+	"error": {
+		"title": "Er is iets misgegaan",
+		"description": "SEMOSS Code is op een fout gestuit waarvan het niet kon herstellen. Meestal verhelpt het opnieuw laden van de pagina dit.",
+		"reload": "Opnieuw laden"
+	},
+	"catalog": {
+		"loading": "De harnesses en modellen laden…",
+		"failed": "Kan de modellen niet laden",
+		"retry": "Opnieuw proberen"
+	},
+	"room": {
+		"opening": "De ruimte openen…",
+		"openFailed": "Kan de ruimte niet openen",
+		"startNew": "Een nieuwe ruimte starten"
+	},
+	"transcript": {
+		"label": "Transcript",
+		"firstRun": "Typ een prompt en druk op Enter om de agent uit te voeren. Typ :help om de opdrachten en toetsen weer te geven."
+	},
+	"line": {
+		"tool": "Tool",
+		"subagent": "Subagent",
+		"reasoning": "Redenering",
+		"outputLines_one": "{{count}} regel uitvoer",
+		"outputLines_other": "{{count}} regels uitvoer",
+		"truncated": "afgekapt"
+	},
+	"itemStatus": {
+		"QUEUED": "in wachtrij",
+		"SUBMITTED": "ingediend",
+		"RUNNING": "bezig",
+		"INPUT_REQUIRED": "wacht op u",
+		"COMPLETED": "klaar",
+		"FAILED": "mislukt",
+		"REJECTED": "geweigerd",
+		"CANCELLED": "geannuleerd"
+	},
+	"status": {
+		"room": "Ruimte",
+		"newRoom": "nieuwe ruimte",
+		"harness": "Harness",
+		"model": "Model",
+		"none": "geen",
+		"ready": "gereed",
+		"starting": "bezig met starten",
+		"running": "bezig",
+		"waiting": "wacht op u",
+		"stopping": "bezig met stoppen"
+	},
+	"input": {
+		"label": "Prompt of opdracht",
+		"placeholder": "Typ een prompt, of :help"
+	},
+	"action": {
+		"send": "Versturen",
+		"stop": "Stoppen",
+		"approve": "Goedkeuren",
+		"deny": "Weigeren"
+	},
+	"question": {
+		"invalid": "De agent heeft een vraag gesteld die deze console niet kan weergeven. Sluit de vraag zodat de uitvoering verdergaat.",
+		"dismiss": "Sluiten"
+	},
+	"announce": {
+		"completed": "De uitvoering is voltooid."
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "Eerdere gebeurtenissen zijn uit de live feed verwijderd ({{n}}).",
+			"unknownItem": "Dit item kan hier niet worden weergegeven ({{kind}})."
+		},
+		"run": {
+			"failed": "Uitvoering mislukt: {{message}}",
+			"failedUnknown": "Uitvoering mislukt. De server gaf geen reden op.",
+			"cancelled": "Uitvoering geannuleerd.",
+			"lost": "Contact met deze uitvoering verloren. Mogelijk loopt deze nog op de server.",
+			"startFailed": "Kan de uitvoering niet starten: {{message}}",
+			"awaitingApproval": "{{tool}} wacht op goedkeuring.",
+			"approvalHint": "Typ :approve om het toe te staan, of :deny om het te weigeren.",
+			"awaitingAnswer": "De agent vraagt om uw invoer.",
+			"stopping": "Bezig met stoppen…",
+			"reconnecting": "Kan de server niet bereiken. Opnieuw proberen… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "harness → {{name}}",
+			"modelChanged": "model → {{name}}",
+			"busy": "Er loopt een uitvoering. Wacht tot deze klaar is, of typ :stop.",
+			"noModel": "Er is geen model beschikbaar. Een model verschijnt hier zodra het de tag text-generation heeft.",
+			"noHarness": "Er is geen agent harness beschikbaar.",
+			"unknownHarness": "Geen harness met de naam \"{{name}}\". Typ :harness om ze weer te geven.",
+			"unknownModel": "Geen model met de naam \"{{name}}\". Typ :model om ze weer te geven.",
+			"harnessList": "Harnesses",
+			"modelList": "Modellen",
+			"current": "huidig",
+			"switchHarnessHint": "Typ :harness gevolgd door een naam om te wisselen.",
+			"switchModelHint": "Typ :model gevolgd door een naam of een id om te wisselen.",
+			"nothingRunning": "Er wordt niets uitgevoerd.",
+			"stopFailed": "Kan de uitvoering niet stoppen: {{message}}",
+			"nothingPending": "Er wacht niets op goedkeuring.",
+			"answerInForm": "De agent heeft een vraag gesteld. Beantwoord deze in het formulier, of typ :deny om de vraag te sluiten.",
+			"approved": "{{tool}} goedgekeurd.",
+			"denied": "{{tool}} geweigerd.",
+			"decisionFailed": "Kan de beslissing niet verzenden: {{message}}",
+			"saveFailed": "Kan de ruimte-instellingen niet opslaan: {{message}}",
+			"newRoom": "Nieuwe ruimte. Deze wordt opgeslagen zodra u de eerste prompt verstuurt.",
+			"nothingToExport": "Nog geen uitvoering om te exporteren.",
+			"exported": "De gebeurtenissen van uitvoering {{runId}} zijn geëxporteerd."
+		},
+		"command": {
+			"unknown": "Onbekende opdracht :{{name}}. Typ :help om de opdrachten weer te geven.",
+			"didYouMean": "Onbekende opdracht :{{name}}. Bedoelde u :{{suggestion}}?",
+			"missingName": "Typ een opdrachtnaam na de dubbele punt, of :help om de opdrachten weer te geven.",
+			"usage": "Gebruik: {{usage}}",
+			"failed": ":{{name}} mislukt: {{message}}",
+			"help": "Opdrachten en toetsen weergeven",
+			"harness": "De harnesses weergeven, of naar een ervan wisselen",
+			"model": "De modellen weergeven, of naar een ervan wisselen",
+			"new": "Een nieuwe ruimte starten",
+			"stop": "De actieve agent stoppen",
+			"clear": "Het scherm wissen (de ruimte behoudt de geschiedenis)",
+			"approve": "De wachtende toolaanroep toestaan",
+			"deny": "De wachtende toolaanroep weigeren",
+			"export": "De onbewerkte gebeurtenissen van de laatste uitvoering als JSON opslaan"
+		},
+		"help": {
+			"commands": "Opdrachten",
+			"keys": "Toetsen",
+			"literalColon": "Typ twee dubbele punten om een prompt te versturen die met een dubbele punt begint."
+		},
+		"key": {
+			"submit": "De prompt versturen",
+			"newline": "Nieuwe regel",
+			"historyPrev": "Vorige prompt",
+			"historyNext": "Volgende prompt",
+			"interrupt": "De actieve agent stoppen",
+			"clearInput": "De invoer wissen",
+			"clearViewport": "Het scherm wissen",
+			"cycleHarness": "Volgende harness"
+		}
+	}
+}

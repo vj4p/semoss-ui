@@ -8,27 +8,33 @@ The translations are organized in a two-tier structure to support multiple packa
 
 ```
 libs/i18n/src/
-├── locales/
-│   ├── en/                    # English translations
-│   │   ├── common.json        # Tier 1: Core shared (buttons, labels, actions)
-│   │   ├── validation.json    # Tier 1: Core shared (form validations)
-│   │   ├── notifications.json # Tier 1: Core shared (notification templates)
-│   │   └── playground/        # Tier 2: Playground-specific
-│   │       ├── chat.json
-│   │       ├── room.json
-│   │       ├── sidebar.json
-│   │       ├── knowledge.json
-│   │       ├── workspace.json
-│   │       └── mcp.json
-│   ├── es/                    # Spanish translations (same structure)
-│   ├── fr/                    # French translations (same structure)
-│   ├── hi/                    # Hindi translations (same structure)
-│   ├── ar/                    # Arabic translations (same structure)
-│   └── ja/                    # Japanese translations (same structure)
-├── core.ts                    # Core shared resources
-├── playground.ts              # Playground package resources
-├── client.ts                  # Client package resources (placeholder)
-└── config.ts                  # i18next configuration (uses playground by default)
+├── builder.ts                     # I18nBuilder + dynamic-import i18next backend
+├── preload.ts                     # preloadNamespaces() for on-demand namespaces
+├── constants.ts                   # Language definitions (LANGUAGES array)
+├── index.ts                       # Main exports
+└── resources/
+    ├── types.ts                   # LazyResources interface
+    ├── client.ts                  # Client lazy loader map
+    ├── playground.ts              # Playground lazy loader map
+    ├── terminal.ts                # Terminal lazy loader map
+    ├── auditlog.ts                # Audit log lazy loader map
+    ├── code.ts                    # SEMOSS Code lazy loader map
+    └── locales/
+        ├── en/                    # English translations
+        │   ├── common.json        # Tier 1: Core shared (buttons, labels, actions)
+        │   ├── validation.json    # Tier 1: Core shared (form validations)
+        │   ├── notifications.json # Tier 1: Core shared (notification templates)
+        │   ├── shared/            # Tier 2: @semoss/shared components
+        │   ├── playground/        # Tier 2: Playground-specific (chat, room, sidebar, …)
+        │   ├── client/            # Tier 2: Client-specific
+        │   ├── terminal/          # Tier 2: Terminal-specific
+        │   └── code/              # Tier 2: SEMOSS Code (code.json)
+        ├── es/                    # Spanish translations (same structure)
+        ├── fr/                    # French translations (same structure)
+        ├── nl/                    # Dutch translations (same structure)
+        ├── hi/                    # Hindi translations (same structure)
+        ├── ar/                    # Arabic translations (same structure)
+        └── ja/                    # Japanese translations (same structure)
 ```
 
 ## Two-Tier System
@@ -43,6 +49,7 @@ Translations used across **all** packages:
 Translations specific to individual packages:
 - `playground/` - Playground app translations (chat, room, sidebar, knowledge, workspace, mcp)
 - `client/` - Client app translations (for example `githubApp`)
+- `code/` - SEMOSS Code translations. `code.json` holds the console's own copy, with the `@semoss/agent-core` session's words under `core.*`
 
 ## Usage
 

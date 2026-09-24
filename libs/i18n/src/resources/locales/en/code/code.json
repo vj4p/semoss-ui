@@ -1,0 +1,144 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "Loading SEMOSS Code…",
+	"error": {
+		"title": "Something went wrong",
+		"description": "SEMOSS Code ran into an error it could not recover from. Reloading the page usually fixes it.",
+		"reload": "Reload"
+	},
+	"catalog": {
+		"loading": "Loading the harnesses and models…",
+		"failed": "Could not load the models",
+		"retry": "Try again"
+	},
+	"room": {
+		"opening": "Opening the room…",
+		"openFailed": "Could not open the room",
+		"startNew": "Start a new room"
+	},
+	"transcript": {
+		"label": "Transcript",
+		"firstRun": "Type a prompt and press Enter to run the agent. Type :help to list commands and keys."
+	},
+	"line": {
+		"tool": "Tool",
+		"subagent": "Subagent",
+		"reasoning": "Reasoning",
+		"outputLines_one": "{{count}} line of output",
+		"outputLines_other": "{{count}} lines of output",
+		"truncated": "truncated"
+	},
+	"itemStatus": {
+		"QUEUED": "queued",
+		"SUBMITTED": "submitted",
+		"RUNNING": "running",
+		"INPUT_REQUIRED": "waiting for you",
+		"COMPLETED": "done",
+		"FAILED": "failed",
+		"REJECTED": "rejected",
+		"CANCELLED": "cancelled"
+	},
+	"status": {
+		"room": "Room",
+		"newRoom": "new room",
+		"harness": "Harness",
+		"model": "Model",
+		"none": "none",
+		"ready": "ready",
+		"starting": "starting",
+		"running": "running",
+		"waiting": "waiting for you",
+		"stopping": "stopping"
+	},
+	"input": {
+		"label": "Prompt or command",
+		"placeholder": "Type a prompt, or :help"
+	},
+	"action": {
+		"send": "Send",
+		"stop": "Stop",
+		"approve": "Approve",
+		"deny": "Deny"
+	},
+	"question": {
+		"invalid": "The agent asked a question this console cannot show. Dismiss it to let the run go on.",
+		"dismiss": "Dismiss"
+	},
+	"announce": {
+		"completed": "The run finished."
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "Earlier events were dropped from the live feed ({{n}}).",
+			"unknownItem": "This item cannot be shown here ({{kind}})."
+		},
+		"run": {
+			"failed": "Run failed: {{message}}",
+			"failedUnknown": "Run failed. The server gave no reason.",
+			"cancelled": "Run cancelled.",
+			"lost": "Lost contact with this run. It may still be running on the server.",
+			"startFailed": "Could not start the run: {{message}}",
+			"awaitingApproval": "{{tool}} is waiting for approval.",
+			"approvalHint": "Type :approve to allow it, or :deny to reject it.",
+			"awaitingAnswer": "The agent is asking for your input.",
+			"stopping": "Stopping…",
+			"reconnecting": "Cannot reach the server. Retrying… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "harness → {{name}}",
+			"modelChanged": "model → {{name}}",
+			"busy": "A run is in progress. Wait for it to finish, or type :stop.",
+			"noModel": "No model is available. A model appears here once it is tagged text-generation.",
+			"noHarness": "No agent harness is available.",
+			"unknownHarness": "No harness named \"{{name}}\". Type :harness to list them.",
+			"unknownModel": "No model named \"{{name}}\". Type :model to list them.",
+			"harnessList": "Harnesses",
+			"modelList": "Models",
+			"current": "current",
+			"switchHarnessHint": "Type :harness followed by a name to switch.",
+			"switchModelHint": "Type :model followed by a name or an id to switch.",
+			"nothingRunning": "Nothing is running.",
+			"stopFailed": "Could not stop the run: {{message}}",
+			"nothingPending": "Nothing is waiting for approval.",
+			"answerInForm": "The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
+			"approved": "Approved {{tool}}.",
+			"denied": "Denied {{tool}}.",
+			"decisionFailed": "Could not send the decision: {{message}}",
+			"saveFailed": "Could not save the room settings: {{message}}",
+			"newRoom": "New room. It is saved when you send the first prompt.",
+			"nothingToExport": "No run to export yet.",
+			"exported": "Exported the events of run {{runId}}."
+		},
+		"command": {
+			"unknown": "Unknown command :{{name}}. Type :help to list commands.",
+			"didYouMean": "Unknown command :{{name}}. Did you mean :{{suggestion}}?",
+			"missingName": "Type a command name after the colon, or :help to list commands.",
+			"usage": "Usage: {{usage}}",
+			"failed": ":{{name}} failed: {{message}}",
+			"help": "List commands and keys",
+			"harness": "Show the harnesses, or switch to one",
+			"model": "Show the models, or switch to one",
+			"new": "Start a new room",
+			"stop": "Stop the running agent",
+			"clear": "Clear the screen (the room keeps its history)",
+			"approve": "Allow the tool call that is waiting",
+			"deny": "Reject the tool call that is waiting",
+			"export": "Save the last run's raw events as JSON"
+		},
+		"help": {
+			"commands": "Commands",
+			"keys": "Keys",
+			"literalColon": "To send a prompt that starts with a colon, type two colons."
+		},
+		"key": {
+			"submit": "Send the prompt",
+			"newline": "New line",
+			"historyPrev": "Previous prompt",
+			"historyNext": "Next prompt",
+			"interrupt": "Stop the running agent",
+			"clearInput": "Clear the input",
+			"clearViewport": "Clear the screen",
+			"cycleHarness": "Next harness"
+		}
+	}
+}

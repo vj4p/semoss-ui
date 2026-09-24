@@ -1,0 +1,143 @@
+{
+	"title": "SEMOSS Code",
+	"loading": "SEMOSS Code を読み込み中…",
+	"error": {
+		"title": "問題が発生しました",
+		"description": "SEMOSS Code で回復できないエラーが発生しました。通常はページを再読み込みすると解決します。",
+		"reload": "再読み込み"
+	},
+	"catalog": {
+		"loading": "ハーネスとモデルを読み込み中…",
+		"failed": "モデルを読み込めませんでした",
+		"retry": "再試行"
+	},
+	"room": {
+		"opening": "ルームを開いています…",
+		"openFailed": "ルームを開けませんでした",
+		"startNew": "新しいルームを開始"
+	},
+	"transcript": {
+		"label": "トランスクリプト",
+		"firstRun": "プロンプトを入力して Enter を押すと、エージェントが実行されます。:help と入力すると、コマンドとキーの一覧を表示します。"
+	},
+	"line": {
+		"tool": "ツール",
+		"subagent": "サブエージェント",
+		"reasoning": "推論",
+		"outputLines_other": "出力 {{count}} 行",
+		"truncated": "一部省略"
+	},
+	"itemStatus": {
+		"QUEUED": "キュー待ち",
+		"SUBMITTED": "送信済み",
+		"RUNNING": "実行中",
+		"INPUT_REQUIRED": "入力待ち",
+		"COMPLETED": "完了",
+		"FAILED": "失敗",
+		"REJECTED": "拒否",
+		"CANCELLED": "キャンセル済み"
+	},
+	"status": {
+		"room": "ルーム",
+		"newRoom": "新しいルーム",
+		"harness": "ハーネス",
+		"model": "モデル",
+		"none": "なし",
+		"ready": "準備完了",
+		"starting": "開始中",
+		"running": "実行中",
+		"waiting": "入力待ち",
+		"stopping": "停止中"
+	},
+	"input": {
+		"label": "プロンプトまたはコマンド",
+		"placeholder": "プロンプトを入力、または :help"
+	},
+	"action": {
+		"send": "送信",
+		"stop": "停止",
+		"approve": "承認",
+		"deny": "拒否"
+	},
+	"question": {
+		"invalid": "エージェントが、このコンソールでは表示できない質問をしています。実行を続けるには、質問を閉じてください。",
+		"dismiss": "閉じる"
+	},
+	"announce": {
+		"completed": "実行が完了しました。"
+	},
+	"core": {
+		"transcript": {
+			"droppedEvents": "以前のイベントがライブフィードから破棄されました ({{n}} 件)。",
+			"unknownItem": "この項目はここでは表示できません ({{kind}})。"
+		},
+		"run": {
+			"failed": "実行に失敗しました: {{message}}",
+			"failedUnknown": "実行に失敗しました。サーバーは理由を返しませんでした。",
+			"cancelled": "実行をキャンセルしました。",
+			"lost": "この実行との接続が失われました。サーバー上でまだ実行中の可能性があります。",
+			"startFailed": "実行を開始できませんでした: {{message}}",
+			"awaitingApproval": "{{tool}} が承認を待っています。",
+			"approvalHint": ":approve と入力すると許可、:deny と入力すると拒否します。",
+			"awaitingAnswer": "エージェントがあなたの入力を求めています。",
+			"stopping": "停止しています…",
+			"reconnecting": "サーバーに接続できません。再試行しています… ({{message}})"
+		},
+		"session": {
+			"harnessChanged": "ハーネス → {{name}}",
+			"modelChanged": "モデル → {{name}}",
+			"busy": "実行中です。終了を待つか、:stop と入力してください。",
+			"noModel": "利用できるモデルがありません。モデルに text-generation タグが付くと、ここに表示されます。",
+			"noHarness": "利用できるエージェントハーネスがありません。",
+			"unknownHarness": "「{{name}}」という名前のハーネスはありません。:harness と入力すると一覧を表示します。",
+			"unknownModel": "「{{name}}」という名前のモデルはありません。:model と入力すると一覧を表示します。",
+			"harnessList": "ハーネス",
+			"modelList": "モデル",
+			"current": "使用中",
+			"switchHarnessHint": "切り替えるには、:harness に続けて名前を入力してください。",
+			"switchModelHint": "切り替えるには、:model に続けて名前または ID を入力してください。",
+			"nothingRunning": "実行中のものはありません。",
+			"stopFailed": "実行を停止できませんでした: {{message}}",
+			"nothingPending": "承認待ちのものはありません。",
+			"answerInForm": "エージェントが質問しています。フォームで回答するか、:deny と入力して閉じてください。",
+			"approved": "{{tool}} を承認しました。",
+			"denied": "{{tool}} を拒否しました。",
+			"decisionFailed": "判断を送信できませんでした: {{message}}",
+			"saveFailed": "ルームの設定を保存できませんでした: {{message}}",
+			"newRoom": "新しいルームです。最初のプロンプトを送信すると保存されます。",
+			"nothingToExport": "エクスポートできる実行はまだありません。",
+			"exported": "実行 {{runId}} のイベントをエクスポートしました。"
+		},
+		"command": {
+			"unknown": "不明なコマンド :{{name}} です。:help と入力するとコマンドの一覧を表示します。",
+			"didYouMean": "不明なコマンド :{{name}} です。:{{suggestion}} のことですか？",
+			"missingName": "コロンの後にコマンド名を入力するか、:help と入力してコマンドの一覧を表示してください。",
+			"usage": "使い方: {{usage}}",
+			"failed": ":{{name}} が失敗しました: {{message}}",
+			"help": "コマンドとキーの一覧を表示",
+			"harness": "ハーネスを表示、または切り替え",
+			"model": "モデルを表示、または切り替え",
+			"new": "新しいルームを開始",
+			"stop": "実行中のエージェントを停止",
+			"clear": "画面をクリア (ルームの履歴は残ります)",
+			"approve": "待機中のツール呼び出しを許可",
+			"deny": "待機中のツール呼び出しを拒否",
+			"export": "直前の実行の生イベントを JSON として保存"
+		},
+		"help": {
+			"commands": "コマンド",
+			"keys": "キー",
+			"literalColon": "コロンで始まるプロンプトを送信するには、コロンを 2 つ入力してください。"
+		},
+		"key": {
+			"submit": "プロンプトを送信",
+			"newline": "改行",
+			"historyPrev": "前のプロンプト",
+			"historyNext": "次のプロンプト",
+			"interrupt": "実行中のエージェントを停止",
+			"clearInput": "入力をクリア",
+			"clearViewport": "画面をクリア",
+			"cycleHarness": "次のハーネス"
+		}
+	}
+}

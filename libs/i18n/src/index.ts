@@ -12,6 +12,7 @@ export * from "./constants";
 export { preloadNamespaces } from "./preload";
 export { auditlogResources } from "./resources/auditlog";
 export { clientResources } from "./resources/client";
+export { codeResources } from "./resources/code";
 export { playgroundResources } from "./resources/playground";
 export { terminalResources } from "./resources/terminal";
 // Per-app lazy resource configs passed to I18nBuilder.
