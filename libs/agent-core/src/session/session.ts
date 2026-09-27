@@ -71,6 +71,7 @@ import {
 } from "../run/run-registry";
 import { type Emphasis, type Line, textLine } from "../transcript/line";
 import { describeError } from "../util/describe-error";
+import { escapeInvisibleInJson } from "../util/invisible";
 import type { RunEntry, RunStatus, SessionEntry } from "./entries";
 import { actionLabel } from "./run-lines";
 import { createSessionCommands } from "./session-commands";
@@ -181,6 +182,12 @@ export interface SessionOptions {
 	now?: () => number;
 }
 
+/** A tool whose later calls are automatically approved without asking. */
+export interface AllowedTool {
+	toolName: string;
+	label: string;
+}
+
 export interface SessionState {
 	roomId?: string;
 	/** What the next run starts with. Undefined only when the catalog is empty. */
@@ -190,6 +197,11 @@ export interface SessionState {
 	entries: readonly SessionEntry[];
 	/** The run in progress, from its prompt until the console stops following it. */
 	activeEntryId?: string;
+	/**
+	 * Tools approved with Always allow, whose later calls this session approves
+	 * without asking. Kept in memory only, so a reload forgets them.
+	 */
+	alwaysAllowed: readonly AllowedTool[];
 }
 
 export type SubmitResult =
@@ -220,6 +232,17 @@ export interface Session {
 		action: PendingAgentAction,
 		answers: Record<string, unknown>,
 	) => Promise<boolean>;
+	/** Approve it, then stop asking about its tool for this session. */
+	alwaysAllow: (action?: PendingAgentAction) => Promise<boolean>;
+	/** Ask about a tool again, or about every tool when none is named. */
+	revoke: (tool?: string) => boolean;
+	/**
+	 * The `:edit` text that puts a waiting call's arguments in the prompt, for a
+	 * host to fill it with. Remembers the call.
+	 */
+	startEdit: (action?: PendingAgentAction) => string | undefined;
+	/** Approve the waiting call with these arguments. */
+	edit: (json: string) => Promise<boolean>;
 	/** Switch by name, or by label, ignoring case. */
 	setHarness: (name: string) => Promise<boolean>;
 	cycleHarness: () => Promise<boolean>;
@@ -292,6 +315,11 @@ interface RunControl {
 	 * would invite a second decision on the same call.
 	 */
 	decided: Set<string>;
+	/**
+	 * Actions this console has tried to approve on its own. Each is tried once,
+	 * and if the backend refuses it, it waits for the user.
+	 */
+	autoTried: Set<string>;
 	/** A stop asked for before the backend had a run to stop. */
 	stopWhenStarted: boolean;
 	cancelling: boolean;
@@ -332,6 +360,7 @@ export const createSession = (options: SessionOptions): Session => {
 					},
 				]
 			: [],
+		alwaysAllowed: [],
 	};
 	const listeners = new Set<() => void>();
 	let disposed = false;
@@ -340,6 +369,8 @@ export const createSession = (options: SessionOptions): Session => {
 	/** The last run the backend accepted, for `:export`. */
 	let exportable: RunControl | undefined;
 	let saving: Promise<void> = Promise.resolve();
+	/** The actionId `startEdit` last filled the prompt for. */
+	let editTarget: string | undefined;
 
 	const commit = (next: SessionState) => {
 		if (disposed) {
@@ -428,6 +459,10 @@ export const createSession = (options: SessionOptions): Session => {
 			onSnapshot: (snapshot, { droppedEvents }) => {
 				control.snapshot = snapshot;
 				control.droppedEvents += droppedEvents;
+				const allowed = takeAllowed(
+					control,
+					pendingOf(control, snapshot),
+				);
 				patchRun(control, (run) =>
 					unlessSame(run, {
 						...run,
@@ -440,10 +475,14 @@ export const createSession = (options: SessionOptions): Session => {
 						transportError: undefined,
 					}),
 				);
+				approveAllowed(control, agent, allowed);
 			},
 			onReconcile: (snapshot) => {
 				control.snapshot = snapshot;
 				const over = isOver(snapshot.status);
+				const allowed = over
+					? []
+					: takeAllowed(control, pendingOf(control, snapshot));
 				patchRun(
 					control,
 					(run) => ({
@@ -460,6 +499,7 @@ export const createSession = (options: SessionOptions): Session => {
 					}),
 					over,
 				);
+				approveAllowed(control, agent, allowed);
 			},
 			onError: (error) => {
 				patchRun(control, (run) =>
@@ -589,6 +629,7 @@ export const createSession = (options: SessionOptions): Session => {
 			omittedEvents: 0,
 			droppedEvents: 0,
 			decided: new Set(),
+			autoTried: new Set(),
 			stopWhenStarted: false,
 			cancelling: false,
 		};
@@ -614,6 +655,96 @@ export const createSession = (options: SessionOptions): Session => {
 		});
 		void launch(control);
 		return { kind: "started", entryId: control.entryId };
+	};
+
+	/**
+	 * Send a decision on an action already taken off the waiting list. If the
+	 * backend refuses it, the action is offered again, unless the run has
+	 * ended, and the error comes back for the caller to explain.
+	 */
+	const send = async (
+		control: RunControl,
+		agent: AgentStore,
+		action: PendingAgentAction,
+		decision: "submit" | "reject" | "respond",
+		paramValues?: Record<string, unknown>,
+	): Promise<{ ok: true } | { ok: false; error: unknown }> => {
+		try {
+			await agent.decide(action, decision, paramValues);
+			return { ok: true };
+		} catch (error) {
+			control.decided.delete(action.actionId);
+			const { snapshot } = control;
+			patchRun(control, (current) =>
+				current.endedAt !== undefined || snapshot === undefined
+					? current
+					: {
+							...current,
+							pendingActions: pendingOf(control, snapshot),
+						},
+			);
+			return { ok: false, error };
+		}
+	};
+
+	/**
+	 * Take the waiting actions that qualify for automatic approval.
+	 *
+	 * They are taken before the run is drawn, so an always-allowed call never
+	 * shows as waiting: no card flashes, and the announcer never announces it.
+	 */
+	const takeAllowed = (
+		control: RunControl,
+		waiting: readonly PendingAgentAction[],
+	): PendingAgentAction[] => {
+		const allowed: PendingAgentAction[] = [];
+		for (const action of waiting) {
+			if (
+				!isRequestUserInputAction(action) &&
+				!action.hasUi &&
+				typeof action.toolName === "string" &&
+				action.toolName !== "" &&
+				state.alwaysAllowed.some(
+					(entry) => entry.toolName === action.toolName,
+				) &&
+				!control.autoTried.has(action.actionId)
+			) {
+				control.decided.add(action.actionId);
+				control.autoTried.add(action.actionId);
+				allowed.push(action);
+			}
+		}
+		return allowed;
+	};
+
+	/**
+	 * Approve each allowed action automatically.
+	 *
+	 * A success is silent: the call's own line shows it ran, and a notice for
+	 * each would pile up under the run, away from the call it is about. A
+	 * failure says so: the call is shown waiting again, and the next poll does
+	 * not retry it.
+	 */
+	const approveAllowed = (
+		control: RunControl,
+		agent: AgentStore,
+		actions: readonly PendingAgentAction[],
+	) => {
+		for (const action of actions) {
+			const run = findRun(control.entryId);
+			const label = run
+				? actionLabel(action, run.items)
+				: action.actionId;
+			void send(control, agent, action, "submit").then((result) => {
+				if (!result.ok) {
+					say(
+						"session.autoApproveFailed",
+						{ tool: label, message: describeError(result.error) },
+						"error",
+					);
+				}
+			});
+		}
 	};
 
 	/**
@@ -643,31 +774,68 @@ export const createSession = (options: SessionOptions): Session => {
 				(a) => a.actionId !== action.actionId,
 			),
 		}));
-		try {
-			await agent.decide(action, decision, paramValues);
-			return true;
-		} catch (error) {
-			control.decided.delete(action.actionId);
-			const { snapshot } = control;
-			patchRun(control, (current) =>
-				current.endedAt !== undefined || snapshot === undefined
-					? current
-					: {
-							...current,
-							pendingActions: pendingOf(control, snapshot),
-						},
-			);
+		const result = await send(
+			control,
+			agent,
+			action,
+			decision,
+			paramValues,
+		);
+		if (!result.ok) {
 			say(
 				"session.decisionFailed",
-				{ message: describeError(error) },
+				{ message: describeError(result.error) },
 				"error",
 			);
 			return false;
 		}
+		return true;
 	};
 
 	const activeRun = () =>
 		active === undefined ? undefined : findRun(active.entryId);
+
+	/**
+	 * The waiting call a key or a command decides: the one given, or else the
+	 * first that is not a question. Says why there is none.
+	 */
+	const approvalTarget = (action?: PendingAgentAction) => {
+		const run = activeRun();
+		if (run === undefined || run.pendingActions.length === 0) {
+			say("session.nothingPending", undefined, "dim");
+			return undefined;
+		}
+		const target = action ?? keyedApproval(state);
+		// A question is answered, not approved: approving it would send the
+		// tool's own arguments back as the answer.
+		if (target === undefined || isRequestUserInputAction(target)) {
+			say("session.answerInForm");
+			return undefined;
+		}
+		return { run, target };
+	};
+
+	/**
+	 * The call `edit` sends: the one `startEdit` last filled the prompt for,
+	 * or, when the user typed `:edit` without it, the keyed approval. When the
+	 * call being edited no longer waits, nothing is sent, rather than the
+	 * edited arguments going to a different call.
+	 */
+	const editedCall = () => {
+		if (editTarget === undefined) {
+			return approvalTarget();
+		}
+		const run = activeRun();
+		const target = run?.pendingActions.find(
+			(action) => action.actionId === editTarget,
+		);
+		if (run === undefined || target === undefined) {
+			editTarget = undefined;
+			say("session.editGone", undefined, "error");
+			return undefined;
+		}
+		return { run, target };
+	};
 
 	const save = () => {
 		saving = saving.then(async () => {
@@ -824,22 +992,12 @@ export const createSession = (options: SessionOptions): Session => {
 		},
 
 		approve: async (action) => {
-			const run = activeRun();
-			const waiting = run?.pendingActions ?? [];
-			const target =
-				action ?? waiting.find((a) => !isRequestUserInputAction(a));
-			if (target === undefined && waiting.length === 0) {
-				say("session.nothingPending", undefined, "dim");
+			const found = approvalTarget(action);
+			if (found === undefined) {
 				return false;
 			}
-			// A question is answered, not approved: approving it would send the
-			// tool's own arguments back as the answer.
-			if (target === undefined || isRequestUserInputAction(target)) {
-				say("session.answerInForm");
-				return false;
-			}
-			const tool = run ? actionLabel(target, run.items) : target.actionId;
-			if (!(await decide(target, "submit"))) {
+			const tool = actionLabel(found.target, found.run.items);
+			if (!(await decide(found.target, "submit"))) {
 				return false;
 			}
 			say("session.approved", { tool }, "dim");
@@ -863,6 +1021,147 @@ export const createSession = (options: SessionOptions): Session => {
 
 		respond: (action, answers) => decide(action, "respond", answers),
 
+		alwaysAllow: async (action) => {
+			const found = approvalTarget(action);
+			if (found === undefined) {
+				return false;
+			}
+			const { run, target } = found;
+			const { toolName } = target;
+			const tool = actionLabel(target, run.items);
+			if (target.hasUi || !toolName) {
+				say("session.cannotAlwaysAllow", { tool });
+				return false;
+			}
+			if (!(await decide(target, "submit"))) {
+				return false;
+			}
+			if (
+				!state.alwaysAllowed.some(
+					(entry) => entry.toolName === toolName,
+				)
+			) {
+				commit({
+					...state,
+					alwaysAllowed: [
+						...state.alwaysAllowed,
+						{ toolName, label: tool },
+					],
+				});
+			}
+			say("session.alwaysAllowed", { tool }, "dim");
+			// A parallel call of the same tool need not wait for the next poll.
+			const control = active;
+			const agent = control?.agent;
+			const current = activeRun();
+			if (
+				control !== undefined &&
+				agent !== undefined &&
+				current !== undefined
+			) {
+				const allowed = takeAllowed(control, current.pendingActions);
+				if (allowed.length > 0) {
+					const taken = new Set(allowed.map((each) => each.actionId));
+					patchRun(control, (entry) => ({
+						...entry,
+						pendingActions: entry.pendingActions.filter(
+							(waiting) => !taken.has(waiting.actionId),
+						),
+					}));
+					approveAllowed(control, agent, allowed);
+				}
+			}
+			return true;
+		},
+
+		revoke: (tool) => {
+			const name = tool?.trim() ?? "";
+			if (name === "") {
+				if (state.alwaysAllowed.length === 0) {
+					say("session.allowedNone", undefined, "dim");
+					return false;
+				}
+				commit({ ...state, alwaysAllowed: [] });
+				say("session.revokedAll", undefined, "dim");
+				return true;
+			}
+			const wanted = name.toLowerCase();
+			const removed =
+				state.alwaysAllowed.find(
+					(entry) => entry.toolName.toLowerCase() === wanted,
+				) ??
+				state.alwaysAllowed.find(
+					(entry) => entry.label.toLowerCase() === wanted,
+				);
+			if (removed === undefined) {
+				say("session.unknownAllowed", { name }, "error");
+				return false;
+			}
+			commit({
+				...state,
+				alwaysAllowed: state.alwaysAllowed.filter(
+					(entry) => entry !== removed,
+				),
+			});
+			say("session.revoked", { tool: removed.label }, "dim");
+			return true;
+		},
+
+		startEdit: (action) => {
+			const found = approvalTarget(action);
+			if (found === undefined) {
+				return undefined;
+			}
+			editTarget = found.target.actionId;
+			const args = JSON.stringify(found.target.toolArgs ?? {}, null, 2);
+			return `:edit ${escapeInvisibleInJson(args)}`;
+		},
+
+		edit: async (json) => {
+			const found = editedCall();
+			if (found === undefined) {
+				return false;
+			}
+			const { run, target } = found;
+			let parsed: unknown;
+			try {
+				parsed = JSON.parse(json);
+			} catch (error) {
+				say(
+					"session.editInvalid",
+					{ message: describeError(error) },
+					"error",
+				);
+				return false;
+			}
+			if (
+				typeof parsed !== "object" ||
+				parsed === null ||
+				Array.isArray(parsed)
+			) {
+				say("session.editNotObject", undefined, "error");
+				return false;
+			}
+			const paramValues = parsed as Record<string, unknown>;
+			// The SDK's own test: arguments sent back unchanged are an approval.
+			const unchanged =
+				JSON.stringify(paramValues) ===
+				JSON.stringify(target.toolArgs ?? {});
+			const tool = actionLabel(target, run.items);
+			if (!(await decide(target, "submit", paramValues))) {
+				return false;
+			}
+			if (editTarget === target.actionId) {
+				editTarget = undefined;
+			}
+			say(
+				unchanged ? "session.approved" : "session.approvedEdited",
+				{ tool },
+				"dim",
+			);
+			return true;
+		},
+
 		setHarness,
 
 		cycleHarness: async () => {
@@ -883,9 +1182,19 @@ export const createSession = (options: SessionOptions): Session => {
 				return false;
 			}
 			exportable = undefined;
-			commit({ ...state, roomId: undefined, entries: [] });
+			editTarget = undefined;
+			const hadAllowed = state.alwaysAllowed.length > 0;
+			commit({
+				...state,
+				roomId: undefined,
+				entries: [],
+				alwaysAllowed: [],
+			});
 			host.onRoomChange?.(undefined);
 			say("session.newRoom", undefined, "dim");
+			if (hadAllowed) {
+				say("session.revokedAll", undefined, "dim");
+			}
 			return true;
 		},
 
@@ -951,3 +1260,13 @@ export const activeRunEntry = (state: SessionState) =>
 		(entry): entry is RunEntry =>
 			entry.kind === "run" && entry.id === state.activeEntryId,
 	);
+
+/** The call the approval keys act on. */
+export const keyedApproval = (
+	state: SessionState,
+): PendingAgentAction | undefined => {
+	const run = activeRunEntry(state);
+	return run?.pendingActions.find(
+		(action) => !isRequestUserInputAction(action),
+	);
+};

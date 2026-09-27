@@ -13,6 +13,7 @@ import {
 	type PendingAgentAction,
 } from "@semoss/sdk";
 import { type Translate, translateEnglish } from "../i18n/messages";
+import type { ApprovalKeyLabels } from "../keymap/keymap";
 import { type Line, textLine } from "../transcript/line";
 import { lineForItem, toolLabel, toTranscript } from "../transcript/transcript";
 import type { RunEntry, SessionEntry } from "./entries";
@@ -107,9 +108,19 @@ export const runEndLine = (
 	}
 };
 
+/** What a host changes about how a run is drawn. */
+export interface RunLinesOptions {
+	/**
+	 * A host passes the keys its prompt binds to the four approval actions, and
+	 * the hint under a waiting call then names the keys instead of the commands.
+	 */
+	approvalKeys?: ApprovalKeyLabels;
+}
+
 export const runLines = (
 	run: RunEntry,
 	translate: Translate = translateEnglish,
+	options: RunLinesOptions = {},
 ): Line[] => {
 	const lines = toTranscript(run.items, {
 		prompt: run.prompt,
@@ -133,7 +144,7 @@ export const runLines = (
 	}
 
 	// A question from RequestUserInput is answered in its form, not approved,
-	// so it gets its own line and no :approve hint.
+	// so it gets its own line and no approval hint.
 	const approvals = run.pendingActions.filter(
 		(action) => !isRequestUserInputAction(action),
 	);
@@ -148,7 +159,15 @@ export const runLines = (
 		);
 	}
 	if (approvals.length > 0) {
-		lines.push(textLine(translate("run.approvalHint"), "dim"));
+		const hint = options.approvalKeys
+			? translate("run.approvalKeys", {
+					approve: options.approvalKeys.approve,
+					deny: options.approvalKeys.deny,
+					edit: options.approvalKeys.edit,
+					always: options.approvalKeys.always,
+				})
+			: translate("run.approvalHint");
+		lines.push(textLine(hint, "dim"));
 	}
 	if (approvals.length < run.pendingActions.length) {
 		lines.push(textLine(translate("run.awaitingAnswer"), "accent"));
@@ -182,10 +201,11 @@ export const runLines = (
 export const entryLines = (
 	entry: SessionEntry,
 	translate: Translate = translateEnglish,
+	options: RunLinesOptions = {},
 ): readonly Line[] => {
 	switch (entry.kind) {
 		case "run":
-			return runLines(entry, translate);
+			return runLines(entry, translate, options);
 		case "input":
 			return [{ kind: "prompt", text: entry.text }];
 		case "notice":

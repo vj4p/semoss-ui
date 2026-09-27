@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	approvalKeyLabels,
 	chordLabel,
 	chordParts,
 	DEFAULT_KEYMAP,
@@ -27,6 +28,7 @@ const idle: KeyContext = {
 	inputEmpty: true,
 	caretOnFirstLine: true,
 	caretOnLastLine: true,
+	approvalReady: false,
 };
 
 const running: KeyContext = { ...idle, running: true };
@@ -125,6 +127,59 @@ describe("resolveKey", () => {
 	it("leaves ordinary typing alone", () => {
 		expect(resolveKey(key("h"), idle)).toBeUndefined();
 		expect(resolveKey(key("c"), running)).toBeUndefined();
+	});
+
+	const ready: KeyContext = { ...idle, approvalReady: true };
+
+	it("approves, denies, edits, or always-allows when ready and input is empty", () => {
+		expect(resolveKey(key("a"), ready)).toBe("approve");
+		expect(resolveKey(key("d"), ready)).toBe("deny");
+		expect(resolveKey(key("e"), ready)).toBe("edit");
+		expect(resolveKey(key("A", { shiftKey: true }), ready)).toBe(
+			"alwaysAllow",
+		);
+	});
+
+	it("does not decide an approval when not ready", () => {
+		expect(resolveKey(key("a"), idle)).toBeUndefined();
+		expect(resolveKey(key("d"), idle)).toBeUndefined();
+		expect(resolveKey(key("e"), idle)).toBeUndefined();
+		expect(resolveKey(key("A", { shiftKey: true }), idle)).toBeUndefined();
+	});
+
+	it("does not decide an approval when input is not empty", () => {
+		const typing = { ...ready, inputEmpty: false };
+		expect(resolveKey(key("a"), typing)).toBeUndefined();
+		expect(resolveKey(key("d"), typing)).toBeUndefined();
+		expect(resolveKey(key("e"), typing)).toBeUndefined();
+		expect(
+			resolveKey(key("A", { shiftKey: true }), typing),
+		).toBeUndefined();
+	});
+
+	it("approves on A without Shift (Caps Lock on)", () => {
+		expect(resolveKey(key("A"), ready)).toBe("approve");
+	});
+
+	it("does not decide an approval with Ctrl or Meta", () => {
+		expect(resolveKey(key("a", { ctrlKey: true }), ready)).toBeUndefined();
+		expect(resolveKey(key("a", { metaKey: true }), ready)).toBeUndefined();
+	});
+
+	it("follows the letter on a non-Latin layout", () => {
+		// Russian layout: "ф" is on the A key.
+		expect(resolveKey(key("ф", { code: "KeyA" }), ready)).toBe("approve");
+	});
+
+	it("does not match AZERTY's Q key as A", () => {
+		// AZERTY: "q" is on the A key, but it's a Latin letter.
+		expect(resolveKey(key("q", { code: "KeyA" }), ready)).toBeUndefined();
+	});
+
+	it("does not decide an approval while composing", () => {
+		expect(
+			resolveKey(key("a", { isComposing: true }), ready),
+		).toBeUndefined();
 	});
 
 	it("takes the first matching binding when several could apply", () => {
@@ -237,5 +292,23 @@ describe("chordParts", () => {
 		expect(chordLabel({ key: "Escape" })).toBe("Esc");
 		expect(chordLabel({ key: "ArrowUp" })).toBe("↑");
 		expect(chordLabel({ key: "Enter", shift: true })).toBe("Shift+Enter");
+	});
+});
+
+describe("approvalKeyLabels", () => {
+	it("returns labels for all four approval actions from the default keymap", () => {
+		expect(approvalKeyLabels(DEFAULT_KEYMAP)).toEqual({
+			approve: "A",
+			deny: "D",
+			edit: "E",
+			always: "Shift+A",
+		});
+	});
+
+	it("returns undefined when any action is missing from the keymap", () => {
+		const incomplete = DEFAULT_KEYMAP.filter(
+			(b) => b.action !== "alwaysAllow",
+		);
+		expect(approvalKeyLabels(incomplete)).toBeUndefined();
 	});
 });

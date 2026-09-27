@@ -36,6 +36,8 @@ export const MESSAGES = {
 	"run.startFailed": "Could not start the run: {{message}}",
 	"run.awaitingApproval": "{{tool}} is waiting for approval.",
 	"run.approvalHint": "Type :approve to allow it, or :deny to reject it.",
+	"run.approvalKeys":
+		"With the prompt empty, press {{approve}} to allow it, {{deny}} to reject it, {{edit}} to change its arguments, or {{always}} to always allow it.",
 	"run.awaitingAnswer": "The agent is asking for your input.",
 	"run.stopping": "Stopping…",
 	"run.reconnecting": "Cannot reach the server. Retrying… ({{message}})",
@@ -63,7 +65,26 @@ export const MESSAGES = {
 	"session.answerInForm":
 		"The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
 	"session.approved": "Approved {{tool}}.",
+	"session.approvedEdited": "Approved {{tool}} with your changes.",
 	"session.denied": "Denied {{tool}}.",
+	"session.editInvalid": "That is not valid JSON: {{message}}",
+	"session.editNotObject": "The arguments must be a JSON object, in braces.",
+	"session.editGone":
+		"The call you were editing is no longer waiting. Nothing was sent.",
+	"session.alwaysAllowed":
+		"Approved {{tool}}. It runs without asking until you type :revoke, start a new room or reload.",
+	"session.autoApproveFailed":
+		"Could not approve {{tool}} automatically: {{message}}. It is waiting for you.",
+	"session.cannotAlwaysAllow":
+		"{{tool}} cannot be always allowed, so it is asked about every time.",
+	"session.allowedList": "Tools that run without asking",
+	"session.allowedNone": "No tool runs without asking.",
+	"session.revokeHint":
+		"Type :revoke followed by a name to be asked about it again, or :revoke alone for every tool.",
+	"session.revoked": "{{tool}} will be asked about again.",
+	"session.revokedAll": "Every tool will be asked about again.",
+	"session.unknownAllowed":
+		'No tool named "{{name}}" runs without asking. Type :allowed to list them.',
 	"session.decisionFailed": "Could not send the decision: {{message}}",
 	"session.saveFailed": "Could not save the room settings: {{message}}",
 	"session.newRoom": "New room. It is saved when you send the first prompt.",
@@ -87,6 +108,12 @@ export const MESSAGES = {
 	"command.clear": "Clear the screen (the room keeps its history)",
 	"command.approve": "Allow the tool call that is waiting",
 	"command.deny": "Reject the tool call that is waiting",
+	"command.edit": "Change the waiting call's arguments, then approve it",
+	"command.always":
+		"Approve the waiting call, and stop asking about its tool",
+	"command.allowed": "List the tools that run without asking",
+	"command.revoke":
+		"Ask about a tool again, or every tool when none is named",
 	"command.export": "Save the last run's raw events as JSON",
 
 	"help.commands": "Commands",
@@ -102,6 +129,11 @@ export const MESSAGES = {
 	"key.clearInput": "Clear the input",
 	"key.clearViewport": "Clear the screen",
 	"key.cycleHarness": "Next harness",
+	"key.approve": "Approve the waiting tool call (prompt empty)",
+	"key.deny": "Deny the waiting tool call (prompt empty)",
+	"key.edit": "Edit the waiting call's arguments (prompt empty)",
+	"key.alwaysAllow":
+		"Approve it, and stop asking about its tool (prompt empty)",
 } as const;
 
 export type MessageKey = keyof typeof MESSAGES;

@@ -39,6 +39,7 @@ const keyContext = (
 		caretOnFirstLine:
 			collapsed && !value.slice(0, selectionStart).includes("\n"),
 		caretOnLastLine: collapsed && !value.slice(selectionEnd).includes("\n"),
+		approvalReady: false,
 	};
 };
 

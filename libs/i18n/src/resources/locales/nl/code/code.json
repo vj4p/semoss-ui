@@ -80,6 +80,7 @@
 			"startFailed": "Kan de uitvoering niet starten: {{message}}",
 			"awaitingApproval": "{{tool}} wacht op goedkeuring.",
 			"approvalHint": "Typ :approve om het toe te staan, of :deny om het te weigeren.",
+			"approvalKeys": "Druk met een lege prompt op {{approve}} om het toe te staan, {{deny}} om het te weigeren, {{edit}} om de argumenten te wijzigen, of {{always}} om het altijd toe te staan.",
 			"awaitingAnswer": "De agent vraagt om uw invoer.",
 			"stopping": "Bezig met stoppen…",
 			"reconnecting": "Kan de server niet bereiken. Opnieuw proberen… ({{message}})"
@@ -102,7 +103,20 @@
 			"nothingPending": "Er wacht niets op goedkeuring.",
 			"answerInForm": "De agent heeft een vraag gesteld. Beantwoord deze in het formulier, of typ :deny om de vraag te sluiten.",
 			"approved": "{{tool}} goedgekeurd.",
+			"approvedEdited": "{{tool}} goedgekeurd met uw wijzigingen.",
 			"denied": "{{tool}} geweigerd.",
+			"editInvalid": "Dat is geen geldige JSON: {{message}}",
+			"editNotObject": "De argumenten moeten een JSON-object zijn, tussen accolades.",
+			"editGone": "De aanroep die u aan het bewerken was, wacht niet meer. Er is niets verzonden.",
+			"alwaysAllowed": "{{tool}} goedgekeurd. Het wordt zonder te vragen uitgevoerd totdat u :revoke typt, een nieuwe ruimte start of de pagina herlaadt.",
+			"autoApproveFailed": "Kan {{tool}} niet automatisch goedkeuren: {{message}}. Het wacht op u.",
+			"cannotAlwaysAllow": "{{tool}} kan niet altijd worden toegestaan, dus er wordt elke keer om goedkeuring gevraagd.",
+			"allowedList": "Tools die zonder te vragen worden uitgevoerd",
+			"allowedNone": "Er is geen tool die zonder te vragen wordt uitgevoerd.",
+			"revokeHint": "Typ :revoke gevolgd door een naam om voor die tool weer om goedkeuring te laten vragen, of alleen :revoke voor alle tools.",
+			"revoked": "Voor {{tool}} wordt weer om goedkeuring gevraagd.",
+			"revokedAll": "Voor elke tool wordt weer om goedkeuring gevraagd.",
+			"unknownAllowed": "Er is geen tool met de naam \"{{name}}\" die zonder te vragen wordt uitgevoerd. Typ :allowed om ze weer te geven.",
 			"decisionFailed": "Kan de beslissing niet verzenden: {{message}}",
 			"saveFailed": "Kan de ruimte-instellingen niet opslaan: {{message}}",
 			"newRoom": "Nieuwe ruimte. Deze wordt opgeslagen zodra u de eerste prompt verstuurt.",
@@ -123,6 +137,10 @@
 			"clear": "Het scherm wissen (de ruimte behoudt de geschiedenis)",
 			"approve": "De wachtende toolaanroep toestaan",
 			"deny": "De wachtende toolaanroep weigeren",
+			"edit": "De argumenten van de wachtende aanroep wijzigen en deze vervolgens goedkeuren",
+			"always": "De wachtende aanroep goedkeuren, en de tool voortaan zonder vragen toestaan",
+			"allowed": "De tools weergeven die zonder te vragen worden uitgevoerd",
+			"revoke": "Weer om goedkeuring vragen voor een tool, of voor alle tools als er geen wordt genoemd",
 			"export": "De onbewerkte gebeurtenissen van de laatste uitvoering als JSON opslaan"
 		},
 		"help": {
@@ -138,7 +156,11 @@
 			"interrupt": "De actieve agent stoppen",
 			"clearInput": "De invoer wissen",
 			"clearViewport": "Het scherm wissen",
-			"cycleHarness": "Volgende harness"
+			"cycleHarness": "Volgende harness",
+			"approve": "De wachtende toolaanroep goedkeuren (lege prompt)",
+			"deny": "De wachtende toolaanroep weigeren (lege prompt)",
+			"edit": "De argumenten van de wachtende aanroep bewerken (lege prompt)",
+			"alwaysAllow": "Goedkeuren, en de tool voortaan zonder vragen toestaan (lege prompt)"
 		}
 	}
 }

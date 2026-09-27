@@ -14,6 +14,7 @@ const COMPLETED = "The run finished.";
 const state = (...entries: SessionEntry[]): SessionState => ({
 	catalog: { harnesses: [], models: [] },
 	entries,
+	alwaysAllowed: [],
 });
 
 const notice = (id: string, ...texts: string[]): SessionEntry => ({

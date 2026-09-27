@@ -79,6 +79,7 @@
 			"startFailed": "実行を開始できませんでした: {{message}}",
 			"awaitingApproval": "{{tool}} が承認を待っています。",
 			"approvalHint": ":approve と入力すると許可、:deny と入力すると拒否します。",
+			"approvalKeys": "プロンプトが空の状態で、許可するには {{approve}}、拒否するには {{deny}}、引数を変更するには {{edit}}、常に許可するには {{always}} を押してください。",
 			"awaitingAnswer": "エージェントがあなたの入力を求めています。",
 			"stopping": "停止しています…",
 			"reconnecting": "サーバーに接続できません。再試行しています… ({{message}})"
@@ -101,7 +102,20 @@
 			"nothingPending": "承認待ちのものはありません。",
 			"answerInForm": "エージェントが質問しています。フォームで回答するか、:deny と入力して閉じてください。",
 			"approved": "{{tool}} を承認しました。",
+			"approvedEdited": "{{tool}} を変更内容とともに承認しました。",
 			"denied": "{{tool}} を拒否しました。",
+			"editInvalid": "有効な JSON ではありません: {{message}}",
+			"editNotObject": "引数は、中括弧で囲まれた JSON オブジェクトである必要があります。",
+			"editGone": "編集していた呼び出しはもう待機していません。何も送信されませんでした。",
+			"alwaysAllowed": "{{tool}} を承認しました。:revoke と入力するか、新しいルームを開始するか、リロードするまで、確認なしで実行されます。",
+			"autoApproveFailed": "{{tool}} を自動的に承認できませんでした: {{message}}。確認を待っています。",
+			"cannotAlwaysAllow": "{{tool}} は常に許可できないため、毎回確認が必要です。",
+			"allowedList": "確認なしで実行されるツール",
+			"allowedNone": "確認なしで実行されるツールはありません。",
+			"revokeHint": ":revoke に続けて名前を入力すると、そのツールは再び確認されます。:revoke だけを入力すると、すべてのツールが対象になります。",
+			"revoked": "{{tool}} は再び確認されるようになります。",
+			"revokedAll": "すべてのツールが再び確認されるようになります。",
+			"unknownAllowed": "確認なしで実行されるツールに「{{name}}」はありません。:allowed と入力すると一覧を表示します。",
 			"decisionFailed": "判断を送信できませんでした: {{message}}",
 			"saveFailed": "ルームの設定を保存できませんでした: {{message}}",
 			"newRoom": "新しいルームです。最初のプロンプトを送信すると保存されます。",
@@ -122,6 +136,10 @@
 			"clear": "画面をクリア (ルームの履歴は残ります)",
 			"approve": "待機中のツール呼び出しを許可",
 			"deny": "待機中のツール呼び出しを拒否",
+			"edit": "待機中の呼び出しの引数を変更して承認",
+			"always": "待機中の呼び出しを承認し、以後そのツールの確認を省略",
+			"allowed": "確認なしで実行されるツールの一覧を表示",
+			"revoke": "ツールの確認を再開 (名前を省略するとすべてのツール)",
 			"export": "直前の実行の生イベントを JSON として保存"
 		},
 		"help": {
@@ -137,7 +155,11 @@
 			"interrupt": "実行中のエージェントを停止",
 			"clearInput": "入力をクリア",
 			"clearViewport": "画面をクリア",
-			"cycleHarness": "次のハーネス"
+			"cycleHarness": "次のハーネス",
+			"approve": "待機中のツール呼び出しを承認 (プロンプトが空のとき)",
+			"deny": "待機中のツール呼び出しを拒否 (プロンプトが空のとき)",
+			"edit": "待機中の呼び出しの引数を編集 (プロンプトが空のとき)",
+			"alwaysAllow": "承認し、以後そのツールの確認を省略 (プロンプトが空のとき)"
 		}
 	}
 }

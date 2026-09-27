@@ -44,7 +44,11 @@ export type KeyAction =
 	| "interrupt"
 	| "clearInput"
 	| "clearViewport"
-	| "cycleHarness";
+	| "cycleHarness"
+	| "approve"
+	| "deny"
+	| "edit"
+	| "alwaysAllow";
 
 /** The subset of a DOM `KeyboardEvent` matching reads, so a CLI can build one. */
 export interface KeyEventLike {
@@ -68,6 +72,11 @@ export interface KeyContext {
 	/** ↑ recalls history only from the first line, so it still moves the caret in a multi-line prompt. */
 	caretOnFirstLine: boolean;
 	caretOnLastLine: boolean;
+	/**
+	 * A tool call is waiting for approval and has been on screen for
+	 * {@link APPROVAL_KEY_DELAY_MS}. The host decides it.
+	 */
+	approvalReady: boolean;
 }
 
 export interface Chord {
@@ -88,11 +97,26 @@ export interface KeyBinding {
 }
 
 /**
+ * How long an approval must be on screen before a single key decides it.
+ *
+ * Longer than the gap between a typist's keystrokes, so a key already on its
+ * way when the approval appears types instead of deciding. About the time a
+ * person takes to notice something new. A host restarts it whenever the call
+ * the keys act on changes, so a double-tapped key cannot decide the call behind
+ * the first.
+ */
+export const APPROVAL_KEY_DELAY_MS = 500;
+
+/**
  * The default bindings, in priority order: the first that matches wins.
  *
  * Ctrl+C carries two actions on disjoint conditions, which is the terminal
  * idiom exactly — it interrupts a running agent, clears a half-typed prompt
  * otherwise, and copies whenever something is selected.
+ *
+ * Plain letters decide a waiting approval only on an empty prompt, so they
+ * never eat a typed character. With Caps Lock on, `A` without Shift approves
+ * and never always-allows.
  */
 export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
 	{ chord: { key: "Enter" }, action: "submit", describe: "key.submit" },
@@ -140,6 +164,30 @@ export const DEFAULT_KEYMAP: readonly KeyBinding[] = [
 		chord: { key: "h", alt: true },
 		action: "cycleHarness",
 		describe: "key.cycleHarness",
+	},
+	{
+		chord: { key: "a" },
+		action: "approve",
+		when: { approvalReady: true, inputEmpty: true },
+		describe: "key.approve",
+	},
+	{
+		chord: { key: "d" },
+		action: "deny",
+		when: { approvalReady: true, inputEmpty: true },
+		describe: "key.deny",
+	},
+	{
+		chord: { key: "e" },
+		action: "edit",
+		when: { approvalReady: true, inputEmpty: true },
+		describe: "key.edit",
+	},
+	{
+		chord: { key: "a", shift: true },
+		action: "alwaysAllow",
+		when: { approvalReady: true, inputEmpty: true },
+		describe: "key.alwaysAllow",
 	},
 ];
 
@@ -236,3 +284,33 @@ export const chordParts = (
 
 export const chordLabel = (chord: Chord, platform?: Platform): string =>
 	chordParts(chord, platform).join("+");
+
+/** What each approval key is called, for the hints that name them. */
+export interface ApprovalKeyLabels {
+	approve: string;
+	deny: string;
+	edit: string;
+	always: string;
+}
+
+/**
+ * The keys a keymap binds to the four approval actions, each labelled as
+ * {@link chordLabel} draws the first binding for it. Undefined when any of the
+ * four is unbound, and a host then names the commands instead.
+ */
+export const approvalKeyLabels = (
+	keymap: readonly KeyBinding[],
+	platform?: Platform,
+): ApprovalKeyLabels | undefined => {
+	const label = (action: KeyAction) => {
+		const binding = keymap.find((candidate) => candidate.action === action);
+		return binding && chordLabel(binding.chord, platform);
+	};
+	const approve = label("approve");
+	const deny = label("deny");
+	const edit = label("edit");
+	const always = label("alwaysAllow");
+	return approve && deny && edit && always
+		? { approve, deny, edit, always }
+		: undefined;
+};

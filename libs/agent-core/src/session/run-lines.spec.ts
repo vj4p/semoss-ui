@@ -5,6 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 import type { AgentRunItem, PendingAgentAction } from "@semoss/sdk";
+import { translateEnglish } from "../i18n/messages";
+import type { ApprovalKeyLabels } from "../keymap/keymap";
 import type { Line } from "../transcript/line";
 import type { RunEntry } from "./entries";
 import { actionLabel, entryLines, runLines } from "./run-lines";
@@ -87,6 +89,13 @@ const texts = (entry: RunEntry) => runLines(entry).map(plain);
 const emphasisOf = (entry: RunEntry, text: string) => {
 	const line = runLines(entry).find((candidate) => plain(candidate) === text);
 	return line?.kind === "text" ? line.segments[0]?.emphasis : undefined;
+};
+
+const KEYS: ApprovalKeyLabels = {
+	approve: "A",
+	deny: "D",
+	edit: "E",
+	always: "Shift+A",
 };
 
 describe("runLines", () => {
@@ -259,6 +268,35 @@ describe("runLines", () => {
 				"The agent is asking for your input.",
 			]);
 		});
+
+		it("names the keys instead of the commands when the host binds them", () => {
+			const entry = run({
+				status: "INPUT_REQUIRED",
+				pendingActions: [action({ toolName: "Bash" })],
+			});
+			const lines = runLines(entry, translateEnglish, {
+				approvalKeys: KEYS,
+			});
+			expect(lines.slice(1).map(plain)).toEqual([
+				"Bash is waiting for approval.",
+				"With the prompt empty, press A to allow it, D to reject it, E to change its arguments, or Shift+A to always allow it.",
+			]);
+			expect(lines.at(-1)).toMatchObject({
+				segments: [{ emphasis: "dim" }],
+			});
+		});
+
+		it("gives a question alone no key hint", () => {
+			const entry = run({
+				status: "INPUT_REQUIRED",
+				pendingActions: [action({ toolName: "RequestUserInput" })],
+			});
+			expect(
+				runLines(entry, translateEnglish, { approvalKeys: KEYS })
+					.slice(1)
+					.map(plain),
+			).toEqual(["The agent is asking for your input."]);
+		});
 	});
 
 	describe("while the console follows the run", () => {
@@ -416,5 +454,18 @@ describe("entryLines", () => {
 	it("draws a run with runLines", () => {
 		const entry = run({ status: "CANCELLED", endedAt: 2 });
 		expect(entryLines(entry)).toEqual(runLines(entry));
+	});
+
+	it("passes the host's options through to runLines", () => {
+		const entry = run({
+			status: "INPUT_REQUIRED",
+			pendingActions: [action()],
+		});
+		const options = { approvalKeys: KEYS };
+		const lines = entryLines(entry, translateEnglish, options);
+		expect(lines).toEqual(runLines(entry, translateEnglish, options));
+		expect(lines.map(plain)).toContain(
+			"With the prompt empty, press A to allow it, D to reject it, E to change its arguments, or Shift+A to always allow it.",
+		);
 	});
 });

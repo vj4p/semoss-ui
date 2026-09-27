@@ -1,10 +1,13 @@
 /**
- * The built-in commands: what `:help`, `:harness` and `:model` print, and
- * that the rest reach the session.
+ * The built-in commands: what `:help`, `:harness`, `:model` and `:allowed`
+ * print, and that the rest reach the session.
  *
  * They run through a real session, typed as a user types them, so what is
  * tested is what the console does with the line and not only what the spec
  * would do if called.
+ *
+ * The decision commands replace the session method they call with a spy; what
+ * the session then does with a waiting call is tested in `session.spec.ts`.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -96,6 +99,19 @@ describe(":help", () => {
 			[":clear", "Clear the screen (the room keeps its history)"],
 			[":approve, :allow", "Allow the tool call that is waiting"],
 			[":deny, :reject", "Reject the tool call that is waiting"],
+			[
+				":edit <json…>",
+				"Change the waiting call's arguments, then approve it",
+			],
+			[
+				":always",
+				"Approve the waiting call, and stop asking about its tool",
+			],
+			[":allowed", "List the tools that run without asking"],
+			[
+				":revoke [tool…]",
+				"Ask about a tool again, or every tool when none is named",
+			],
 		]);
 	});
 
@@ -131,6 +147,13 @@ describe(":help", () => {
 			["Ctrl+C", "Clear the input"],
 			["Ctrl+L", "Clear the screen"],
 			["Alt+H", "Next harness"],
+			["A", "Approve the waiting tool call (prompt empty)"],
+			["D", "Deny the waiting tool call (prompt empty)"],
+			["E", "Edit the waiting call's arguments (prompt empty)"],
+			[
+				"Shift+A",
+				"Approve it, and stop asking about its tool (prompt empty)",
+			],
 		]);
 	});
 
@@ -139,10 +162,7 @@ describe(":help", () => {
 			await printed(setup({ host: { platform: "mac" } }), ":help"),
 			"Keys",
 		);
-		expect(columns(rows.at(-1) ?? "")).toEqual([
-			"Option+H",
-			"Next harness",
-		]);
+		expect(rows.map(columns)).toContainEqual(["Option+H", "Next harness"]);
 	});
 
 	it("lists the host's keys when it binds its own", async () => {
@@ -309,12 +329,72 @@ describe("the other commands", () => {
 
 	it("refuse arguments they do not take", async () => {
 		const session = setup();
-		for (const command of [":stop now", ":help me", ":approve all"]) {
+		for (const command of [
+			":stop now",
+			":help me",
+			":approve all",
+			":always now",
+			":allowed x",
+		]) {
 			const [name] = command.split(" ");
 			expect(await session.submit(command)).toEqual({
 				kind: "error",
 				message: `Usage: ${name}`,
 			});
 		}
+	});
+});
+
+describe("the decision commands", () => {
+	it(":edit hands the session its JSON as typed, newlines and all", async () => {
+		const session = setup();
+		const edit = vi.spyOn(session, "edit").mockResolvedValue(true);
+		const json = '{\n\t"command": "pwd",\n\t"cwd": "/tmp"\n}';
+		expect(await session.submit(`:edit ${json}`)).toEqual({
+			kind: "ran",
+			name: "edit",
+		});
+		expect(edit).toHaveBeenCalledWith(json);
+	});
+
+	it(":edit alone is refused, and sends nothing", async () => {
+		const session = setup();
+		const edit = vi.spyOn(session, "edit");
+		expect(await session.submit(":edit")).toEqual({
+			kind: "error",
+			message: "Usage: :edit <json…>",
+		});
+		expect(edit).not.toHaveBeenCalled();
+	});
+
+	it(":always always allows the waiting call", async () => {
+		const session = setup();
+		const alwaysAllow = vi
+			.spyOn(session, "alwaysAllow")
+			.mockResolvedValue(true);
+		expect(await session.submit(":always")).toEqual({
+			kind: "ran",
+			name: "always",
+		});
+		expect(alwaysAllow).toHaveBeenCalledWith();
+	});
+
+	it(":revoke hands the session the name as typed, or nothing for every tool", async () => {
+		const session = setup();
+		const revoke = vi.spyOn(session, "revoke").mockReturnValue(true);
+		await session.submit(":revoke Run a command");
+		await session.submit(":revoke");
+		expect(revoke.mock.calls).toEqual([["Run a command"], [""]]);
+	});
+
+	it(":allowed says so when no tool runs without asking", async () => {
+		expect(await printed(setup(), ":allowed")).toEqual([
+			{
+				kind: "text",
+				segments: [
+					{ text: "No tool runs without asking.", emphasis: "dim" },
+				],
+			},
+		]);
 	});
 });

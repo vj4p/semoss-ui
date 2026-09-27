@@ -32,12 +32,14 @@ import {
 	currentHarness,
 	currentModel,
 	EXPORT_EVENT_LIMIT,
+	keyedApproval,
 	type RunExport,
 	type RunRequest,
 	type Session,
 	type SessionBackend,
 	type SessionCatalog,
 	type SessionOptions,
+	type SessionState,
 } from "./session";
 
 const CATALOG: SessionCatalog = {
@@ -1323,5 +1325,492 @@ describe("selectors", () => {
 		expect(activeRunEntry(session.getState())).toBeUndefined();
 		await start(session);
 		expect(activeRunEntry(session.getState())?.prompt).toBe(PROMPT);
+	});
+
+	it("keyedApproval returns the first non-question waiting action", async () => {
+		const bash = action({
+			actionId: "a-bash",
+			toolCallId: "t1",
+			toolName: "Bash",
+		});
+		const question = action({
+			actionId: "a-question",
+			toolName: "RequestUserInput",
+		});
+		const { session, latest } = setup();
+		await start(session);
+		expect(keyedApproval(session.getState())).toBeUndefined();
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [question] });
+		expect(keyedApproval(session.getState())).toBeUndefined();
+		latest().poll({
+			status: "INPUT_REQUIRED",
+			pendingActions: [question, bash],
+		});
+		expect(keyedApproval(session.getState())?.actionId).toBe("a-bash");
+	});
+});
+
+describe("editing a call", () => {
+	const bash = action({
+		actionId: "a-bash",
+		toolCallId: "t1",
+		toolName: "Bash",
+		toolArgs: { command: "ls -la" },
+	});
+	const question = action({
+		actionId: "a-question",
+		toolName: "RequestUserInput",
+	});
+
+	const waitingOn = async (...pending: PendingAgentAction[]) => {
+		const { session, latest } = setup();
+		await start(session);
+		const run = latest();
+		run.poll({ status: "INPUT_REQUIRED", pendingActions: pending }, [
+			run.started(tool("t1", "Run a command")),
+		]);
+		return { session, run };
+	};
+
+	it("startEdit gives the keyed approval's arguments as an :edit command, and says nothing", async () => {
+		const { session } = await waitingOn(bash);
+		expect(session.startEdit()).toBe(
+			`:edit ${JSON.stringify(bash.toolArgs, null, 2)}`,
+		);
+		expect(notices(session)).toEqual([]);
+	});
+
+	it("skips a question queued before the call", async () => {
+		const { session } = await waitingOn(question, bash);
+		expect(session.startEdit()).toBe(
+			`:edit ${JSON.stringify(bash.toolArgs, null, 2)}`,
+		);
+	});
+
+	it("with only a question waiting: undefined and the answerInForm notice", async () => {
+		const { session } = await waitingOn(question);
+		expect(session.startEdit()).toBeUndefined();
+		expect(notices(session)).toEqual([
+			"The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
+		]);
+	});
+
+	it("with nothing waiting: undefined and the nothingPending notice", async () => {
+		const { session } = setup();
+		expect(session.startEdit()).toBeUndefined();
+		expect(notices(session)).toEqual(["Nothing is waiting for approval."]);
+	});
+
+	it("edit with changed JSON calls decide with the parsed object", async () => {
+		const { session, run } = await waitingOn(bash);
+		session.startEdit();
+		await session.edit('{"command": "pwd"}');
+		expect(run.fake.decide).toHaveBeenCalledWith(bash, "submit", {
+			command: "pwd",
+		});
+		expect(notices(session)).toEqual([
+			"Approved Run a command with your changes.",
+		]);
+	});
+
+	it("with the JSON unchanged, says approved, not approved with changes", async () => {
+		const { session, run } = await waitingOn(bash);
+		session.startEdit();
+		expect(await session.edit('{"command": "ls -la"}')).toBe(true);
+		expect(run.fake.decide).toHaveBeenCalledWith(bash, "submit", {
+			command: "ls -la",
+		});
+		expect(notices(session)).toEqual(["Approved Run a command."]);
+	});
+
+	it("JSON spread over several lines works", async () => {
+		const { session, run } = await waitingOn(bash);
+		await session.edit('{\n  "command": "pwd"\n}');
+		expect(run.fake.decide).toHaveBeenCalledWith(bash, "submit", {
+			command: "pwd",
+		});
+	});
+
+	it("invalid JSON: the editInvalid notice, decide not called", async () => {
+		const { session, run } = await waitingOn(bash);
+		expect(await session.edit("{not json}")).toBe(false);
+		expect(run.fake.decide).not.toHaveBeenCalled();
+		expect(notices(session).some((n) => n.includes("not valid JSON"))).toBe(
+			true,
+		);
+		expect(lastRun(session).pendingActions).toEqual([bash]);
+	});
+
+	it("an array: the editNotObject notice", async () => {
+		const { session, run } = await waitingOn(bash);
+		expect(await session.edit("[]")).toBe(false);
+		expect(run.fake.decide).not.toHaveBeenCalled();
+		expect(notices(session)).toEqual([
+			"The arguments must be a JSON object, in braces.",
+		]);
+	});
+
+	it("startEdit, then the call is approved, then edit: nothing is sent, and the call is forgotten", async () => {
+		const { session, run } = await waitingOn(bash);
+		session.startEdit();
+		await session.approve();
+		expect(await session.edit('{"command": "pwd"}')).toBe(false);
+		expect(run.fake.decide).toHaveBeenCalledTimes(1);
+		expect(notices(session).at(-1)).toBe(
+			"The call you were editing is no longer waiting. Nothing was sent.",
+		);
+		expect(await session.edit('{"command": "pwd"}')).toBe(false);
+		expect(run.fake.decide).toHaveBeenCalledTimes(1);
+		expect(notices(session).at(-1)).toBe(
+			"Nothing is waiting for approval.",
+		);
+	});
+
+	it("forgets the call once its edit is sent, so the next edit is the next call's", async () => {
+		const write = action({
+			actionId: "a-write",
+			toolCallId: "t2",
+			toolName: "Write",
+			toolArgs: { path: "a.txt" },
+		});
+		const { session, run } = await waitingOn(bash, write);
+		session.startEdit();
+		expect(await session.edit('{"command": "pwd"}')).toBe(true);
+		expect(await session.edit('{"path": "b.txt"}')).toBe(true);
+		expect(run.fake.decide).toHaveBeenLastCalledWith(write, "submit", {
+			path: "b.txt",
+		});
+	});
+
+	it("an argument holding an RLO: startEdit shows its escape, and edit sends the character itself", async () => {
+		const rlo = String.fromCodePoint(0x202e);
+		const tricky = action({ ...bash, toolArgs: { command: `ls${rlo}` } });
+		const { session, run } = await waitingOn(tricky);
+		const text = session.startEdit() ?? "";
+		expect(text).toContain(`${String.fromCodePoint(92)}u202e`);
+		expect(text).not.toContain(rlo);
+		expect(await session.edit(text.slice(":edit ".length))).toBe(true);
+		expect(run.fake.decide).toHaveBeenCalledWith(tricky, "submit", {
+			command: `ls${rlo}`,
+		});
+		expect(notices(session)).toEqual(["Approved Run a command."]);
+	});
+});
+
+describe("always allowing a tool", () => {
+	const bash = action({
+		actionId: "a-bash",
+		toolCallId: "t1",
+		toolName: "Bash",
+	});
+	const bash2 = action({
+		actionId: "a-bash-2",
+		toolCallId: "t2",
+		toolName: "Bash",
+	});
+	const edit = action({
+		actionId: "a-edit",
+		toolCallId: "t3",
+		toolName: "Edit",
+	});
+	const question = action({
+		actionId: "a-question",
+		toolName: "RequestUserInput",
+	});
+
+	const waitingOn = async (...pending: PendingAgentAction[]) => {
+		const { session, latest } = setup();
+		await start(session);
+		const run = latest();
+		run.poll({ status: "INPUT_REQUIRED", pendingActions: pending }, [
+			run.started(tool("t1", "Run a command")),
+		]);
+		return { session, run };
+	};
+
+	it("alwaysAllow approves, lists the tool, and says alwaysAllowed", async () => {
+		const { session } = await waitingOn(bash);
+		expect(await session.alwaysAllow()).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([
+			{ toolName: "Bash", label: "Run a command" },
+		]);
+		expect(notices(session)).toEqual([
+			"Approved Run a command. It runs without asking until you type :revoke, start a new room or reload.",
+		]);
+	});
+
+	it("lists nothing when the approval itself is refused", async () => {
+		const { session, run } = await waitingOn(bash);
+		run.fake.decide.mockRejectedValueOnce(new Error("Action stale"));
+		expect(await session.alwaysAllow()).toBe(false);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toEqual([
+			"Could not send the decision: Action stale",
+		]);
+	});
+
+	it("never allows a question: it goes to its form, and nothing is listed", async () => {
+		const { session, run } = await waitingOn(question);
+		expect(await session.alwaysAllow()).toBe(false);
+		expect(run.fake.decide).not.toHaveBeenCalled();
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toEqual([
+			"The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
+		]);
+	});
+
+	it("allows the call waiting behind a question, and leaves the question waiting", async () => {
+		const { session, run } = await waitingOn(question, bash);
+		expect(await session.alwaysAllow()).toBe(true);
+		expect(run.fake.decide).toHaveBeenCalledTimes(1);
+		expect(run.fake.decide).toHaveBeenCalledWith(bash, "submit", undefined);
+		expect(session.getState().alwaysAllowed).toEqual([
+			{ toolName: "Bash", label: "Run a command" },
+		]);
+		expect(lastRun(session).pendingActions).toEqual([question]);
+	});
+
+	it("a later poll bringing a new call of the same tool: decided automatically, silently, never shown waiting", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash] }, [
+			latest().started(tool("t1", "Run a command")),
+		]);
+		await session.alwaysAllow();
+		const noticesBefore = notices(session);
+		const states: SessionState[] = [];
+		const unsubscribe = session.subscribe(() => {
+			states.push(session.getState());
+		});
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash2] }, [
+			latest().started(tool("t2", "Another command")),
+		]);
+		await settle();
+		unsubscribe();
+		expect(states).not.toHaveLength(0);
+		expect(
+			states.some((each) =>
+				each.entries.some(
+					(entry) =>
+						entry.kind === "run" &&
+						entry.pendingActions.some(
+							(waiting) => waiting.actionId === bash2.actionId,
+						),
+				),
+			),
+		).toBe(false);
+		expect(notices(session)).toEqual(noticesBefore);
+		expect(lastRun(session).pendingActions).toEqual([]);
+		expect(latest().fake.decide).toHaveBeenCalledWith(
+			bash2,
+			"submit",
+			undefined,
+		);
+	});
+
+	it("the same through a reconcile that is not final", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash] });
+		await session.alwaysAllow();
+		latest().reconcile({
+			status: "INPUT_REQUIRED",
+			pendingActions: [bash2],
+		});
+		expect(lastRun(session).pendingActions).toEqual([]);
+		expect(latest().fake.decide).toHaveBeenCalledWith(
+			bash2,
+			"submit",
+			undefined,
+		);
+	});
+
+	it("a final reconcile sends nothing", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash] });
+		await session.alwaysAllow();
+		latest().reconcile({ status: "COMPLETED", pendingActions: [bash2] });
+		expect(latest().fake.decide).toHaveBeenCalledTimes(1);
+	});
+
+	it("a call of another tool still waits", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash] });
+		await session.alwaysAllow();
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [edit] });
+		expect(lastRun(session).pendingActions).toEqual([edit]);
+	});
+
+	it("two calls of the same tool waiting together: always allowing the first decides both", async () => {
+		const { session, run } = await waitingOn(bash, bash2);
+		await session.alwaysAllow();
+		expect(run.fake.decide).toHaveBeenCalledTimes(2);
+		expect(lastRun(session).pendingActions).toEqual([]);
+	});
+
+	it("hasUi: true: the cannotAlwaysAllow notice, nothing decided, nothing listed", async () => {
+		const uiCall = action({ ...bash, hasUi: true });
+		const { session, run } = await waitingOn(uiCall);
+		expect(await session.alwaysAllow()).toBe(false);
+		expect(run.fake.decide).not.toHaveBeenCalled();
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toContain(
+			"Run a command cannot be always allowed, so it is asked about every time.",
+		);
+	});
+
+	it("toolName: null: the cannotAlwaysAllow notice", async () => {
+		const noName = action({ ...bash, toolName: null });
+		const { session, run } = await waitingOn(noName);
+		expect(await session.alwaysAllow(noName)).toBe(false);
+		expect(run.fake.decide).not.toHaveBeenCalled();
+		expect(session.getState().alwaysAllowed).toEqual([]);
+	});
+
+	it("an automatic approval the backend refuses: shown waiting again, said, and not retried", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash] }, [
+			latest().started(tool("t1", "Run a command")),
+		]);
+		await session.alwaysAllow();
+		latest().fake.decide.mockRejectedValueOnce(new Error("Action stale"));
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash2] }, [
+			latest().started(tool("t2", "Another command")),
+		]);
+		await settle();
+		expect(lastRun(session).pendingActions).toEqual([bash2]);
+		expect(notices(session).at(-1)).toBe(
+			"Could not approve Another command automatically: Action stale. It is waiting for you.",
+		);
+		latest().poll({ status: "INPUT_REQUIRED", pendingActions: [bash2] });
+		await settle();
+		expect(lastRun(session).pendingActions).toEqual([bash2]);
+		expect(
+			latest().fake.decide.mock.calls.filter(
+				([decided]) => decided.actionId === bash2.actionId,
+			),
+		).toHaveLength(1);
+	});
+
+	it("revoke by label", async () => {
+		const { session } = await waitingOn(bash);
+		await session.alwaysAllow();
+		expect(session.revoke("Run a command")).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toContain(
+			"Run a command will be asked about again.",
+		);
+	});
+
+	it("revoke by toolName, ignoring case and surrounding spaces", async () => {
+		const { session } = await waitingOn(bash);
+		await session.alwaysAllow();
+		expect(session.revoke("  bash  ")).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session).at(-1)).toBe(
+			"Run a command will be asked about again.",
+		);
+	});
+
+	it("revoke() clearing all: revokedAll", async () => {
+		const { session } = await waitingOn(bash);
+		await session.alwaysAllow();
+		expect(session.revoke()).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toContain(
+			"Every tool will be asked about again.",
+		);
+	});
+
+	it("revoke with only spaces revokes every tool", async () => {
+		const { session } = await waitingOn(bash);
+		await session.alwaysAllow();
+		expect(session.revoke("   ")).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session).at(-1)).toBe(
+			"Every tool will be asked about again.",
+		);
+	});
+
+	it("revoke() with none: allowedNone", async () => {
+		const { session } = setup();
+		expect(session.revoke()).toBe(false);
+		expect(notices(session)).toEqual(["No tool runs without asking."]);
+	});
+
+	it('revoke("nope"): unknownAllowed and false', async () => {
+		const { session } = await waitingOn(bash);
+		await session.alwaysAllow();
+		expect(session.revoke("nope")).toBe(false);
+		expect(notices(session)).toContain(
+			'No tool named "nope" runs without asking. Type :allowed to list them.',
+		);
+		expect(session.getState().alwaysAllowed).toEqual([
+			{ toolName: "Bash", label: "Run a command" },
+		]);
+	});
+
+	it(":allowed lists each tool by its label, with its name when that differs", async () => {
+		const { session } = await waitingOn(bash, edit);
+		await session.alwaysAllow();
+		await session.alwaysAllow();
+		expect(await session.submit(":allowed")).toEqual({
+			kind: "ran",
+			name: "allowed",
+		});
+		expect(notices(session).slice(-4)).toEqual([
+			"Tools that run without asking",
+			"  Run a command  Bash",
+			"  Edit",
+			"Type :revoke followed by a name to be asked about it again, or :revoke alone for every tool.",
+		]);
+		expect(session.getState().entries.at(-1)).toMatchObject({
+			kind: "notice",
+			lines: [
+				{ segments: [{ emphasis: "bold" }] },
+				{
+					segments: [
+						{ text: "  " },
+						{ text: "Run a command", emphasis: "code" },
+						{ text: "  " },
+						{ text: "Bash", emphasis: "dim" },
+					],
+				},
+				{
+					segments: [
+						{ text: "  " },
+						{ text: "Edit", emphasis: "code" },
+					],
+				},
+				{ segments: [{ emphasis: "dim" }] },
+			],
+		});
+	});
+
+	it("newRoom clears the list and says revokedAll after the newRoom notice", async () => {
+		const { session, run } = await waitingOn(bash);
+		await session.alwaysAllow();
+		run.reconcile({ status: "COMPLETED" });
+		await settle();
+		expect(session.newRoom()).toBe(true);
+		expect(session.getState().alwaysAllowed).toEqual([]);
+		expect(notices(session)).toEqual([
+			"New room. It is saved when you send the first prompt.",
+			"Every tool will be asked about again.",
+		]);
+	});
+
+	it("newRoom with an empty list does not say revokedAll", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		latest().reconcile({ status: "COMPLETED" });
+		await settle();
+		expect(session.newRoom()).toBe(true);
+		expect(notices(session)).toEqual([
+			"New room. It is saved when you send the first prompt.",
+		]);
 	});
 });

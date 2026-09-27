@@ -26,7 +26,7 @@ import {
 	createAgentRunItemsState,
 } from "../../../sdk/src/stores/agent/agent.store";
 import { formatTranscript, stripAnsi } from "../format/ansi";
-import { lineForItem, toTranscript } from "./transcript";
+import { describeArguments, lineForItem, toTranscript } from "./transcript";
 import { FIXTURE, PROMPT } from "./transcript.fixture";
 
 /**
@@ -225,5 +225,59 @@ describe("lineForItem", () => {
 				},
 			],
 		});
+	});
+
+	const detail = (item: AgentRunItem) =>
+		(lineForItem(item) as { detail?: string }).detail;
+
+	it("reveals RLO in tool line detail", () => {
+		const rlo = String.fromCodePoint(0x202e);
+		const item = tool({ arguments: { command: `test${rlo}value` } });
+		expect(detail(item)).toContain("⟨U+202E⟩");
+		expect(detail(item)).not.toContain(rlo);
+	});
+});
+
+describe("describeArguments", () => {
+	it("returns primary key first, then other keys in object order", () => {
+		const args = { other: "value", command: "ls -la", extra: "data" };
+		const result = describeArguments(args);
+		expect(result.map((r) => r.key)).toEqual(["command", "other", "extra"]);
+	});
+
+	it("pretty-prints a nested object", () => {
+		const args = { config: { nested: { value: 42 } } };
+		const result = describeArguments(args);
+		expect(result[0].text).toContain("{\n");
+		expect(result[0].text).toContain("  ");
+	});
+
+	it("does not truncate long strings", () => {
+		const longString = "a".repeat(200);
+		const args = { command: longString };
+		const result = describeArguments(args);
+		expect(result[0].text).toBe(longString);
+		expect(result[0].text.length).toBe(200);
+	});
+
+	it("reveals RLO in describeArguments", () => {
+		const rlo = String.fromCodePoint(0x202e);
+		const args = { command: `test${rlo}value` };
+		const result = describeArguments(args);
+		expect(result[0].text).toContain("⟨U+202E⟩");
+		expect(result[0].text).not.toContain(rlo);
+	});
+
+	it("returns empty array for null, undefined, or empty object", () => {
+		expect(describeArguments(null)).toEqual([]);
+		expect(describeArguments(undefined)).toEqual([]);
+		expect(describeArguments({})).toEqual([]);
+	});
+
+	it("skips values that stringify to undefined", () => {
+		const args = { valid: "test", invalid: undefined };
+		const result = describeArguments(args);
+		expect(result.length).toBe(1);
+		expect(result[0].key).toBe("valid");
 	});
 });

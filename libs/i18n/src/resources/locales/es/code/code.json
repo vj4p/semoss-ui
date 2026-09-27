@@ -81,6 +81,7 @@
 			"startFailed": "No se pudo iniciar la ejecución: {{message}}",
 			"awaitingApproval": "{{tool}} está esperando aprobación.",
 			"approvalHint": "Escribe :approve para permitirla o :deny para rechazarla.",
+			"approvalKeys": "Con la indicación vacía, presiona {{approve}} para permitirla, {{deny}} para rechazarla, {{edit}} para cambiar sus argumentos, o {{always}} para permitirla siempre.",
 			"awaitingAnswer": "El agente espera tu respuesta.",
 			"stopping": "Deteniendo…",
 			"reconnecting": "No se puede conectar con el servidor. Reintentando… ({{message}})"
@@ -103,7 +104,20 @@
 			"nothingPending": "No hay nada esperando aprobación.",
 			"answerInForm": "El agente hizo una pregunta. Respóndela en el formulario o escribe :deny para descartarla.",
 			"approved": "Aprobado: {{tool}}.",
+			"approvedEdited": "Aprobado {{tool}} con tus cambios.",
 			"denied": "Denegado: {{tool}}.",
+			"editInvalid": "Eso no es JSON válido: {{message}}",
+			"editNotObject": "Los argumentos deben ser un objeto JSON, entre llaves.",
+			"editGone": "La llamada que estabas editando ya no está esperando. No se envió nada.",
+			"alwaysAllowed": "Aprobado {{tool}}. Se ejecuta sin preguntar hasta que escribas :revoke, inicies una sala nueva o recargues.",
+			"autoApproveFailed": "No se pudo aprobar {{tool}} automáticamente: {{message}}. Está esperando tu decisión.",
+			"cannotAlwaysAllow": "{{tool}} no se puede permitir siempre, así que se pedirá aprobación cada vez.",
+			"allowedList": "Herramientas que se ejecutan sin preguntar",
+			"allowedNone": "Ninguna herramienta se ejecuta sin preguntar.",
+			"revokeHint": "Escribe :revoke seguido de un nombre para que se pregunte de nuevo, o :revoke solo para todas las herramientas.",
+			"revoked": "Se preguntará de nuevo sobre {{tool}}.",
+			"revokedAll": "Se preguntará de nuevo sobre todas las herramientas.",
+			"unknownAllowed": "No hay ninguna herramienta llamada \"{{name}}\" que se ejecute sin preguntar. Escribe :allowed para ver la lista.",
 			"decisionFailed": "No se pudo enviar la decisión: {{message}}",
 			"saveFailed": "No se pudo guardar la configuración de la sala: {{message}}",
 			"newRoom": "Sala nueva. Se guarda cuando envías la primera indicación.",
@@ -124,6 +138,10 @@
 			"clear": "Limpiar la pantalla (la sala conserva su historial)",
 			"approve": "Permitir la llamada a herramienta en espera",
 			"deny": "Rechazar la llamada a herramienta en espera",
+			"edit": "Cambiar los argumentos de la llamada en espera y luego aprobarla",
+			"always": "Aprobar la llamada en espera y dejar de preguntar sobre su herramienta",
+			"allowed": "Mostrar las herramientas que se ejecutan sin preguntar",
+			"revoke": "Preguntar sobre una herramienta de nuevo, o sobre todas si no se nombra ninguna",
 			"export": "Guardar los eventos sin procesar de la última ejecución como JSON"
 		},
 		"help": {
@@ -139,7 +157,11 @@
 			"interrupt": "Detener el agente en ejecución",
 			"clearInput": "Borrar la entrada",
 			"clearViewport": "Limpiar la pantalla",
-			"cycleHarness": "Siguiente arnés"
+			"cycleHarness": "Siguiente arnés",
+			"approve": "Aprobar la llamada a herramienta en espera (indicación vacía)",
+			"deny": "Rechazar la llamada a herramienta en espera (indicación vacía)",
+			"edit": "Editar los argumentos de la llamada en espera (indicación vacía)",
+			"alwaysAllow": "Aprobarla y dejar de preguntar sobre su herramienta (indicación vacía)"
 		}
 	}
 }

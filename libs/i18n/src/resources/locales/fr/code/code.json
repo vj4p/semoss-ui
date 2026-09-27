@@ -81,6 +81,7 @@
 			"startFailed": "Impossible de démarrer l'exécution : {{message}}",
 			"awaitingApproval": "{{tool}} attend une approbation.",
 			"approvalHint": "Tapez :approve pour l'autoriser, ou :deny pour le refuser.",
+			"approvalKeys": "Avec l'invite vide, appuyez sur {{approve}} pour l'autoriser, {{deny}} pour le refuser, {{edit}} pour modifier ses arguments, ou {{always}} pour toujours l'autoriser.",
 			"awaitingAnswer": "L'agent attend votre réponse.",
 			"stopping": "Arrêt en cours…",
 			"reconnecting": "Impossible de joindre le serveur. Nouvelle tentative… ({{message}})"
@@ -103,7 +104,20 @@
 			"nothingPending": "Rien n'attend d'approbation.",
 			"answerInForm": "L'agent a posé une question. Répondez-y dans le formulaire, ou tapez :deny pour l'ignorer.",
 			"approved": "{{tool}} approuvé.",
+			"approvedEdited": "{{tool}} approuvé avec vos modifications.",
 			"denied": "{{tool}} refusé.",
+			"editInvalid": "Ce n'est pas du JSON valide : {{message}}",
+			"editNotObject": "Les arguments doivent être un objet JSON, entre accolades.",
+			"editGone": "L'appel que vous modifiiez n'attend plus. Rien n'a été envoyé.",
+			"alwaysAllowed": "{{tool}} approuvé. Il s'exécutera sans demander d'approbation jusqu'à ce que vous tapiez :revoke, démarriez une nouvelle salle ou rechargiez la page.",
+			"autoApproveFailed": "Impossible d'approuver {{tool}} automatiquement : {{message}}. Il attend votre décision.",
+			"cannotAlwaysAllow": "{{tool}} ne peut pas être toujours autorisé, donc une approbation est demandée à chaque fois.",
+			"allowedList": "Outils qui s'exécutent sans approbation",
+			"allowedNone": "Aucun outil ne s'exécute sans approbation.",
+			"revokeHint": "Tapez :revoke suivi d'un nom pour que son approbation soit de nouveau demandée, ou :revoke seul pour tous les outils.",
+			"revoked": "L'approbation de {{tool}} sera de nouveau demandée.",
+			"revokedAll": "L'approbation de chaque outil sera de nouveau demandée.",
+			"unknownAllowed": "Aucun outil nommé « {{name}} » ne s'exécute sans approbation. Tapez :allowed pour les lister.",
 			"decisionFailed": "Impossible d'envoyer la décision : {{message}}",
 			"saveFailed": "Impossible d'enregistrer les paramètres de la salle : {{message}}",
 			"newRoom": "Nouvelle salle. Elle est enregistrée à l'envoi de la première invite.",
@@ -124,6 +138,10 @@
 			"clear": "Effacer l'écran (la salle conserve son historique)",
 			"approve": "Autoriser l'appel d'outil en attente",
 			"deny": "Refuser l'appel d'outil en attente",
+			"edit": "Modifier les arguments de l'appel en attente, puis l'approuver",
+			"always": "Approuver l'appel en attente, et ne plus demander d'approbation pour son outil",
+			"allowed": "Lister les outils qui s'exécutent sans approbation",
+			"revoke": "Redemander l'approbation pour un outil, ou pour tous si aucun n'est nommé",
 			"export": "Enregistrer les événements bruts de la dernière exécution au format JSON"
 		},
 		"help": {
@@ -139,7 +157,11 @@
 			"interrupt": "Arrêter l'agent en cours d'exécution",
 			"clearInput": "Effacer la saisie",
 			"clearViewport": "Effacer l'écran",
-			"cycleHarness": "Harnais suivant"
+			"cycleHarness": "Harnais suivant",
+			"approve": "Approuver l'appel d'outil en attente (invite vide)",
+			"deny": "Refuser l'appel d'outil en attente (invite vide)",
+			"edit": "Modifier les arguments de l'appel en attente (invite vide)",
+			"alwaysAllow": "L'approuver, et ne plus demander d'approbation pour son outil (invite vide)"
 		}
 	}
 }

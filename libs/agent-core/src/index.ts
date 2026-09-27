@@ -55,3 +55,4 @@ export * from "./session/session-commands";
 export * from "./transcript/line";
 export * from "./transcript/transcript";
 export * from "./util/describe-error";
+export * from "./util/invisible";

@@ -21,6 +21,7 @@
 
 import type { AgentRunItem, AgentRunItemsState } from "@semoss/sdk";
 import { type Translate, translateEnglish } from "../i18n/messages";
+import { revealInvisible } from "../util/invisible";
 import type { ItemStatus, Line } from "./line";
 
 /** The backend's marker when a tool result hit MAX_LIVE_TOOL_RESULT_CHARS (12,000). */
@@ -65,7 +66,7 @@ const digestArguments = (args: Record<string, unknown>): string | undefined => {
 	for (const key of DIGEST_KEYS) {
 		const value = args[key];
 		if (typeof value === "string" && value.trim() !== "") {
-			return oneLine(value);
+			return oneLine(revealInvisible(value));
 		}
 	}
 	// No well-known key: fall back to the first scalar, named, since an
@@ -76,10 +77,43 @@ const digestArguments = (args: Record<string, unknown>): string | undefined => {
 			typeof value === "number" ||
 			typeof value === "boolean"
 		) {
-			return oneLine(`${key}=${value}`);
+			return oneLine(revealInvisible(`${key}=${value}`));
 		}
 	}
 	return undefined;
+};
+
+/**
+ * Every argument of a tool call, untruncated, for a person deciding it.
+ *
+ * The digest's key first, then the rest in object order. A string shows as
+ * itself and anything else as indented JSON. Keys and text are revealed, so an
+ * argument cannot display in a different order from the one that runs.
+ */
+export const describeArguments = (
+	args: Readonly<Record<string, unknown>> | null | undefined,
+): { key: string; text: string }[] => {
+	if (!args) {
+		return [];
+	}
+
+	const primary = DIGEST_KEYS.find((key) => {
+		const value = args[key];
+		return typeof value === "string" && value.trim() !== "";
+	});
+
+	const keys = primary
+		? [primary, ...Object.keys(args).filter((k) => k !== primary)]
+		: Object.keys(args);
+
+	return keys.flatMap((key) => {
+		const value = args[key];
+		const text =
+			typeof value === "string" ? value : JSON.stringify(value, null, 2);
+		return text === undefined
+			? []
+			: [{ key: revealInvisible(key), text: revealInvisible(text) }];
+	});
 };
 
 /** Count rendered lines, not array length — `output` arrives as one string. */

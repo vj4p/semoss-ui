@@ -80,6 +80,7 @@
 			"startFailed": "Could not start the run: {{message}}",
 			"awaitingApproval": "{{tool}} is waiting for approval.",
 			"approvalHint": "Type :approve to allow it, or :deny to reject it.",
+			"approvalKeys": "With the prompt empty, press {{approve}} to allow it, {{deny}} to reject it, {{edit}} to change its arguments, or {{always}} to always allow it.",
 			"awaitingAnswer": "The agent is asking for your input.",
 			"stopping": "Stopping…",
 			"reconnecting": "Cannot reach the server. Retrying… ({{message}})"
@@ -102,7 +103,20 @@
 			"nothingPending": "Nothing is waiting for approval.",
 			"answerInForm": "The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
 			"approved": "Approved {{tool}}.",
+			"approvedEdited": "Approved {{tool}} with your changes.",
 			"denied": "Denied {{tool}}.",
+			"editInvalid": "That is not valid JSON: {{message}}",
+			"editNotObject": "The arguments must be a JSON object, in braces.",
+			"editGone": "The call you were editing is no longer waiting. Nothing was sent.",
+			"alwaysAllowed": "Approved {{tool}}. It runs without asking until you type :revoke, start a new room or reload.",
+			"autoApproveFailed": "Could not approve {{tool}} automatically: {{message}}. It is waiting for you.",
+			"cannotAlwaysAllow": "{{tool}} cannot be always allowed, so it is asked about every time.",
+			"allowedList": "Tools that run without asking",
+			"allowedNone": "No tool runs without asking.",
+			"revokeHint": "Type :revoke followed by a name to be asked about it again, or :revoke alone for every tool.",
+			"revoked": "{{tool}} will be asked about again.",
+			"revokedAll": "Every tool will be asked about again.",
+			"unknownAllowed": "No tool named \"{{name}}\" runs without asking. Type :allowed to list them.",
 			"decisionFailed": "Could not send the decision: {{message}}",
 			"saveFailed": "Could not save the room settings: {{message}}",
 			"newRoom": "New room. It is saved when you send the first prompt.",
@@ -123,6 +137,10 @@
 			"clear": "Clear the screen (the room keeps its history)",
 			"approve": "Allow the tool call that is waiting",
 			"deny": "Reject the tool call that is waiting",
+			"edit": "Change the waiting call's arguments, then approve it",
+			"always": "Approve the waiting call, and stop asking about its tool",
+			"allowed": "List the tools that run without asking",
+			"revoke": "Ask about a tool again, or every tool when none is named",
 			"export": "Save the last run's raw events as JSON"
 		},
 		"help": {
@@ -138,7 +156,11 @@
 			"interrupt": "Stop the running agent",
 			"clearInput": "Clear the input",
 			"clearViewport": "Clear the screen",
-			"cycleHarness": "Next harness"
+			"cycleHarness": "Next harness",
+			"approve": "Approve the waiting tool call (prompt empty)",
+			"deny": "Deny the waiting tool call (prompt empty)",
+			"edit": "Edit the waiting call's arguments (prompt empty)",
+			"alwaysAllow": "Approve it, and stop asking about its tool (prompt empty)"
 		}
 	}
 }

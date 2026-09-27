@@ -4,7 +4,7 @@
  * Each one is a thin call into the {@link Session}, where the behaviour lives,
  * so a button in the web host and a command typed at the prompt cannot come to
  * differ. What is left here is what only a command has: its name, its
- * arguments, and the listings `:help`, `:harness` and `:model` print.
+ * arguments, and the listings `:help`, `:harness`, `:model` and `:allowed` print.
  *
  * The listings pad their columns with spaces, which lines up in the monospace
  * type both hosts draw a console in.
@@ -25,7 +25,10 @@ export interface SessionCommandOptions {
 const INDENT = "  ";
 const GUTTER = "  ";
 
-/** Rows of a two-column table: the first column as code, padded to one width. */
+/**
+ * Rows of a two-column table: the first column as code, padded to one width. A
+ * row with nothing in its second column ends at its key.
+ */
 const table = (
 	rows: readonly { key: string; rest: readonly Segment[] }[],
 ): Line[] => {
@@ -35,8 +38,12 @@ const table = (
 		segments: [
 			{ text: INDENT },
 			{ text: row.key, emphasis: "code" },
-			{ text: " ".repeat(width - row.key.length) + GUTTER },
-			...row.rest,
+			...(row.rest.length === 0
+				? []
+				: [
+						{ text: " ".repeat(width - row.key.length) + GUTTER },
+						...row.rest,
+					]),
 		],
 	}));
 };
@@ -133,6 +140,27 @@ const modelLines = (session: Session): Line[] => {
 	];
 };
 
+const allowedLines = (session: Session): Line[] => {
+	const { translate } = session;
+	const { alwaysAllowed } = session.getState();
+	if (alwaysAllowed.length === 0) {
+		return [textLine(translate("session.allowedNone"), "dim")];
+	}
+	return [
+		textLine(translate("session.allowedList"), "bold"),
+		...table(
+			alwaysAllowed.map((tool) => ({
+				key: tool.label,
+				rest:
+					tool.toolName === tool.label
+						? []
+						: [{ text: tool.toolName, emphasis: "dim" }],
+			})),
+		),
+		textLine(translate("session.revokeHint"), "dim"),
+	];
+};
+
 export const createSessionCommands = ({
 	keymap,
 	platform,
@@ -198,6 +226,34 @@ export const createSessionCommands = ({
 		describe: "command.deny",
 		run: async (session) => {
 			await session.deny();
+		},
+	},
+	{
+		name: "edit",
+		args: [{ name: "json", rest: true }],
+		describe: "command.edit",
+		run: async (session, { rest }) => {
+			await session.edit(rest);
+		},
+	},
+	{
+		name: "always",
+		describe: "command.always",
+		run: async (session) => {
+			await session.alwaysAllow();
+		},
+	},
+	{
+		name: "allowed",
+		describe: "command.allowed",
+		run: (session) => session.notice(allowedLines(session)),
+	},
+	{
+		name: "revoke",
+		args: [{ name: "tool", optional: true, rest: true }],
+		describe: "command.revoke",
+		run: (session, { rest }) => {
+			session.revoke(rest);
 		},
 	},
 	...(canExport
