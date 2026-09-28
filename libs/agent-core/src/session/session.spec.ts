@@ -193,6 +193,14 @@ const fakeAgent = (roomId = "room-new") => {
 			kind: "message",
 			delta: text,
 		}),
+		/** A tool begun, as the semoss harness says so, just before it runs. */
+		running: (itemId: string): AgentRunItemEvent => ({
+			...nextEvent(),
+			type: "item.updated",
+			itemId,
+			kind: "tool",
+			patch: { status: "RUNNING" },
+		}),
 		/** One poll, as `watch` delivers it: each event folded, then the snapshot. */
 		poll: (
 			partial: Partial<AgentRunSnapshot> = {},
@@ -637,6 +645,62 @@ describe("running a prompt", () => {
 				"Could not start the run: Not allowed",
 			);
 		});
+	});
+});
+
+describe("timing a running tool", () => {
+	/**
+	 * A call as the backend first shows it: QUEUED from the semoss harness,
+	 * which patches it RUNNING later, and RUNNING from claude_code.
+	 */
+	const bash = (id: string, status: "QUEUED" | "RUNNING"): AgentRunItem => ({
+		id,
+		kind: "tool",
+		name: "Bash",
+		arguments: {},
+		status,
+	});
+
+	it("notes when a tool was first drawn running, and keeps that time", async () => {
+		let clock = 1_000;
+		const { session, latest } = setup({ now: () => clock });
+		await start(session);
+		const run = latest();
+
+		clock = 2_000;
+		run.poll({ status: "RUNNING" }, [run.started(bash("t1", "QUEUED"))]);
+		expect(lastRun(session).runningSince).toEqual({});
+
+		clock = 3_000;
+		run.poll({ status: "RUNNING" }, [run.running("t1")]);
+		expect(lastRun(session).runningSince).toEqual({ t1: 3_000 });
+		expect(
+			entryLines(lastRun(session)).find((line) => line.kind === "tool"),
+		).toMatchObject({ status: "RUNNING", runningSince: 3_000 });
+
+		// Nothing new, so nothing to redraw: the time stands, and so does
+		// the state.
+		const before = session.getState();
+		clock = 4_000;
+		run.poll({ status: "RUNNING" });
+		expect(session.getState()).toBe(before);
+		expect(lastRun(session).runningSince).toEqual({ t1: 3_000 });
+	});
+
+	it("notes a tool that starts out running, as claude_code's do", async () => {
+		const { session, latest } = setup({ now: () => 5_000 });
+		await start(session);
+		const run = latest();
+		run.poll({ status: "RUNNING" }, [run.started(bash("t1", "RUNNING"))]);
+		expect(lastRun(session).runningSince).toEqual({ t1: 5_000 });
+	});
+
+	it("does not count a call waiting on the user", async () => {
+		const { session, latest } = setup();
+		await start(session);
+		const run = latest();
+		run.poll({ status: "RUNNING" }, [run.started(tool("t1", "Bash"))]);
+		expect(lastRun(session).runningSince).toEqual({});
 	});
 });
 

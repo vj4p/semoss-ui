@@ -26,6 +26,7 @@ import {
 	createAgentRunItemsState,
 } from "../../../sdk/src/stores/agent/agent.store";
 import { formatTranscript, stripAnsi } from "../format/ansi";
+import type { Line } from "./line";
 import { describeArguments, lineForItem, toTranscript } from "./transcript";
 import { FIXTURE, PROMPT } from "./transcript.fixture";
 
@@ -91,14 +92,21 @@ describe("agent items -> terminal transcript", () => {
 		]);
 	});
 
-	it("reduces a tool's output to a line count, never the payload", () => {
+	it("carries a tool's output for a host to open, and prints only its size", () => {
 		const lines = toTranscript(foldFixture());
 		const bash = lines.find((l) => l.kind === "tool" && l.label === "Bash");
-		expect(bash).toMatchObject({ outputLines: 3, durationMs: 412 });
-		// The transcript must not embed the output itself. Assert on a string
-		// unique to the OUTPUT - not on the command, which the argument digest
-		// is supposed to echo and which quotes the same symbol it searched for.
-		expect(JSON.stringify(bash)).not.toContain("room-options-form");
+		expect(bash).toMatchObject({
+			outputLines: 3,
+			durationMs: 412,
+			output: expect.stringContaining("room-options-form"),
+		});
+		// The terminal form must not print the output itself. Assert on a
+		// string unique to the OUTPUT - not on the command, which the argument
+		// digest is supposed to echo and which quotes the same symbol it
+		// searched for.
+		const printed = formatTranscript(lines, { colour: false }).join("\n");
+		expect(printed).toContain("↳ 3 lines");
+		expect(printed).not.toContain("room-options-form");
 	});
 
 	it("detects the backend's 12,000-char truncation marker", () => {
@@ -142,6 +150,27 @@ describe("agent items -> terminal transcript", () => {
 			kind: "divider",
 			label: "transcript.droppedEvents|3",
 		});
+	});
+
+	it("gives each running tool the time the host first drew it running", () => {
+		const running = (id: string): AgentRunItem => ({
+			id,
+			kind: "tool",
+			name: "Bash",
+			arguments: {},
+			status: "RUNNING",
+		});
+		const lines = toTranscript(
+			{
+				itemsById: { a: running("a"), b: running("b") },
+				itemOrder: ["a", "b"],
+			},
+			{ runningSince: { a: 10, b: 20 } },
+		);
+		expect(lines).toMatchObject([
+			{ runningSince: 10 },
+			{ runningSince: 20 },
+		]);
 	});
 
 	it("renders the same transcript twice: plain text and ANSI", () => {
@@ -235,6 +264,84 @@ describe("lineForItem", () => {
 		const item = tool({ arguments: { command: `test${rlo}value` } });
 		expect(detail(item)).toContain("⟨U+202E⟩");
 		expect(detail(item)).not.toContain(rlo);
+	});
+
+	const toolLine = (item: AgentRunItem, runningSince?: number) =>
+		lineForItem(item, undefined, { runningSince }) as Extract<
+			Line,
+			{ kind: "tool" }
+		>;
+
+	/** Where the backend cuts an output for the live stream, and its marker. */
+	const CUT = `${"x".repeat(12_000)}\n... [truncated for live stream]`;
+
+	it("carries every argument, the digest's first", () => {
+		expect(
+			toolLine(tool({ arguments: { limit: 5, query: "harness" } })).args,
+		).toEqual([
+			{ key: "query", text: "harness" },
+			{ key: "limit", text: "5" },
+		]);
+		expect(toolLine(tool({})).args).toEqual([]);
+	});
+
+	it("reveals RLO in a tool's output, and keeps the backend's marker", () => {
+		const rlo = String.fromCodePoint(0x202e);
+		const line = toolLine(
+			tool({
+				status: "COMPLETED",
+				output: `ok${rlo}\n... [truncated for live stream]`,
+			}),
+		);
+		expect(line.output).toBe("ok⟨U+202E⟩\n... [truncated for live stream]");
+		expect(line.outputTruncated).toBe(true);
+	});
+
+	it("cuts an output where the backend cuts the live stream", () => {
+		// A room's history keeps a tool's output whole.
+		const line = toolLine(
+			tool({ status: "COMPLETED", output: "x".repeat(20_000) }),
+		);
+		expect(line).toMatchObject({
+			output: CUT,
+			outputLines: 2,
+			outputTruncated: true,
+		});
+	});
+
+	it("leaves an output the backend cut, or one at the cap, as it is", () => {
+		expect(
+			toolLine(tool({ status: "COMPLETED", output: CUT })).output,
+		).toBe(CUT);
+		const full = "x".repeat(12_000);
+		expect(
+			toolLine(tool({ status: "COMPLETED", output: full })),
+		).toMatchObject({
+			output: full,
+			outputLines: 1,
+			outputTruncated: false,
+		});
+	});
+
+	it("cuts a failed tool's error before revealing it, as the backend cuts", () => {
+		const rlo = String.fromCodePoint(0x202e);
+		const line = toolLine(
+			tool({ status: "FAILED", error: `${rlo}${"x".repeat(20_000)}` }),
+		);
+		expect(line.error).toBe(
+			`⟨U+202E⟩${"x".repeat(11_999)}\n... [truncated for live stream]`,
+		);
+	});
+
+	it("carries when the host first drew a tool running, while it runs", () => {
+		expect(toolLine(tool({ status: "RUNNING" }), 5_000).runningSince).toBe(
+			5_000,
+		);
+		for (const status of ["INPUT_REQUIRED", "COMPLETED"] as const) {
+			expect(
+				toolLine(tool({ status }), 5_000).runningSince,
+			).toBeUndefined();
+		}
 	});
 });
 

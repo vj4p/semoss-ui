@@ -325,6 +325,16 @@ describe("runLines", () => {
 				texts(run({ status: "FAILED", errorMessage: "boom" })),
 			).toEqual(["Find the flaky test"]);
 		});
+
+		it("gives a running tool the time the console first drew it running", () => {
+			const [, line] = runLines(
+				run({
+					items: itemsOf(tool("call-1", { status: "RUNNING" })),
+					runningSince: { "call-1": 5_000 },
+				}),
+			);
+			expect(line).toMatchObject({ kind: "tool", runningSince: 5_000 });
+		});
 	});
 
 	describe("once the run has ended", () => {
@@ -373,6 +383,22 @@ describe("runLines", () => {
 					transportError: "Network down",
 				}),
 			).toEqual(["Run cancelled."]);
+		});
+
+		it("counts nothing up, whatever the last items said", () => {
+			// A stopped run's last snapshot can still show a tool running.
+			const [, line] = runLines(
+				run({
+					status: "CANCELLED",
+					endedAt: 2,
+					items: itemsOf(tool("call-1", { status: "RUNNING" })),
+					runningSince: { "call-1": 5_000 },
+				}),
+			);
+			expect(line).toMatchObject({ kind: "tool", status: "RUNNING" });
+			expect(
+				line?.kind === "tool" ? line.runningSince : null,
+			).toBeUndefined();
 		});
 	});
 

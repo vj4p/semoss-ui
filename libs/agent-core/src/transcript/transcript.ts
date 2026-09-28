@@ -22,10 +22,25 @@
 import type { AgentRunItem, AgentRunItemsState } from "@semoss/sdk";
 import { type Translate, translateEnglish } from "../i18n/messages";
 import { revealInvisible } from "../util/invisible";
-import type { ItemStatus, Line } from "./line";
+import type { ItemStatus, Line, ToolArgument } from "./line";
 
 /** The backend's marker when a tool result hit MAX_LIVE_TOOL_RESULT_CHARS (12,000). */
 const TRUNCATION_MARKER = "... [truncated for live stream]";
+
+/** The backend's MAX_LIVE_TOOL_RESULT_CHARS. */
+const MAX_OUTPUT_CHARS = 12_000;
+
+/**
+ * An output cut the way the backend cuts the live stream.
+ *
+ * A live output is cut already, and cutting it again gives the same string,
+ * so this changes only an output from a room's history, which the backend
+ * keeps whole. Without it, one call's history could put megabytes on a line.
+ */
+const capOutput = (output: string): string =>
+	output.length > MAX_OUTPUT_CHARS
+		? `${output.slice(0, MAX_OUTPUT_CHARS)}\n${TRUNCATION_MARKER}`
+		: output;
 
 /**
  * Argument keys worth showing beside a tool name, best first.
@@ -92,7 +107,7 @@ const digestArguments = (args: Record<string, unknown>): string | undefined => {
  */
 export const describeArguments = (
 	args: Readonly<Record<string, unknown>> | null | undefined,
-): { key: string; text: string }[] => {
+): ToolArgument[] => {
 	if (!args) {
 		return [];
 	}
@@ -162,10 +177,14 @@ export const toolLabel = (item: Extract<AgentRunItem, { kind: "tool" }>) => {
  * build. It draws a placeholder rather than throwing, for the reason the
  * missing-entry skip below gives: losing one line beats blanking the
  * transcript.
+ *
+ * `options.runningSince` is when the host first drew the item running, which
+ * a tool's line carries while it is running.
  */
 export const lineForItem = (
 	item: AgentRunItem,
 	translate: Translate = translateEnglish,
+	options: { runningSince?: number } = {},
 ): Line => {
 	switch (item.kind) {
 		case "message":
@@ -177,17 +196,33 @@ export const lineForItem = (
 			return { kind: "reasoning", text: item.summary, collapsed: true };
 
 		case "tool": {
-			const output = item.output;
+			const output =
+				item.output === undefined ? undefined : capOutput(item.output);
 			return {
 				kind: "tool",
 				label: toolLabel(item),
 				status: item.status satisfies ItemStatus,
 				detail: digestArguments(item.arguments),
+				args: describeArguments(item.arguments),
 				durationMs: item.durationMs,
+				runningSince:
+					item.status === "RUNNING"
+						? options.runningSince
+						: undefined,
+				// Revealed like the arguments, so that output cannot display
+				// in a different order from the one the tool wrote. The
+				// backend's marker stays in: it is where the cut is.
+				output:
+					output === undefined ? undefined : revealInvisible(output),
 				outputLines:
 					output === undefined ? undefined : countLines(output),
 				outputTruncated: output?.endsWith(TRUNCATION_MARKER),
-				error: item.error,
+				// Cut and revealed like the output, which it often is: a
+				// failed call's error in a room's history is its whole result.
+				error:
+					item.error === undefined
+						? undefined
+						: revealInvisible(capOutput(item.error)),
 			};
 		}
 
@@ -229,6 +264,8 @@ export const lineForItem = (
  *                              total it has accumulated across polls
  * @param options.translate     the host's translation of the lines this
  *                              projection writes itself; English when omitted
+ * @param options.runningSince  by item id, when the host first drew each
+ *                              item running, in epoch milliseconds
  * @return the transcript, append-only and safe to re-render from scratch
  */
 export const toTranscript = (
@@ -237,6 +274,7 @@ export const toTranscript = (
 		prompt?: string;
 		droppedEvents?: number;
 		translate?: Translate;
+		runningSince?: Readonly<Record<string, number>>;
 	} = {},
 ): Line[] => {
 	const lines: Line[] = [];
@@ -253,7 +291,11 @@ export const toTranscript = (
 		// can reach. Skip rather than throw: losing one line beats blanking the
 		// whole transcript.
 		if (item !== undefined) {
-			lines.push(lineForItem(item, translate));
+			lines.push(
+				lineForItem(item, translate, {
+					runningSince: options.runningSince?.[id],
+				}),
+			);
 		}
 	}
 

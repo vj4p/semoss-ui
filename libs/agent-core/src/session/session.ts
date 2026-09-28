@@ -297,6 +297,31 @@ const unlessSame = (run: RunEntry, next: RunEntry): RunEntry => {
 	return run;
 };
 
+/**
+ * `since`, with `at` for each tool the items show running that it has no time
+ * for yet. It is `since` itself when there is none, so that a poll that
+ * brought nothing new does not make the host redraw the run.
+ */
+const noteRunning = (
+	since: Readonly<Record<string, number>>,
+	items: AgentRunItemsState | undefined,
+	at: number,
+): Readonly<Record<string, number>> => {
+	let next: Record<string, number> | undefined;
+	for (const id of items?.itemOrder ?? []) {
+		const item = items?.itemsById[id];
+		if (
+			item?.kind === "tool" &&
+			item.status === "RUNNING" &&
+			since[id] === undefined
+		) {
+			next ??= { ...since };
+			next[id] = at;
+		}
+	}
+	return next ?? since;
+};
+
 /** What the session keeps about a run that nothing draws. */
 interface RunControl {
 	entryId: string;
@@ -305,6 +330,11 @@ interface RunControl {
 	agent?: AgentStore;
 	/** The items as of the last event, committed with the snapshot that follows it. */
 	items?: AgentRunItemsState;
+	/**
+	 * When each tool was first drawn running: at the snapshot that committed
+	 * it, since the items are drawn then and not before.
+	 */
+	runningSince: Readonly<Record<string, number>>;
 	events: AgentRunItemEvent[];
 	omittedEvents: number;
 	droppedEvents: number;
@@ -459,6 +489,11 @@ export const createSession = (options: SessionOptions): Session => {
 			onSnapshot: (snapshot, { droppedEvents }) => {
 				control.snapshot = snapshot;
 				control.droppedEvents += droppedEvents;
+				control.runningSince = noteRunning(
+					control.runningSince,
+					control.items,
+					now(),
+				);
 				const allowed = takeAllowed(
 					control,
 					pendingOf(control, snapshot),
@@ -470,6 +505,7 @@ export const createSession = (options: SessionOptions): Session => {
 						status: snapshot.status,
 						pendingActions: pendingOf(control, snapshot),
 						droppedEvents: control.droppedEvents,
+						runningSince: control.runningSince,
 						finalText: snapshot.finalText ?? run.finalText,
 						errorMessage: snapshot.errorMessage ?? run.errorMessage,
 						transportError: undefined,
@@ -625,6 +661,7 @@ export const createSession = (options: SessionOptions): Session => {
 			entryId: newId("run"),
 			prompt,
 			settings: { harness, modelId },
+			runningSince: {},
 			events: [],
 			omittedEvents: 0,
 			droppedEvents: 0,
@@ -648,6 +685,7 @@ export const createSession = (options: SessionOptions): Session => {
 					items: EMPTY_ITEMS,
 					droppedEvents: 0,
 					pendingActions: [],
+					runningSince: control.runningSince,
 					startedAt: now(),
 				},
 			],

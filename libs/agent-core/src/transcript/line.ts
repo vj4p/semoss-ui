@@ -40,6 +40,15 @@ export type ItemStatus =
 	| "REJECTED"
 	| "CANCELLED";
 
+/**
+ * One argument of a tool call, as a person reads it: a string as itself,
+ * anything else as indented JSON.
+ */
+export interface ToolArgument {
+	key: string;
+	text: string;
+}
+
 export type Line =
 	/**
 	 * The human's turn. Host-injected, NOT derived from the event stream:
@@ -62,12 +71,30 @@ export type Line =
 			status: ItemStatus;
 			/** One-line argument digest, for the `⏵ Bash  git log --oneline` idiom. */
 			detail?: string;
+			/**
+			 * Every argument, whole, the digest's first: what a host shows when the
+			 * line is opened. Empty for a call with none. Absent from a line made
+			 * by hand rather than projected from an item.
+			 */
+			args?: ToolArgument[];
 			durationMs?: number;
+			/**
+			 * While the tool is RUNNING, when the console first drew it running, in
+			 * epoch milliseconds. An item carries how long it took once it is done
+			 * and no time it started, so a host counts from this.
+			 */
+			runningSince?: number;
+			/**
+			 * The output, cut where the backend cuts the live stream and ending in
+			 * its marker when cut, for a host to show on demand. The ANSI form
+			 * prints only its size.
+			 */
+			output?: string;
 			/** Line count of `output`, for the `↳ 412 lines` affordance. */
 			outputLines?: number;
-			/** True when the backend hit its 12,000-char live-stream cap. */
+			/** True when the output was cut at the 12,000-char live-stream cap. */
 			outputTruncated?: boolean;
-			/** Present only on FAILED. */
+			/** Present only on FAILED. Cut and revealed like `output`. */
 			error?: string;
 	  }
 	/**

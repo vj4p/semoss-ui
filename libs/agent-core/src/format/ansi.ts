@@ -150,10 +150,11 @@ export const formatTranscript = (
 						emphasisForStatus(line.status),
 					),
 				);
-				// The output reference, not the output. A tool is capped at
+				// The output's size, not the output. A tool is capped at
 				// 12,000 chars server-side but that is still ~300 lines, which
 				// would bury the transcript — so the line count is the
-				// affordance and `:out` opens the pager.
+				// affordance, and a host that can open a line shows the
+				// output there.
 				if (line.outputLines !== undefined && line.outputLines > 0) {
 					const trunc = line.outputTruncated ? ", truncated" : "";
 					out.push(

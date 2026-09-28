@@ -48,6 +48,12 @@ export interface RunEntry {
 	/** The last poll's failure, cleared by the next poll that succeeds. */
 	transportError?: string;
 	stopRequested?: boolean;
+	/**
+	 * By item id, when the console first drew each tool running, in epoch
+	 * milliseconds. Items carry no start time, and a host counts a running
+	 * tool's time from this.
+	 */
+	runningSince?: Readonly<Record<string, number>>;
 	startedAt: number;
 	/** Set when the console stops following the run, whatever the reason. */
 	endedAt?: number;

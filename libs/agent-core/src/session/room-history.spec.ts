@@ -53,11 +53,14 @@ const result = (
 });
 
 /** A prompt, a response that called one tool, the tool's result, and the answer. */
-const toolTurn = (toolStatus?: string): RoomHistoryMessage[] => [
+const toolTurn = (
+	toolStatus?: string,
+	value?: string,
+): RoomHistoryMessage[] => [
 	input("in-1", undefined, text("list files")),
 	output("out-1", "in-1", text("Looking."), call("toolu_1")),
 	{
-		...input("in-2", "out-1", result("toolu_1", toolStatus)),
+		...input("in-2", "out-1", result("toolu_1", toolStatus, value)),
 		type: "INPUT_TOOL_EXEC",
 	},
 	output("out-2", "in-2", text("Two files.")),
@@ -77,11 +80,28 @@ describe("roomHistoryLines", () => {
 				label: "a1f3c9e2_Bash",
 				status: "COMPLETED",
 				detail: "ls",
+				args: [{ key: "command", text: "ls" }],
+				output: "one\ntwo",
 				outputLines: 2,
 				outputTruncated: false,
 			},
 			{ kind: "text", segments: [{ text: "Two files." }] },
 		]);
+	});
+
+	it("cuts a long result where the live stream cuts it", () => {
+		// The backend keeps a room's history whole, and cuts only the stream.
+		const cut = `${"x".repeat(12_000)}\n... [truncated for live stream]`;
+		const toolOf = (toolStatus: string) =>
+			roomHistoryLines(toolTurn(toolStatus, "x".repeat(20_000))).find(
+				(line) => line.kind === "tool",
+			);
+
+		expect(toolOf("success")).toMatchObject({
+			output: cut,
+			outputTruncated: true,
+		});
+		expect(toolOf("error")).toMatchObject({ error: cut });
 	});
 
 	it("reads a tool's status the way the harness does", () => {

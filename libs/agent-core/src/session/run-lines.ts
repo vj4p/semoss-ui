@@ -147,6 +147,9 @@ export const runLines = (
 		prompt: run.prompt,
 		droppedEvents: run.droppedEvents,
 		translate,
+		// Once the run has ended nothing in it is running, whatever its last
+		// items said, so nothing counts up.
+		runningSince: run.endedAt === undefined ? run.runningSince : undefined,
 	});
 
 	const recovered = recoveredFinalText(run);
