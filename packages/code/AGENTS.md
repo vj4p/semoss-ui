@@ -58,10 +58,10 @@ An application, so it uses the `src/` layout from the root AGENTS.md including `
 | Folder / file | Purpose |
 |---------------|---------|
 | `api/` | Pixel calls by domain: `rooms.ts` (open, create, read and write a room's options), `engines.ts` (the models, the user's default) |
-| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `announcer.tsx` is the screen-reader channel |
-| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-session-state`, `use-line-labels`, `use-elapsed-seconds` |
+| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel. `prompt-input`, `pending-actions` and `status-bar` have component tests beside them |
+| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-session-state`, `use-line-labels`, `use-elapsed-seconds`, `use-ready-approval` (when the approval keys may act) |
 | `pages/` | `router.tsx`, `initialized.layout.tsx`, `authenticated.layout.tsx`, `console.page.tsx`, `login.page.tsx`, `error.page.tsx` |
-| `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts` |
+| `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts`, `keyboard.ts` (the platform, and the approval keys that the hints and buttons name) |
 | `app.tsx`, `main.tsx`, `index.css` | App entry files |
 
 ## Key Dependencies
@@ -106,14 +106,32 @@ These were decided in Phase 2 of the plan rather than retrofitted:
 - **The `Announcer` is the console's only live region** (polite, additions only). The page's
   others are the `Toaster`'s and, while something loads, the spinner's `role="status"`.
   `announcementsFor` decides what it says: the console's notices, a tool call or question
-  waiting on the user (with how to answer it), the server not answering (once, not per
-  retry), and how a run ended. It does not announce a run's start, its answer, the user's own
-  input, or a reopened room's history.
+  waiting on the user (with how to answer it, in the words of the transcript's hint), the
+  server not answering (once, not per retry), and how a run ended. It does not announce a
+  run's start, its answer, the user's own input, or a reopened room's history.
 - **Focus.** The prompt has focus from the start. Deciding a pending action sends focus back
   to the prompt *before* the decision goes out, because the button pressed is about to
   disappear.
 - **Pending actions are `FieldSet` / `FieldLegend` groups**, so that a screen reader names
   the tool with its buttons. Not `role="group"`, which Biome's `useSemanticElements` rejects.
+- **Approve what you read.** A waiting tool call's card lists every argument whole, in a
+  `dl`, the telling one first, with bidi and zero-width characters shown as markers such as
+  `⟨U+202E⟩` (agent-core's `describeArguments`), so that an argument cannot read in a
+  different order from the one that runs. Each value is a `<pre dir="ltr">` that wraps, and
+  the pending list scrolls past a third of the console. Edit puts an `:edit` line in the
+  prompt, in place of anything typed there, and Always allow approves the call and every
+  later call of its tool, for this session.
+- **The approval keys.** From an empty prompt, A, D, E and Shift+A approve, deny, edit or
+  always allow the first waiting call that is not a question. They act only once that call
+  has been on screen for `APPROVAL_KEY_DELAY_MS` (`useReadyApproval`), so that a key already
+  on its way when the card appears types instead, and the wait starts again whenever the call
+  changes. A key decides the call only if the session still waits on it when the key is
+  pressed. While the keys work, the placeholder names them and that call's buttons show them
+  as `Kbd` caps, `aria-hidden` because the announcer's hint names them already. The
+  transcript's hint names the keys whenever the console binds them.
+- **What runs without asking stays in sight.** The status bar lists the always-allowed
+  tools, a list named by its label, for as long as they are allowed. `:allowed` lists them
+  too, and `:revoke` asks about one again.
 - **Status is never colour alone.** A glyph's shape carries it and a visually hidden word
   names it.
 - **Keys are data.** They come from agent-core's `DEFAULT_KEYMAP`, and `:help` lists the same
@@ -133,6 +151,9 @@ These were decided in Phase 2 of the plan rather than retrofitted:
   same thing.
 - **Ctrl+L on Windows and Linux** is the browser's address-bar shortcut, which the prompt
   takes over while it has focus. Alt+D and F6 still reach the address bar.
+- **A, D and E in a screen reader's browse mode** are its quick-navigation keys, so they reach
+  the prompt only in focus mode, which a screen reader normally enters when the prompt has
+  focus. `:approve`, `:deny`, `:edit` and `:always` do the same things.
 
 ### Right to left
 
@@ -167,6 +188,7 @@ Contrast decisions, measured against the tokens:
 | `text-muted-foreground` on `bg-muted` | 4.35:1 on the light theme | not paired |
 | `text-warning` for a waiting glyph | 2.15:1 on the light theme | the foreground colour there |
 | `primary` for accented text | 4.3:1 on the dark theme's background | the foreground colour |
+| `Kbd`'s own `bg-muted` and `text-muted-foreground`, in a button | the 4.35:1 pair above, and a grey cap on the primary button | the button's colour: `bg-transparent text-current border-current/30` |
 
 - **The `Toaster` is mounted for shared components only.** The console reports in its
   transcript. `AgentUserInputCard` says which question is unanswered in a toast, and
@@ -177,7 +199,11 @@ Contrast decisions, measured against the tokens:
 
 ## Tooling Notes
 
-- **Tests are `*.test.ts`**, like the other apps. Agent-core's are `*.spec.ts`.
+- **Tests are `*.test.ts`**, like the other apps, or `*.test.tsx` for a component. Agent-core's
+  are `*.spec.ts`. A component test renders against a fake session, an object that
+  `satisfies Partial<Session>`, with the real English strings from
+  `new I18nBuilder(codeResources, { lockToEnglish: true })` and no provider. Fake timers work
+  under the `vmForks` pool.
 - **`tsc` reports 14 errors, all in `libs/shared` source**: `audit-log-filter.tsx` (10),
   `audit-logs-detail-drawer.tsx` (2), `mcp-utils.ts` (1) and `notebook-sortable-cell.tsx`
   (1). They show up because this package is `strict` and shared is consumed as source. None
