@@ -25,7 +25,9 @@
 		"subagent": "サブエージェント",
 		"reasoning": "推論",
 		"outputLines_other": "出力 {{count}} 行",
-		"truncated": "一部省略"
+		"truncated": "一部省略",
+		"arguments": "引数",
+		"output": "出力"
 	},
 	"itemStatus": {
 		"QUEUED": "キュー待ち",

@@ -4,8 +4,8 @@ import { useTranslation } from "@semoss/i18n";
 
 /**
  * The words the transcript adds to agent-core's lines, in the current
- * language: what a row is and what state it is in, for a screen reader, and a
- * tool call's duration.
+ * language: what a row is and what state it is in, for a screen reader, what
+ * an opened tool call shows, and its duration.
  *
  * Resolved once for the whole transcript and passed down, rather than looked
  * up in every line, so that a long transcript does not subscribe each of its
@@ -30,6 +30,9 @@ export const useLineLabels = () => {
 			subagent: t("line.subagent"),
 			reasoning: t("line.reasoning"),
 			truncated: t("line.truncated"),
+			arguments: t("line.arguments"),
+			noArguments: t("approval.noArguments"),
+			output: t("line.output"),
 			outputLines: (count: number) => t("line.outputLines", { count }),
 			status: (status: ItemStatus) => t(`itemStatus.${status}`),
 			duration: (milliseconds: number) =>

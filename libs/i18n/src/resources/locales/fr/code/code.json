@@ -27,7 +27,9 @@
 		"outputLines_one": "{{count}} ligne de sortie",
 		"outputLines_many": "{{count}} de lignes de sortie",
 		"outputLines_other": "{{count}} lignes de sortie",
-		"truncated": "tronquée"
+		"truncated": "tronquée",
+		"arguments": "Arguments",
+		"output": "Sortie"
 	},
 	"itemStatus": {
 		"QUEUED": "en file d'attente",

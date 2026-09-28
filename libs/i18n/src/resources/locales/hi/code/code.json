@@ -26,7 +26,9 @@
 		"reasoning": "तर्क",
 		"outputLines_one": "आउटपुट की {{count}} पंक्ति",
 		"outputLines_other": "आउटपुट की {{count}} पंक्तियाँ",
-		"truncated": "छोटा किया गया"
+		"truncated": "छोटा किया गया",
+		"arguments": "आर्गुमेंट",
+		"output": "आउटपुट"
 	},
 	"itemStatus": {
 		"QUEUED": "कतार में",

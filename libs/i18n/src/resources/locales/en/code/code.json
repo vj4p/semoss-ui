@@ -26,7 +26,9 @@
 		"reasoning": "Reasoning",
 		"outputLines_one": "{{count}} line of output",
 		"outputLines_other": "{{count}} lines of output",
-		"truncated": "truncated"
+		"truncated": "truncated",
+		"arguments": "Arguments",
+		"output": "Output"
 	},
 	"itemStatus": {
 		"QUEUED": "queued",

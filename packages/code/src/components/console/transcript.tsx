@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import type { SessionEntry, Translate } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import { useLineLabels } from "@/hooks";
@@ -7,12 +7,18 @@ import { EntryView } from "./line-view";
 /** How near the bottom, in pixels, still counts as reading the latest line. */
 const STICK_DISTANCE = 32;
 
+/** Whether the log is scrolled to within STICK_DISTANCE of its end. */
+const nearBottom = (log: HTMLElement) =>
+	log.scrollHeight - log.scrollTop - log.clientHeight <= STICK_DISTANCE;
+
 /**
  * The session's entries, oldest first, in a log that scrolls on its own.
  *
  * The log keeps to its last line while the user is reading there, and stays
  * where it is once they scroll up to read something earlier. A new entry,
- * which is always something the user just did, brings it back down.
+ * which is always something the user just did, brings it back down. Opening
+ * a tool call counts as reading it: the log stays put once what opened runs
+ * past its end, rather than scroll it away on the next update.
  *
  * It is not a live region: every line of a streaming run would be read out.
  * The console's announcer says what is worth hearing instead. It can take
@@ -54,12 +60,25 @@ export const Transcript = ({
 		}
 	}, [entries]);
 
+	// A line opened or closed moves the log's end without scrolling it, so
+	// the log asks again whether it is at the end. A toggle event does not
+	// bubble, so it is heard on the way down.
+	useEffect(() => {
+		const log = logRef.current;
+		if (log === null) {
+			return;
+		}
+		const onToggle = () => {
+			stickRef.current = nearBottom(log);
+		};
+		log.addEventListener("toggle", onToggle, true);
+		return () => log.removeEventListener("toggle", onToggle, true);
+	}, []);
+
 	const onScroll = () => {
 		const log = logRef.current;
 		if (log !== null) {
-			stickRef.current =
-				log.scrollHeight - log.scrollTop - log.clientHeight <=
-				STICK_DISTANCE;
+			stickRef.current = nearBottom(log);
 		}
 	};
 

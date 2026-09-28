@@ -30,7 +30,9 @@
 		"outputLines_few": "{{count}} أسطر من المخرجات",
 		"outputLines_many": "{{count}} سطرًا من المخرجات",
 		"outputLines_other": "{{count}} سطر من المخرجات",
-		"truncated": "مقتطعة"
+		"truncated": "مقتطعة",
+		"arguments": "الوسائط",
+		"output": "المخرجات"
 	},
 	"itemStatus": {
 		"QUEUED": "في قائمة الانتظار",

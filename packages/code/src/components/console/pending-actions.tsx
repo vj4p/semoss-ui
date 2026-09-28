@@ -21,6 +21,7 @@ import {
 	Kbd,
 } from "@semoss/ui/next";
 import { APPROVAL_KEYS } from "@/utility";
+import { ArgumentList } from "./argument-list";
 
 /**
  * The key that does what a button does, after the button's label. It takes
@@ -75,26 +76,10 @@ const Approval = ({
 					{t("approval.noArguments")}
 				</p>
 			) : (
-				<dl
-					className="flex flex-col gap-2"
+				<ArgumentList
+					args={args}
 					data-testid="pendingActions-arguments-list"
-				>
-					{args.map(({ key, text }) => (
-						<div key={key} className="min-w-0">
-							<dt className="text-muted-foreground">
-								<code dir="ltr">{key}</code>
-							</dt>
-							<dd>
-								<pre
-									dir="ltr"
-									className="whitespace-pre-wrap break-words"
-								>
-									{text}
-								</pre>
-							</dd>
-						</div>
-					))}
-				</dl>
+				/>
 			)}
 			<div className="flex flex-wrap gap-2">
 				<Button

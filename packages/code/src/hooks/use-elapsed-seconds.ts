@@ -7,8 +7,9 @@ const TICK_MS = 1_000;
  * Whole seconds since `startedAt`, counting while it is set.
  *
  * @name useElapsedSeconds
- * @param startedAt - When the run started, in epoch milliseconds, or
- * undefined when none is going.
+ * @param startedAt - When the count starts, in epoch milliseconds: a run's
+ * start, or when a tool was first drawn running. Undefined when nothing is
+ * going.
  * @return The seconds since then, or undefined when `startedAt` is.
  */
 export const useElapsedSeconds = (startedAt?: number): number | undefined => {
