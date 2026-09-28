@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Session, Translate } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
-import { announcementsFor } from "@/utility";
+import { announcementsFor, RUN_LINES_OPTIONS } from "@/utility";
 
 /**
  * Messages kept in the region. Only the ones added are read out, so the rest
@@ -45,7 +45,13 @@ export const Announcer = ({
 		return session.subscribe(() => {
 			const next = session.getState();
 			const { translate, completed } = latest.current;
-			const said = announcementsFor(previous, next, translate, completed);
+			const said = announcementsFor(
+				previous,
+				next,
+				translate,
+				completed,
+				RUN_LINES_OPTIONS,
+			);
 			previous = next;
 			if (said.length > 0) {
 				setMessages((current) =>

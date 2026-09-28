@@ -43,6 +43,7 @@
 		"newRoom": "new room",
 		"harness": "Harness",
 		"model": "Model",
+		"alwaysAllowed": "Always allowed",
 		"none": "none",
 		"ready": "ready",
 		"starting": "starting",
@@ -52,13 +53,19 @@
 	},
 	"input": {
 		"label": "Prompt or command",
-		"placeholder": "Type a prompt, or :help"
+		"placeholder": "Type a prompt, or :help",
+		"approvalPlaceholder": "{{approve}} approve, {{deny}} deny, {{edit}} edit, {{always}} always allow"
 	},
 	"action": {
 		"send": "Send",
 		"stop": "Stop",
 		"approve": "Approve",
-		"deny": "Deny"
+		"deny": "Deny",
+		"edit": "Edit",
+		"alwaysAllow": "Always allow"
+	},
+	"approval": {
+		"noArguments": "No arguments"
 	},
 	"question": {
 		"invalid": "The agent asked a question this console cannot show. Dismiss it to let the run go on.",

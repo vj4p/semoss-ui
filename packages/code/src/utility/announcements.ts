@@ -1,7 +1,9 @@
 import {
 	actionLabel,
+	approvalHint,
 	type Line,
 	type RunEntry,
+	type RunLinesOptions,
 	runEndLine,
 	type SessionState,
 	type Translate,
@@ -40,6 +42,7 @@ const runAnnouncements = (
 	run: RunEntry,
 	translate: Translate,
 	completed: string,
+	options: RunLinesOptions,
 ): string[] => {
 	const messages: string[] = [];
 
@@ -60,7 +63,7 @@ const runAnnouncements = (
 		);
 	}
 	if (approvals.length > 0) {
-		messages.push(translate("run.approvalHint"));
+		messages.push(approvalHint(translate, options));
 	}
 	if (approvals.length < fresh.length) {
 		messages.push(translate("run.awaitingAnswer"));
@@ -106,6 +109,8 @@ const runAnnouncements = (
  * @param next - The state after it.
  * @param translate - The session's translate.
  * @param completed - What to say when a run completes.
+ * @param options - How the transcript draws a run, so that the hint read out
+ * for a tool call waiting for approval is the one it shows.
  * @return The messages, in the order to say them.
  */
 export const announcementsFor = (
@@ -113,6 +118,7 @@ export const announcementsFor = (
 	next: SessionState,
 	translate: Translate,
 	completed: string,
+	options: RunLinesOptions = {},
 ): string[] => {
 	if (previous.entries === next.entries) {
 		return [];
@@ -134,6 +140,7 @@ export const announcementsFor = (
 					entry,
 					translate,
 					completed,
+					options,
 				);
 			default:
 				return [];

@@ -43,6 +43,7 @@
 		"newRoom": "nieuwe ruimte",
 		"harness": "Harness",
 		"model": "Model",
+		"alwaysAllowed": "Altijd toegestaan",
 		"none": "geen",
 		"ready": "gereed",
 		"starting": "bezig met starten",
@@ -52,13 +53,19 @@
 	},
 	"input": {
 		"label": "Prompt of opdracht",
-		"placeholder": "Typ een prompt, of :help"
+		"placeholder": "Typ een prompt, of :help",
+		"approvalPlaceholder": "{{approve}} goedkeuren, {{deny}} weigeren, {{edit}} bewerken, {{always}} altijd toestaan"
 	},
 	"action": {
 		"send": "Versturen",
 		"stop": "Stoppen",
 		"approve": "Goedkeuren",
-		"deny": "Weigeren"
+		"deny": "Weigeren",
+		"edit": "Bewerken",
+		"alwaysAllow": "Altijd toestaan"
+	},
+	"approval": {
+		"noArguments": "Geen argumenten"
 	},
 	"question": {
 		"invalid": "De agent heeft een vraag gesteld die deze console niet kan weergeven. Sluit de vraag zodat de uitvoering verdergaat.",

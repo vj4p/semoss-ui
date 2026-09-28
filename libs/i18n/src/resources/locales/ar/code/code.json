@@ -47,6 +47,7 @@
 		"newRoom": "غرفة جديدة",
 		"harness": "إطار التشغيل",
 		"model": "النموذج",
+		"alwaysAllowed": "مسموح بها دائمًا",
 		"none": "لا يوجد",
 		"ready": "جاهز",
 		"starting": "جارٍ البدء",
@@ -56,13 +57,19 @@
 	},
 	"input": {
 		"label": "موجه أو أمر",
-		"placeholder": "اكتب موجهًا، أو \u2066:help\u2069"
+		"placeholder": "اكتب موجهًا، أو \u2066:help\u2069",
+		"approvalPlaceholder": "\u2066{{approve}}\u2069 للموافقة، \u2066{{deny}}\u2069 للرفض، \u2066{{edit}}\u2069 للتعديل، \u2066{{always}}\u2069 للسماح دائمًا"
 	},
 	"action": {
 		"send": "إرسال",
 		"stop": "إيقاف",
 		"approve": "موافقة",
-		"deny": "رفض"
+		"deny": "رفض",
+		"edit": "تعديل",
+		"alwaysAllow": "السماح دائمًا"
+	},
+	"approval": {
+		"noArguments": "لا توجد وسائط"
 	},
 	"question": {
 		"invalid": "طرح الوكيل سؤالًا لا تستطيع وحدة التحكم هذه عرضه. تجاهله ليستمر التشغيل.",

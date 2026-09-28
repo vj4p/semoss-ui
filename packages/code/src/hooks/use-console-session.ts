@@ -3,19 +3,13 @@ import { useNavigate } from "react-router";
 import {
 	createSession,
 	describeError,
-	type Platform,
 	roomHistoryLines,
 	type Session,
 	type SessionCatalog,
 	type Translate,
 } from "@semoss/agent-core";
 import { type OpenedRoom, openRoom } from "@/api";
-import { createSessionBackend, downloadRunExport } from "@/utility";
-
-/** How `:help` names the keys: a Mac's Alt key says Option. */
-const PLATFORM: Platform = /Mac|iPhone|iPad/.test(navigator.userAgent)
-	? "mac"
-	: "other";
+import { createSessionBackend, downloadRunExport, PLATFORM } from "@/utility";
 
 /**
  * The console's session, in the room the URL names, or in a new room when it

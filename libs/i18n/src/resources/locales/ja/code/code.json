@@ -42,6 +42,7 @@
 		"newRoom": "新しいルーム",
 		"harness": "ハーネス",
 		"model": "モデル",
+		"alwaysAllowed": "常に許可",
 		"none": "なし",
 		"ready": "準備完了",
 		"starting": "開始中",
@@ -51,13 +52,19 @@
 	},
 	"input": {
 		"label": "プロンプトまたはコマンド",
-		"placeholder": "プロンプトを入力、または :help"
+		"placeholder": "プロンプトを入力、または :help",
+		"approvalPlaceholder": "{{approve}} 承認、{{deny}} 拒否、{{edit}} 編集、{{always}} 常に許可"
 	},
 	"action": {
 		"send": "送信",
 		"stop": "停止",
 		"approve": "承認",
-		"deny": "拒否"
+		"deny": "拒否",
+		"edit": "編集",
+		"alwaysAllow": "常に許可"
+	},
+	"approval": {
+		"noArguments": "引数なし"
 	},
 	"question": {
 		"invalid": "エージェントが、このコンソールでは表示できない質問をしています。実行を続けるには、質問を閉じてください。",

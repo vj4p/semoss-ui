@@ -38,7 +38,9 @@ const runState = (run: RunEntry | undefined) => {
 
 /**
  * The line under the prompt: the room, the harness and model the next run
- * starts with, and what the console is doing.
+ * starts with, the tools that run without asking, and what the console is
+ * doing. Those tools stay in sight for as long as they are allowed, and
+ * `:revoke` asks about one again.
  *
  * The harness and model can be switched here as well as with `:harness` and
  * `:model`, but not while a run is going, which is when the session would
@@ -62,6 +64,7 @@ export const StatusBar = ({
 	const { t, i18n } = useTranslation("code");
 	const harnessId = useId();
 	const modelId = useId();
+	const allowedId = useId();
 	const run = activeRunEntry(state);
 	const running = state.activeEntryId !== undefined;
 	const elapsed = useElapsedSeconds(run?.startedAt);
@@ -144,6 +147,25 @@ export const StatusBar = ({
 					</SelectContent>
 				</Select>
 			</div>
+			{state.alwaysAllowed.length > 0 && (
+				<div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">
+					<span id={allowedId}>{t("status.alwaysAllowed")}</span>
+					<ul
+						aria-labelledby={allowedId}
+						className="flex min-w-0 flex-wrap gap-1"
+						data-testid="statusBar-alwaysAllowed-list"
+					>
+						{state.alwaysAllowed.map((tool) => (
+							<li
+								key={tool.toolName}
+								className="rounded-sm border px-1 text-foreground"
+							>
+								<bdi>{tool.label}</bdi>
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
 			<p className="ms-auto flex items-baseline gap-2">
 				<span className="text-foreground">
 					{t(`status.${runState(run)}`)}

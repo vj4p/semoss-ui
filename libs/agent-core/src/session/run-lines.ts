@@ -117,6 +117,27 @@ export interface RunLinesOptions {
 	approvalKeys?: ApprovalKeyLabels;
 }
 
+/**
+ * The hint under a tool call waiting for approval: the keys that decide it,
+ * when the host binds them, and the commands otherwise. A host that also says
+ * what a run waits on some other way, such as a screen reader announcement,
+ * says this with it, so that the two cannot disagree.
+ */
+export const approvalHint = (
+	translate: Translate = translateEnglish,
+	options: RunLinesOptions = {},
+): string => {
+	const keys = options.approvalKeys;
+	return keys === undefined
+		? translate("run.approvalHint")
+		: translate("run.approvalKeys", {
+				approve: keys.approve,
+				deny: keys.deny,
+				edit: keys.edit,
+				always: keys.always,
+			});
+};
+
 export const runLines = (
 	run: RunEntry,
 	translate: Translate = translateEnglish,
@@ -159,15 +180,7 @@ export const runLines = (
 		);
 	}
 	if (approvals.length > 0) {
-		const hint = options.approvalKeys
-			? translate("run.approvalKeys", {
-					approve: options.approvalKeys.approve,
-					deny: options.approvalKeys.deny,
-					edit: options.approvalKeys.edit,
-					always: options.approvalKeys.always,
-				})
-			: translate("run.approvalHint");
-		lines.push(textLine(hint, "dim"));
+		lines.push(textLine(approvalHint(translate, options), "dim"));
 	}
 	if (approvals.length < run.pendingActions.length) {
 		lines.push(textLine(translate("run.awaitingAnswer"), "accent"));

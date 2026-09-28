@@ -10,7 +10,12 @@ import {
 } from "@semoss/agent-core";
 import { cn } from "@semoss/ui/next";
 import type { useLineLabels } from "@/hooks";
-import { EMPHASIS_CLASS, isLeftToRight, STATUS_CLASS } from "@/utility";
+import {
+	EMPHASIS_CLASS,
+	isLeftToRight,
+	RUN_LINES_OPTIONS,
+	STATUS_CLASS,
+} from "@/utility";
 
 type LineLabels = ReturnType<typeof useLineLabels>;
 
@@ -242,18 +247,20 @@ export const EntryView = memo(
 			className="flex flex-col gap-1"
 			data-testid={`lineView-entry-${entry.id}`}
 		>
-			{entryLines(entry, translate).map((line, index) => (
-				<LineView
-					// An item has one line, and a run's items are only ever
-					// appended, so a line keeps its index for as long as it is
-					// shown. That matters for reasoning, whose disclosure keeps
-					// its own open state.
-					// biome-ignore lint/suspicious/noArrayIndexKey: lines have no id, and the index is stable as described above
-					key={index}
-					line={line}
-					labels={labels}
-				/>
-			))}
+			{entryLines(entry, translate, RUN_LINES_OPTIONS).map(
+				(line, index) => (
+					<LineView
+						// An item has one line, and a run's items are only ever
+						// appended, so a line keeps its index for as long as it is
+						// shown. That matters for reasoning, whose disclosure keeps
+						// its own open state.
+						// biome-ignore lint/suspicious/noArrayIndexKey: lines have no id, and the index is stable as described above
+						key={index}
+						line={line}
+						labels={labels}
+					/>
+				),
+			)}
 		</div>
 	),
 );

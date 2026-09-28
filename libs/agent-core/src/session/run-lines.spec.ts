@@ -9,7 +9,7 @@ import { translateEnglish } from "../i18n/messages";
 import type { ApprovalKeyLabels } from "../keymap/keymap";
 import type { Line } from "../transcript/line";
 import type { RunEntry } from "./entries";
-import { actionLabel, entryLines, runLines } from "./run-lines";
+import { actionLabel, approvalHint, entryLines, runLines } from "./run-lines";
 
 const itemsOf = (...items: AgentRunItem[]) => ({
 	itemsById: Object.fromEntries(items.map((item) => [item.id, item])),
@@ -467,5 +467,29 @@ describe("entryLines", () => {
 		expect(lines.map(plain)).toContain(
 			"With the prompt empty, press A to allow it, D to reject it, E to change its arguments, or Shift+A to always allow it.",
 		);
+	});
+});
+
+describe("approvalHint", () => {
+	it("names the commands when the host binds no keys", () => {
+		expect(approvalHint()).toBe(
+			"Type :approve to allow it, or :deny to reject it.",
+		);
+	});
+
+	it("names each key the host binds, as the hint under a waiting call does", () => {
+		const options = { approvalKeys: KEYS };
+		expect(approvalHint(translateEnglish, options)).toBe(
+			"With the prompt empty, press A to allow it, D to reject it, E to change its arguments, or Shift+A to always allow it.",
+		);
+		expect(
+			runLines(
+				run({ status: "INPUT_REQUIRED", pendingActions: [action()] }),
+				translateEnglish,
+				options,
+			)
+				.map(plain)
+				.at(-1),
+		).toBe(approvalHint(translateEnglish, options));
 	});
 });

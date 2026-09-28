@@ -44,6 +44,7 @@
 		"newRoom": "nouvelle salle",
 		"harness": "Harnais",
 		"model": "Modèle",
+		"alwaysAllowed": "Toujours autorisés",
 		"none": "aucun",
 		"ready": "prêt",
 		"starting": "démarrage",
@@ -53,13 +54,19 @@
 	},
 	"input": {
 		"label": "Invite ou commande",
-		"placeholder": "Tapez une invite, ou :help"
+		"placeholder": "Tapez une invite, ou :help",
+		"approvalPlaceholder": "{{approve}} approuver, {{deny}} refuser, {{edit}} modifier, {{always}} toujours autoriser"
 	},
 	"action": {
 		"send": "Envoyer",
 		"stop": "Arrêter",
 		"approve": "Approuver",
-		"deny": "Refuser"
+		"deny": "Refuser",
+		"edit": "Modifier",
+		"alwaysAllow": "Toujours autoriser"
+	},
+	"approval": {
+		"noArguments": "Aucun argument"
 	},
 	"question": {
 		"invalid": "L'agent a posé une question que cette console ne peut pas afficher. Ignorez-la pour que l'exécution continue.",

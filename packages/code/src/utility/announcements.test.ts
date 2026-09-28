@@ -180,6 +180,30 @@ describe("announcementsFor", () => {
 		).toEqual([]);
 	});
 
+	it("names the keys that decide it, when the console binds them", () => {
+		const options = {
+			approvalKeys: {
+				approve: "A",
+				deny: "D",
+				edit: "E",
+				always: "Shift+A",
+			},
+		};
+
+		expect(
+			announcementsFor(
+				state(run()),
+				state(run({ pendingActions: [action()] })),
+				translateEnglish,
+				COMPLETED,
+				options,
+			),
+		).toEqual([
+			translateEnglish("run.awaitingApproval", { tool: "Bash" }),
+			"With the prompt empty, press A to allow it, D to reject it, E to change its arguments, or Shift+A to always allow it.",
+		]);
+	});
+
 	it("announces a question without the approval hint", () => {
 		expect(
 			announce(

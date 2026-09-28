@@ -44,6 +44,7 @@
 		"newRoom": "sala nueva",
 		"harness": "Arnés",
 		"model": "Modelo",
+		"alwaysAllowed": "Siempre permitidas",
 		"none": "ninguno",
 		"ready": "listo",
 		"starting": "iniciando",
@@ -53,13 +54,19 @@
 	},
 	"input": {
 		"label": "Indicación o comando",
-		"placeholder": "Escribe una indicación, o :help"
+		"placeholder": "Escribe una indicación, o :help",
+		"approvalPlaceholder": "{{approve}} aprobar, {{deny}} denegar, {{edit}} editar, {{always}} permitir siempre"
 	},
 	"action": {
 		"send": "Enviar",
 		"stop": "Detener",
 		"approve": "Aprobar",
-		"deny": "Denegar"
+		"deny": "Denegar",
+		"edit": "Editar",
+		"alwaysAllow": "Permitir siempre"
+	},
+	"approval": {
+		"noArguments": "Sin argumentos"
 	},
 	"question": {
 		"invalid": "El agente hizo una pregunta que esta consola no puede mostrar. Descártala para que la ejecución continúe.",
