@@ -58,8 +58,8 @@ An application, so it uses the `src/` layout from the root AGENTS.md including `
 | Folder / file | Purpose |
 |---------------|---------|
 | `api/` | Pixel calls by domain: `rooms.ts` (open, create, read and write a room's options), `engines.ts` (the models, the user's default) |
-| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel. `prompt-input`, `pending-actions` and `status-bar` have component tests beside them |
-| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-session-state`, `use-line-labels`, `use-elapsed-seconds`, `use-ready-approval` (when the approval keys may act) |
+| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `argument-list.tsx` is a tool call's arguments, on its approval card and in its opened line; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel. `prompt-input`, `pending-actions`, `status-bar`, `line-view` and `transcript` have component tests beside them |
+| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-session-state`, `use-line-labels` (the words the transcript adds to agent-core's lines), `use-elapsed-seconds` (a run's time, and a running tool call's), `use-ready-approval` (when the approval keys may act) |
 | `pages/` | `router.tsx`, `initialized.layout.tsx`, `authenticated.layout.tsx`, `console.page.tsx`, `login.page.tsx`, `error.page.tsx` |
 | `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts`, `keyboard.ts` (the platform, and the approval keys that the hints and buttons name) |
 | `app.tsx`, `main.tsx`, `index.css` | App entry files |
@@ -132,6 +132,25 @@ These were decided in Phase 2 of the plan rather than retrofitted:
 - **What runs without asking stays in sight.** The status bar lists the always-allowed
   tools, a list named by its label, for as long as they are allowed. `:allowed` lists them
   too, and `:revoke` asks about one again.
+- **A tool call opens.** A call with arguments or output to show is a `<details>` whose
+  summary is its row, a tab stop with the focus outline. It opens on every argument, drawn by
+  `ArgumentList` as on the approval card, and on the output, under labels that are muted `<p>`s
+  rather than headings, so that the heading keys still step from one prompt to the next. The
+  body is rendered while the call is closed, so that find-in-page can reach it. A failed
+  call's error stays outside the disclosure, in sight, and a call with nothing more to show is
+  a plain row. A line keeps its open state while its run goes on.
+- **What opens is bounded.** A room's history keeps a call's output whole, so agent-core cuts
+  it, and an error, at the live stream's 12,000 characters, ending in the backend's marker, so
+  that one call cannot put megabytes on a line. The size and the truncated badge describe what
+  the line holds. Invisible characters in both show as markers, as in arguments.
+- **A running call counts its seconds**, from when the console first drew it running
+  (agent-core's `runningSince`), so that the wait for an approval is not counted. The count
+  is `aria-hidden`: the summary names the disclosure, whose name would otherwise change every
+  second, and the status bar keeps the run's time.
+- **Opening a call counts as reading it.** The transcript stays put once what opened runs
+  past its end, rather than scroll it away on the next update, and follows the run again once
+  the end is back in view. A `toggle` event does not bubble, so the transcript hears it in the
+  capture phase.
 - **Status is never colour alone.** A glyph's shape carries it and a visually hidden word
   names it.
 - **Keys are data.** They come from agent-core's `DEFAULT_KEYMAP`, and `:help` lists the same
@@ -163,6 +182,14 @@ These were decided in Phase 2 of the plan rather than retrofitted:
   `utility/translate.test.ts` fails if one is dropped.
 - Room names are drawn in `<bdi>`. Segments that are file paths or key chords stay left to
   right (`isLeftToRight` in `line-styles.ts`).
+- Argument values and a call's output are left to right, as code is, in `<pre dir="ltr">`
+  blocks that are `w-fit max-w-full`: as wide as their text and no wider than the line, so
+  that in a right-to-left console each sits under its label rather than across the page from
+  it. The summary is `w-fit` too, so that its focus outline, and the area a click toggles, end
+  where the row does.
+- **Not fixed yet:** a tool's or a subagent's error, and a subagent's result preview, are
+  `dir="auto"` blocks, so English text in them sits at the far left of a right-to-left
+  console, away from its row.
 
 ### 200% zoom
 
@@ -196,6 +223,11 @@ Contrast decisions, measured against the tokens:
 - **The prompt is a command line, not a form,** so the react-hook-form + zod rule does not
   apply to it. There is nothing to validate before it is sent, and the answer arrives in the
   transcript, not beside it. The status bar's harness and model selects apply as they change.
+- **A tool call's chevron ends its row**, so that the status glyphs stay in one column. It is
+  a glyph, `▸` mirrored right to left and `▾` once open, not a Lucide icon: this package does
+  not depend on `lucide-react`, and adding it would change `pnpm-lock.yaml`. The summary hides
+  the browser's own triangle with `list-none` and, for WebKit, the
+  `[&::-webkit-details-marker]:hidden` variant.
 
 ## Tooling Notes
 
@@ -203,7 +235,8 @@ Contrast decisions, measured against the tokens:
   are `*.spec.ts`. A component test renders against a fake session, an object that
   `satisfies Partial<Session>`, with the real English strings from
   `new I18nBuilder(codeResources, { lockToEnglish: true })` and no provider. Fake timers work
-  under the `vmForks` pool.
+  under the `vmForks` pool. `line-view` and `transcript` draw a `Transcript` of lines made by
+  hand instead, and `transcript` gives the log the heights that jsdom does not lay out.
 - **`tsc` reports 14 errors, all in `libs/shared` source**: `audit-log-filter.tsx` (10),
   `audit-logs-detail-drawer.tsx` (2), `mcp-utils.ts` (1) and `notebook-sortable-cell.tsx`
   (1). They show up because this package is `strict` and shared is consumed as source. None
