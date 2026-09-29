@@ -107,6 +107,26 @@ Terminal usability features for professional workflow.
 
 ---
 
+## Real Cost Tracking ✅
+**Implemented:** 2026-09-29
+
+`:cost` overlay now displays real token usage and cost data from the backend.
+
+**Implementation:**
+- Calls `GetModelCost(roomId=["..."])` Pixel to fetch usage data
+- Displays per-model breakdown: input/output tokens, API calls, estimated cost
+- Shows aggregate totals across all models in the room
+- Handles unpriced models (self-hosted, missing catalog rates)
+- Empty state for rooms with no usage yet
+
+**Data source:** Backend's `GetModelCostReactor` queries `ModelInferenceLogsDatabase` MESSAGE table for token counts, calculates costs via `ModelCostCalculator` using published rates from `MODELMETADATA.PRICING`
+
+**Scope:** Room-level only (not per-run) — MESSAGE table has no RUN_ID column, so per-run aggregation would require parsing every message payload
+
+**Status:** Fully functional. Status bar cost accumulator can now be implemented using the same data source.
+
+---
+
 ## What's Next
 
 ### High Priority
@@ -114,12 +134,8 @@ Terminal usability features for professional workflow.
    - `:files` — Real file browser (currently hardcoded tree)
      - Integration with file system or SDK asset APIs
      - Tree navigation, file preview
-   - `:cost` — Real cost tracking (structure defined, data missing)
-     - Token count tracking per model
-     - Cost calculation from published rates
-     - Per-run and session totals
    - Status bar — Real values (currently `$0.00`, `0%`, `—`)
-     - Cost accumulator
+     - Cost accumulator (depends on `:cost` data)
      - Context window percentage from session
      - Git branch detection
 
@@ -191,19 +207,17 @@ Terminal usability features for professional workflow.
 
 1. **Status bar placeholders**: All show static values (cost, context, branch)
 2. **:files placeholder**: Hardcoded tree, not connected to real file system
-3. **:cost placeholder**: UI structure exists but no real cost data
-4. **:inbox placeholder**: Roadmap-only, no real notification system
-5. **Type errors**: 22 baseline errors in `libs/shared` (not in this package)
-6. **Home node_modules leak**: Undeclared workspace deps resolve from ~/node_modules on dev machine
+3. **:inbox placeholder**: Roadmap-only, no real notification system
+4. **Type errors**: 14 baseline errors in `libs/shared` (not in this package)
+5. **Home node_modules leak**: Undeclared workspace deps resolve from ~/node_modules on dev machine
 
 ---
 
 ## Technical Debt
 
-1. **Real cost tracking**: Need to instrument token counts in RunEntry or track via backend
-2. **File browser API**: Determine whether to use SDK asset APIs or shell commands
-3. **Context tracking**: Need to expose context window usage from session or backend
-4. **Git integration**: Branch detection, status polling for status bar
+1. **File browser API**: Determine whether to use SDK asset APIs or shell commands
+2. **Context tracking**: Need to expose context window usage from session or backend
+3. **Git integration**: Branch detection, status polling for status bar
 
 ---
 

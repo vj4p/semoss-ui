@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@semoss/agent-core";
+import { runPixel } from "@semoss/sdk";
 import { Spinner } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
 
@@ -38,20 +39,115 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 			return;
 		}
 
-		// Extract cost information from session state
-		setLoading(true);
+		const fetchCostData = async () => {
+			setLoading(true);
 
-		// TODO: Implement actual cost tracking from session state
-		// For now, show placeholder data structure
-		const placeholderSummary: CostSummary = {
-			totalCost: 0,
-			totalTokens: 0,
-			totalCalls: 0,
-			byModel: [],
+			try {
+				const state = session.getState();
+				const roomId = state.roomId;
+
+				if (!roomId) {
+					// No room yet, show empty state
+					setSummary({
+						totalCost: 0,
+						totalTokens: 0,
+						totalCalls: 0,
+						byModel: [],
+					});
+					setLoading(false);
+					return;
+				}
+
+				// Call GetModelCost Pixel
+				type CostResponse = {
+					models: Array<{
+						modelId: string;
+						modelName: string;
+						llmCalls: number;
+						inputTokens: number;
+						outputTokens: number;
+						thinkingTokens: number;
+						cacheReadTokens: number;
+						cacheWriteTokens: number;
+						cost: number | null;
+						priced: boolean;
+					}>;
+					totals: {
+						llmCalls: number;
+						inputTokens: number;
+						outputTokens: number;
+						thinkingTokens: number;
+						cacheReadTokens: number;
+						cacheWriteTokens: number;
+						cost: number | null;
+						currency: string;
+					};
+					coverage: {
+						pricedModels: number;
+						unpricedModels: number;
+						complete: boolean;
+					};
+				};
+
+				const response = await runPixel<[CostResponse]>(
+					`GetModelCost(roomId=["${roomId}"])`,
+				);
+
+				if (response.errors.length > 0) {
+					console.error("GetModelCost error:", response.errors);
+					setSummary({
+						totalCost: 0,
+						totalTokens: 0,
+						totalCalls: 0,
+						byModel: [],
+					});
+					setLoading(false);
+					return;
+				}
+
+				const data = response.pixelReturn[0]?.output;
+				if (!data) {
+					setSummary({
+						totalCost: 0,
+						totalTokens: 0,
+						totalCalls: 0,
+						byModel: [],
+					});
+					setLoading(false);
+					return;
+				}
+
+				// Map backend response to CostSummary
+				const costSummary: CostSummary = {
+					totalCost: data.totals.cost ?? 0,
+					totalTokens:
+						data.totals.inputTokens + data.totals.outputTokens,
+					totalCalls: data.totals.llmCalls,
+					byModel: data.models.map((m) => ({
+						model: m.modelName || m.modelId,
+						inputTokens: m.inputTokens,
+						outputTokens: m.outputTokens,
+						totalTokens: m.inputTokens + m.outputTokens,
+						estimatedCost: m.cost ?? 0,
+						calls: m.llmCalls,
+					})),
+				};
+
+				setSummary(costSummary);
+			} catch (error) {
+				console.error("Failed to fetch cost data:", error);
+				setSummary({
+					totalCost: 0,
+					totalTokens: 0,
+					totalCalls: 0,
+					byModel: [],
+				});
+			} finally {
+				setLoading(false);
+			}
 		};
 
-		setSummary(placeholderSummary);
-		setLoading(false);
+		fetchCostData();
 	}, [open, session]);
 
 	const formatCost = (cost: number) => {
@@ -84,9 +180,6 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 					<p className="text-muted-foreground text-xs">
 						Cost tracking will appear after your first model
 						interaction
-					</p>
-					<p className="mt-4 text-muted-foreground text-xs">
-						(Cost tracking implementation coming soon)
 					</p>
 				</div>
 			) : (
