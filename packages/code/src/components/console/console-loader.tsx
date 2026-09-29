@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import type { SessionCatalog } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
@@ -9,6 +9,7 @@ import {
 	CostOverlay,
 	DiffOverlay,
 	FilesOverlay,
+	HistorySearchOverlay,
 	InboxOverlay,
 	PacksOverlay,
 	RunsOverlay,
@@ -38,6 +39,23 @@ const RoomLoader = ({
 		translate,
 		onShowOverlay: setActiveOverlay,
 	});
+
+	// Handle Ctrl+R / Cmd+R for history search
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Ctrl+R (Windows/Linux) or Cmd+R (Mac)
+			if (e.key === "r" && (e.ctrlKey || e.metaKey)) {
+				// Only trigger if no overlay is already open
+				if (!activeOverlay) {
+					e.preventDefault();
+					setActiveOverlay("history");
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [activeOverlay]);
 
 	switch (room.status) {
 		case "opening":
@@ -85,6 +103,15 @@ const RoomLoader = ({
 					<InboxOverlay
 						open={activeOverlay === "inbox"}
 						onDismiss={() => setActiveOverlay(null)}
+					/>
+					<HistorySearchOverlay
+						open={activeOverlay === "history"}
+						onDismiss={() => setActiveOverlay(null)}
+						onSelect={(text) => {
+							// Submit the selected command/prompt
+							void room.session.submit(text);
+						}}
+						session={room.session}
 					/>
 				</>
 			);

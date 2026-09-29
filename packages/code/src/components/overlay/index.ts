@@ -1,6 +1,7 @@
 export { CostOverlay } from "./cost-overlay";
 export { DiffOverlay } from "./diff-overlay";
 export { FilesOverlay } from "./files-overlay";
+export { HistorySearchOverlay } from "./history-search-overlay";
 export { InboxOverlay } from "./inbox-overlay";
 export { OverlayContainer } from "./overlay-container";
 export { PacksOverlay } from "./packs-overlay";
