@@ -160,6 +160,9 @@
 			"allowed": "Mostrar las herramientas que se ejecutan sin preguntar",
 			"revoke": "Preguntar sobre una herramienta de nuevo, o sobre todas si no se nombra ninguna",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "Guardar los eventos sin procesar de la última ejecución como JSON"
 		},
 		"help": {

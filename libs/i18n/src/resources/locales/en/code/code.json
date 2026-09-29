@@ -159,6 +159,9 @@
 			"allowed": "List the tools that run without asking",
 			"revoke": "Ask about a tool again, or every tool when none is named",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "Save the last run's raw events as JSON"
 		},
 		"help": {

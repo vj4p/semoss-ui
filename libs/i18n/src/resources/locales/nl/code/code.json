@@ -159,6 +159,9 @@
 			"allowed": "De tools weergeven die zonder te vragen worden uitgevoerd",
 			"revoke": "Weer om goedkeuring vragen voor een tool, of voor alle tools als er geen wordt genoemd",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "De onbewerkte gebeurtenissen van de laatste uitvoering als JSON opslaan"
 		},
 		"help": {

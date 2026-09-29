@@ -158,6 +158,9 @@
 			"allowed": "確認なしで実行されるツールの一覧を表示",
 			"revoke": "ツールの確認を再開 (名前を省略するとすべてのツール)",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "直前の実行の生イベントを JSON として保存"
 		},
 		"help": {

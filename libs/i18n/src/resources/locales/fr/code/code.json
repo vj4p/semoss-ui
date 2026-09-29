@@ -160,6 +160,9 @@
 			"allowed": "Lister les outils qui s'exécutent sans approbation",
 			"revoke": "Redemander l'approbation pour un outil, ou pour tous si aucun n'est nommé",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "Enregistrer les événements bruts de la dernière exécution au format JSON"
 		},
 		"help": {

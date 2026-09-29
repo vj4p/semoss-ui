@@ -5,7 +5,12 @@ import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
 import { useCatalog, useConsoleSession } from "@/hooks";
 import { createTranslate } from "@/utility";
-import { FilesOverlay } from "../overlay";
+import {
+	DiffOverlay,
+	FilesOverlay,
+	PacksOverlay,
+	RunsOverlay,
+} from "../overlay";
 import { Console } from "./console";
 import { ConsoleFailure, ConsolePending } from "./console-status";
 
@@ -55,6 +60,19 @@ const RoomLoader = ({
 					/>
 					<FilesOverlay
 						open={activeOverlay === "files"}
+						onDismiss={() => setActiveOverlay(null)}
+					/>
+					<DiffOverlay
+						open={activeOverlay === "diff"}
+						onDismiss={() => setActiveOverlay(null)}
+					/>
+					<RunsOverlay
+						open={activeOverlay === "runs"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
+					/>
+					<PacksOverlay
+						open={activeOverlay === "packs"}
 						onDismiss={() => setActiveOverlay(null)}
 					/>
 				</>

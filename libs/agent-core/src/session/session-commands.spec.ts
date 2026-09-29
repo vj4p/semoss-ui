@@ -113,6 +113,9 @@ describe(":help", () => {
 				"Ask about a tool again, or every tool when none is named",
 			],
 			[":files", "Browse files"],
+			[":diff", "Show git diff for current changes"],
+			[":runs", "Browse run history"],
+			[":packs", "List capability packs"],
 		]);
 	});
 

@@ -127,6 +127,9 @@ export const MESSAGES = {
 	"command.revoke":
 		"Ask about a tool again, or every tool when none is named",
 	"command.files": "Browse files",
+	"command.diff": "Show git diff for current changes",
+	"command.runs": "Browse run history",
+	"command.packs": "List capability packs",
 	"command.export": "Save the last run's raw events as JSON",
 
 	"help.commands": "Commands",

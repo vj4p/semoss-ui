@@ -266,6 +266,27 @@ export const createSessionCommands = ({
 			onShowOverlay?.("files");
 		},
 	},
+	{
+		name: "diff",
+		describe: "command.diff",
+		run: () => {
+			onShowOverlay?.("diff");
+		},
+	},
+	{
+		name: "runs",
+		describe: "command.runs",
+		run: () => {
+			onShowOverlay?.("runs");
+		},
+	},
+	{
+		name: "packs",
+		describe: "command.packs",
+		run: () => {
+			onShowOverlay?.("packs");
+		},
+	},
 	...(canExport
 		? [
 				{

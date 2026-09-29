@@ -163,6 +163,9 @@
 			"allowed": "عرض الأدوات التي تعمل دون سؤال",
 			"revoke": "السؤال عن أداة مرة أخرى، أو عن كل أداة عند عدم تسمية أي منها",
 			"files": "Browse files",
+			"diff": "Show git diff for current changes",
+			"runs": "Browse run history",
+			"packs": "List capability packs",
 			"export": "حفظ الأحداث الأولية لآخر تشغيل بصيغة JSON"
 		},
 		"help": {
