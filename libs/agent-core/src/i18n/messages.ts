@@ -130,6 +130,8 @@ export const MESSAGES = {
 	"command.diff": "Show git diff for current changes",
 	"command.runs": "Browse run history",
 	"command.packs": "List capability packs",
+	"command.cost": "Show cost and usage breakdown",
+	"command.inbox": "View notifications and messages",
 	"command.export": "Save the last run's raw events as JSON",
 
 	"help.commands": "Commands",

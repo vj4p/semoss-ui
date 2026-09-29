@@ -168,6 +168,28 @@ export const StatusBar = ({
 					</ul>
 				</div>
 			)}
+			{/* Phase 4c placeholders - full implementation pending cost tracking */}
+			<p
+				className="flex items-baseline gap-1.5 opacity-50"
+				title="Session cost (implementation pending)"
+			>
+				<span>$</span>
+				<span className="text-foreground">0.00</span>
+			</p>
+			<p
+				className="flex items-baseline gap-1.5 opacity-50"
+				title="Context usage (implementation pending)"
+			>
+				<span>ctx</span>
+				<span className="text-foreground">0%</span>
+			</p>
+			<p
+				className="flex items-baseline gap-1.5 opacity-50"
+				title="Git branch (implementation pending)"
+			>
+				<span>⎇</span>
+				<span className="text-foreground">—</span>
+			</p>
 			<p className="ms-auto flex items-baseline gap-2">
 				<span className="text-foreground">
 					{t(`status.${runState(state)}`)}

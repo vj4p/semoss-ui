@@ -6,8 +6,10 @@ import { useInsight } from "@semoss/sdk/react";
 import { useCatalog, useConsoleSession } from "@/hooks";
 import { createTranslate } from "@/utility";
 import {
+	CostOverlay,
 	DiffOverlay,
 	FilesOverlay,
+	InboxOverlay,
 	PacksOverlay,
 	RunsOverlay,
 } from "../overlay";
@@ -73,6 +75,15 @@ const RoomLoader = ({
 					/>
 					<PacksOverlay
 						open={activeOverlay === "packs"}
+						onDismiss={() => setActiveOverlay(null)}
+					/>
+					<CostOverlay
+						open={activeOverlay === "cost"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
+					/>
+					<InboxOverlay
+						open={activeOverlay === "inbox"}
 						onDismiss={() => setActiveOverlay(null)}
 					/>
 				</>

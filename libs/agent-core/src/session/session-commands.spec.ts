@@ -116,6 +116,8 @@ describe(":help", () => {
 			[":diff", "Show git diff for current changes"],
 			[":runs", "Browse run history"],
 			[":packs", "List capability packs"],
+			[":cost", "Show cost and usage breakdown"],
+			[":inbox", "View notifications and messages"],
 		]);
 	});
 

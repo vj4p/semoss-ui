@@ -287,6 +287,20 @@ export const createSessionCommands = ({
 			onShowOverlay?.("packs");
 		},
 	},
+	{
+		name: "cost",
+		describe: "command.cost",
+		run: () => {
+			onShowOverlay?.("cost");
+		},
+	},
+	{
+		name: "inbox",
+		describe: "command.inbox",
+		run: () => {
+			onShowOverlay?.("inbox");
+		},
+	},
 	...(canExport
 		? [
 				{

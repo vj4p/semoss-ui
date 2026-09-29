@@ -163,6 +163,8 @@
 			"diff": "Show git diff for current changes",
 			"runs": "Browse run history",
 			"packs": "List capability packs",
+			"cost": "Show cost and usage breakdown",
+			"inbox": "View notifications and messages",
 			"export": "Guardar los eventos sin procesar de la última ejecución como JSON"
 		},
 		"help": {
