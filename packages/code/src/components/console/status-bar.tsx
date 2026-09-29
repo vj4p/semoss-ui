@@ -1,9 +1,9 @@
 import { useId, useMemo } from "react";
 import {
 	activeRunEntry,
-	type RunEntry,
 	type Session,
 	type SessionState,
+	waitingActions,
 } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import {
@@ -17,18 +17,20 @@ import {
 import { useElapsedSeconds } from "@/hooks";
 
 /**
- * What the console is doing, in the words of `status.*`: a run that is
- * waiting for the user says so ahead of anything else it is doing.
+ * What the console is doing, in the words of `status.*`. A call waiting for
+ * the user says so ahead of anything else but a stop, wherever it is: a
+ * subagent can wait after the run that spawned it has ended.
  */
-const runState = (run: RunEntry | undefined) => {
-	if (run === undefined) {
-		return "ready";
-	}
-	if (run.stopRequested) {
+const runState = (state: SessionState) => {
+	const run = activeRunEntry(state);
+	if (run?.stopRequested) {
 		return "stopping";
 	}
-	if (run.pendingActions.length > 0 || run.status === "INPUT_REQUIRED") {
+	if (waitingActions(state).length > 0 || run?.status === "INPUT_REQUIRED") {
 		return "waiting";
+	}
+	if (run === undefined) {
+		return "ready";
 	}
 	if (run.status === "STARTING" || run.status === "SUBMITTED") {
 		return "starting";
@@ -168,7 +170,7 @@ export const StatusBar = ({
 			)}
 			<p className="ms-auto flex items-baseline gap-2">
 				<span className="text-foreground">
-					{t(`status.${runState(run)}`)}
+					{t(`status.${runState(state)}`)}
 				</span>
 				{elapsed !== undefined && (
 					<time dateTime={`PT${elapsed}S`} className="tabular-nums">

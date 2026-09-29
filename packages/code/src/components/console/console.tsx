@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import {
-	activeRunEntry,
 	keyedApproval,
 	type Session,
 	type Translate,
+	waitingActions,
 } from "@semoss/agent-core";
 import { useReadyApproval, useSessionState } from "@/hooks";
 import { Announcer } from "./announcer";
@@ -13,8 +13,10 @@ import { StatusBar } from "./status-bar";
 import { Transcript } from "./transcript";
 
 /**
- * One session, as a terminal: the transcript, what the run is waiting on,
- * the prompt, and the status bar, top to bottom.
+ * One session, as a terminal: the transcript, what its runs wait on the user
+ * for, the prompt, and the status bar, top to bottom. What waits is looked
+ * for in every entry, not only the run in progress, since a subagent can
+ * still wait after the run that spawned it has ended.
  *
  * The prompt has focus from the start, since typing into it is what the
  * console is for, and every decision made elsewhere sends focus back to it.
@@ -43,8 +45,9 @@ export const Console = ({
 	const state = useSessionState(session);
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const promptRef = useRef<PromptHandle>(null);
-	const run = activeRunEntry(state);
-	const ready = useReadyApproval(keyedApproval(state));
+	const waiting = waitingActions(state, translate);
+	const keyed = keyedApproval(state);
+	const ready = useReadyApproval(keyed);
 
 	useEffect(() => {
 		inputRef.current?.focus();
@@ -52,10 +55,14 @@ export const Console = ({
 
 	return (
 		<>
-			<Transcript entries={state.entries} translate={translate} />
-			{run !== undefined && run.pendingActions.length > 0 && (
+			<Transcript
+				entries={state.entries}
+				translate={translate}
+				keyedActionId={keyed?.actionId}
+			/>
+			{waiting.length > 0 && (
 				<PendingActions
-					run={run}
+					waiting={waiting}
 					session={session}
 					translate={translate}
 					ready={ready}

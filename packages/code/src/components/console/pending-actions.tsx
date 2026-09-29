@@ -1,11 +1,10 @@
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import {
 	type ApprovalKeyLabels,
-	actionLabel,
 	describeArguments,
-	type RunEntry,
 	type Session,
 	type Translate,
+	type WaitingAction,
 } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import {
@@ -16,11 +15,12 @@ import {
 import {
 	AgentUserInputCard,
 	Button,
+	FieldDescription,
 	FieldLegend,
 	FieldSet,
 	Kbd,
 } from "@semoss/ui/next";
-import { APPROVAL_KEYS } from "@/utility";
+import { APPROVAL_KEYS, waitingText } from "@/utility";
 import { ArgumentList } from "./argument-list";
 
 /**
@@ -44,18 +44,18 @@ const KeyCap = ({ label }: { label: string }) => (
  * Every argument is shown whole, the telling one first, and with any
  * invisible character revealed, so that what the user approves is what they
  * read. The call the keys act on shows them on its buttons once they work.
+ * A subagent's call whose parent has ended says so, as the fieldset's
+ * description.
  */
 const Approval = ({
-	action,
-	run,
+	waiting,
 	session,
 	translate,
 	keys,
 	returnFocus,
 	onEdit,
 }: {
-	action: PendingAgentAction;
-	run: RunEntry;
+	waiting: WaitingAction;
 	session: Session;
 	translate: Translate;
 	keys?: ApprovalKeyLabels;
@@ -63,14 +63,22 @@ const Approval = ({
 	onEdit: (text: string) => void;
 }) => {
 	const { t } = useTranslation("code");
+	const noteId = useId();
+	const { action, parentEnded } = waiting;
 	const args = describeArguments(action.toolArgs);
 	return (
-		<FieldSet className="min-w-0 gap-3">
+		<FieldSet
+			className="min-w-0 gap-3"
+			aria-describedby={parentEnded ? noteId : undefined}
+		>
 			<FieldLegend variant="label" className="mb-2 break-words">
-				{translate("run.awaitingApproval", {
-					tool: actionLabel(action, run.items),
-				})}
+				{waitingText(waiting, translate)}
 			</FieldLegend>
+			{parentEnded && (
+				<FieldDescription id={noteId}>
+					{translate("run.parentEnded")}
+				</FieldDescription>
+			)}
 			{args.length === 0 ? (
 				<p className="text-muted-foreground">
 					{t("approval.noArguments")}
@@ -140,26 +148,38 @@ const Approval = ({
 /**
  * A question the agent asked, as the platform's form for it. A question that
  * form cannot show can still be dismissed, which rejects it, so that the run
- * is not left waiting on something the user cannot answer.
+ * is not left waiting on something the user cannot answer. A subagent's
+ * question names the subagent, and says so when its parent has ended, as an
+ * approval does.
  */
 const Question = ({
-	action,
+	waiting,
 	session,
 	translate,
 	returnFocus,
 }: {
-	action: PendingAgentAction;
+	waiting: WaitingAction;
 	session: Session;
 	translate: Translate;
 	returnFocus: () => void;
 }) => {
 	const { t } = useTranslation("code");
+	const noteId = useId();
+	const { action, parentEnded } = waiting;
 	const request = useMemo(() => parseUserInputRequest(action), [action]);
 	return (
-		<FieldSet className="min-w-0">
-			<FieldLegend variant="label" className="mb-2">
-				{translate("run.awaitingAnswer")}
+		<FieldSet
+			className="min-w-0"
+			aria-describedby={parentEnded ? noteId : undefined}
+		>
+			<FieldLegend variant="label" className="mb-2 break-words">
+				{waitingText(waiting, translate)}
 			</FieldLegend>
+			{parentEnded && (
+				<FieldDescription id={noteId}>
+					{translate("run.parentEnded")}
+				</FieldDescription>
+			)}
 			{request === null ? (
 				<div className="flex flex-wrap items-center gap-2">
 					<p className="min-w-0 flex-1 text-muted-foreground">
@@ -191,8 +211,12 @@ const Question = ({
 };
 
 /**
- * What the run in progress is waiting on the user for: tool calls to approve
- * or deny, and questions to answer.
+ * What the runs the console follows are waiting on the user for: tool calls
+ * to approve or deny, and questions to answer, in the run in progress first.
+ * A subagent's call is named by its path, the subagents it is under and then
+ * the tool, and can still wait after the run that spawned the subagent has
+ * ended, when it says so: that run will not use the result, but deciding the
+ * call lets the subagent carry on.
  *
  * Deciding one sends focus back to the prompt before the decision goes out.
  * The session takes the action off the list at once, so the button pressed
@@ -210,7 +234,7 @@ const Question = ({
  * action stays in view and the transcript keeps its share.
  *
  * @name PendingActions
- * @param props.run - The run in progress.
+ * @param props.waiting - Every call waiting on the user, from waitingActions.
  * @param props.session - The session that decides the actions.
  * @param props.translate - Translate for agent-core's messages.
  * @param props.ready - The call the approval keys may decide, once it is
@@ -219,14 +243,14 @@ const Question = ({
  * @param props.onEdit - Puts text in the prompt, for Edit.
  */
 export const PendingActions = ({
-	run,
+	waiting,
 	session,
 	translate,
 	ready,
 	returnFocus,
 	onEdit,
 }: {
-	run: RunEntry;
+	waiting: readonly WaitingAction[];
 	session: Session;
 	translate: Translate;
 	ready?: PendingAgentAction;
@@ -237,23 +261,22 @@ export const PendingActions = ({
 		className="flex max-h-1/3 shrink-0 flex-col gap-3 overflow-y-auto border-t px-4 py-3 md:px-6"
 		data-testid="pendingActions-list"
 	>
-		{run.pendingActions.map((action) => (
-			<li key={action.actionId}>
-				{isRequestUserInputAction(action) ? (
+		{waiting.map((each) => (
+			<li key={each.action.actionId}>
+				{isRequestUserInputAction(each.action) ? (
 					<Question
-						action={action}
+						waiting={each}
 						session={session}
 						translate={translate}
 						returnFocus={returnFocus}
 					/>
 				) : (
 					<Approval
-						action={action}
-						run={run}
+						waiting={each}
 						session={session}
 						translate={translate}
 						keys={
-							action.actionId === ready?.actionId
+							each.action.actionId === ready?.actionId
 								? APPROVAL_KEYS
 								: undefined
 						}

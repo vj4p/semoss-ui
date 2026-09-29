@@ -1,4 +1,4 @@
-import type { SessionBackend } from "@semoss/agent-core";
+import { getOrCreateAgent, type SessionBackend } from "@semoss/agent-core";
 import { AgentStore } from "@semoss/sdk/react";
 import {
 	createRoom,
@@ -13,7 +13,8 @@ import {
  * Every call runs in the insight the room is bound to: the one it was opened
  * in, or, for a room the session creates, the one it was created in. A session
  * that starts without a room has no insight until its first prompt creates the
- * room, and needs none before then.
+ * room, and needs none before then. A subagent's run is followed in that
+ * insight too, though its room is its own.
  *
  * @name createSessionBackend
  * @param insightId - Insight the opened room is bound to, when the session
@@ -51,5 +52,10 @@ export const createSessionBackend = (insightId?: string): SessionBackend => {
 				{ roomId, command, engine: modelId, harnessType: harness },
 				requireInsight(),
 			),
+		// The run's store in the registry, so that a run this tab already
+		// watches is not polled twice. Not watched here: the session does
+		// that, as it does its own runs.
+		followRun: ({ runId, roomId }) =>
+			getOrCreateAgent(roomId, requireInsight(), runId),
 	};
 };

@@ -2,11 +2,13 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import {
 	type RunEntry,
+	type RunStatus,
 	type Session,
 	translateEnglish,
+	waitingIn,
 } from "@semoss/agent-core";
 import { codeResources, I18nBuilder } from "@semoss/i18n";
-import type { PendingAgentAction } from "@semoss/sdk/react";
+import type { AgentRunItem, PendingAgentAction } from "@semoss/sdk/react";
 import { PendingActions } from "./pending-actions";
 
 const builder = new I18nBuilder(codeResources, { lockToEnglish: true });
@@ -43,6 +45,42 @@ const run = (...pendingActions: PendingAgentAction[]): RunEntry => ({
 	pendingActions,
 	startedAt: 1,
 });
+
+/**
+ * A run in `status` that spawned `reviewer`, which the console follows and
+ * which is waiting on `pendingActions`.
+ */
+const withReviewer = (
+	status: RunStatus,
+	...pendingActions: PendingAgentAction[]
+): RunEntry => {
+	const item: AgentRunItem = {
+		id: "child-1",
+		kind: "subagent",
+		childRunId: "child-1",
+		alias: "reviewer",
+		roomId: "room-child-1",
+		status: "INPUT_REQUIRED",
+	};
+	return {
+		...run(),
+		status,
+		items: { itemsById: { [item.id]: item }, itemOrder: [item.id] },
+		subagents: {
+			"child-1": {
+				followed: true,
+				runId: "child-1",
+				status: "INPUT_REQUIRED",
+				items: { itemsById: {}, itemOrder: [] },
+				droppedEvents: 0,
+				pendingActions,
+			},
+		},
+	};
+};
+
+const PARENT_ENDED =
+	"The parent run has ended and will not use this subagent's result. Deciding lets the subagent carry on, and what it does is shown here.";
 
 /** A session, and the order in which the card called it and the console. */
 const fakeSession = () => {
@@ -81,7 +119,7 @@ const mount = (
 ) => {
 	render(
 		<PendingActions
-			run={entry}
+			waiting={waitingIn(entry)}
 			session={fakes.session}
 			translate={translateEnglish}
 			ready={ready}
@@ -177,5 +215,55 @@ describe("PendingActions", () => {
 			expect(within(ready).getByRole("button", { name })).toBeVisible();
 		}
 		expect(card("Write").querySelector("kbd")).toBeNull();
+	});
+
+	describe("a subagent's", () => {
+		const childCall = action({
+			actionId: "child-action",
+			runId: "child-1",
+		});
+
+		it("call is named by its path, and decided with the subagent's action", () => {
+			const { fake } = mount(withReviewer("RUNNING", childCall));
+			const group = card("reviewer › Bash");
+
+			expect(group).not.toHaveAccessibleDescription();
+
+			fireEvent.click(
+				within(group).getByRole("button", { name: "Approve" }),
+			);
+
+			expect(fake.approve).toHaveBeenCalledWith(childCall);
+		});
+
+		it("call says so, as its description, once the parent has ended", () => {
+			mount(withReviewer("COMPLETED", childCall));
+
+			expect(card("reviewer › Bash")).toHaveAccessibleDescription(
+				PARENT_ENDED,
+			);
+		});
+
+		it("question names the subagent, and can still be dismissed", () => {
+			// With no questions to show, the platform's form cannot draw it.
+			const question = action({
+				actionId: "child-question",
+				runId: "child-1",
+				toolName: "request_user_input",
+				toolArgs: {},
+			});
+			const { fake } = mount(withReviewer("COMPLETED", question));
+			const group = screen.getByRole("group", {
+				name: "reviewer is asking for your input.",
+			});
+
+			expect(group).toHaveAccessibleDescription(PARENT_ENDED);
+
+			fireEvent.click(
+				within(group).getByRole("button", { name: "Dismiss" }),
+			);
+
+			expect(fake.deny).toHaveBeenCalledWith(question);
+		});
 	});
 });

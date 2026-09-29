@@ -1,12 +1,19 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Line, translateEnglish } from "@semoss/agent-core";
+import {
+	type Line,
+	type RunEntry,
+	textLine,
+	translateEnglish,
+} from "@semoss/agent-core";
 import { codeResources, I18nBuilder } from "@semoss/i18n";
+import type { PendingAgentAction } from "@semoss/sdk/react";
 import { Transcript } from "./transcript";
 
 const builder = new I18nBuilder(codeResources, { lockToEnglish: true });
 
 type ToolLine = Extract<Line, { kind: "tool" }>;
+type SubagentLine = Extract<Line, { kind: "subagent" }>;
 
 /** A finished call with an argument and two lines of output. */
 const tool = (extra: Partial<ToolLine> = {}): ToolLine => ({
@@ -18,6 +25,14 @@ const tool = (extra: Partial<ToolLine> = {}): ToolLine => ({
 	output: "On branch dev\nnothing to commit",
 	outputLines: 2,
 	outputTruncated: false,
+	...extra,
+});
+
+/** A subagent still going, as its parent reports it. */
+const subagent = (extra: Partial<SubagentLine> = {}): SubagentLine => ({
+	kind: "subagent",
+	label: "reviewer",
+	status: "RUNNING",
 	...extra,
 });
 
@@ -173,5 +188,162 @@ describe("a tool call's line", () => {
 		});
 
 		expect(count).toHaveTextContent("5s");
+	});
+});
+
+describe("a subagent's line", () => {
+	it("opens on its steps, open from the start, and closes on its row", () => {
+		render(
+			transcript(subagent({ children: [textLine("Reading the diff.")] })),
+		);
+		const { details, summary } = disclosure();
+		const step = within(details).getByText("Reading the diff.");
+
+		expect(details.open).toBe(true);
+		expect(summary).toHaveTextContent("reviewer");
+		expect(summary).not.toContainElement(step);
+		expect(step).toBeVisible();
+
+		fireEvent.click(summary);
+
+		expect(details.open).toBe(false);
+		expect(step).not.toBeVisible();
+		expect(summary).toBeVisible();
+	});
+
+	it.each<{ name: string; extra: Partial<SubagentLine>; text: string }>([
+		{
+			name: "result",
+			extra: { status: "COMPLETED", resultPreview: "Looks fine." },
+			text: "Looks fine.",
+		},
+		{
+			name: "error",
+			extra: { status: "FAILED", error: "Out of budget" },
+			text: "Out of budget",
+		},
+	])("keeps its $name in sight, outside what opens", ({ extra, text }) => {
+		render(
+			transcript(
+				subagent({
+					...extra,
+					children: [textLine("Reading the diff.")],
+				}),
+			),
+		);
+		const { details, summary } = disclosure();
+		const end = screen.getByText(text);
+
+		expect(details).not.toContainElement(end);
+
+		fireEvent.click(summary);
+
+		expect(end).toBeVisible();
+	});
+
+	it("draws one with no steps to show as a plain row", () => {
+		// Not followed, and followed but not heard from yet.
+		for (const children of [undefined, []]) {
+			const { unmount } = render(
+				transcript(
+					subagent({
+						status: "COMPLETED",
+						resultPreview: "Looks fine.",
+						children,
+					}),
+				),
+			);
+
+			expect(
+				screen.getByTestId("transcript-log").querySelector("details"),
+			).toBeNull();
+			expect(screen.getByText("reviewer").closest("p")).not.toBeNull();
+			expect(screen.getByText("Looks fine.")).toBeVisible();
+			unmount();
+		}
+	});
+
+	it("closes a nested subagent without closing the one around it", () => {
+		render(
+			transcript(
+				subagent({
+					label: "planner",
+					children: [
+						subagent({ children: [textLine("Reading the diff.")] }),
+					],
+				}),
+			),
+		);
+		const [outer, inner] = screen
+			.getByTestId("transcript-log")
+			.querySelectorAll("details");
+		const summary = inner?.querySelector("summary");
+		if (!outer || !inner || !summary) {
+			throw new Error("no nested disclosure in the transcript");
+		}
+		expect(outer).toContainElement(inner);
+
+		fireEvent.click(summary);
+
+		expect(inner.open).toBe(false);
+		expect(outer.open).toBe(true);
+		expect(summary).toBeVisible();
+		expect(screen.getByText("Reading the diff.")).not.toBeVisible();
+	});
+});
+
+describe("the hint under an approval", () => {
+	const waiting = (id: string, actionId: string): RunEntry => {
+		const action: PendingAgentAction = {
+			actionId,
+			runId: `run-${id}`,
+			parentMessageId: null,
+			toolCallId: null,
+			toolName: "Bash",
+			toolArgs: {},
+			editedArgs: null,
+			toolMeta: null,
+			hasUi: false,
+			uiUrl: null,
+			status: "PENDING",
+		};
+		return {
+			kind: "run",
+			id,
+			prompt: `Prompt ${id}`,
+			harness: "semoss",
+			modelId: "model-1",
+			runId: `run-${id}`,
+			status: "INPUT_REQUIRED",
+			items: { itemsById: {}, itemOrder: [] },
+			droppedEvents: 0,
+			pendingActions: [action],
+			startedAt: 1,
+		};
+	};
+
+	it("goes under the call the keys act on alone, whichever entry it is in", () => {
+		render(
+			<Transcript
+				entries={[
+					waiting("entry-1", "action-1"),
+					waiting("entry-2", "action-2"),
+				]}
+				translate={translateEnglish}
+				keyedActionId="action-2"
+			/>,
+		);
+		const hint = /^With the prompt empty/;
+
+		expect(
+			within(screen.getByTestId("lineView-entry-entry-1")).queryByText(
+				hint,
+			),
+		).toBeNull();
+		expect(
+			within(screen.getByTestId("lineView-entry-entry-2")).getByText(
+				hint,
+			),
+		).toBeVisible();
 	});
 });

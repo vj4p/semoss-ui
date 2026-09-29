@@ -54,6 +54,60 @@ const SegmentView = ({ segment }: { segment: Segment }) => {
 	);
 };
 
+/** The summary of a row that opens: a tool call's, or a subagent's. */
+const SUMMARY_CLASS =
+	"flex w-fit max-w-full cursor-pointer list-none flex-col rounded-sm focus-visible:outline-2 focus-visible:outline-foreground [&::-webkit-details-marker]:hidden";
+
+/**
+ * The marker at the end of a row that opens: along the row while it is
+ * closed, and down while it is open. It asks the disclosure the row opens,
+ * not any open one around it as `group-open` would, since a subagent's steps
+ * can hold disclosures of their own.
+ */
+const DisclosureMarker = () => (
+	<>
+		<span
+			aria-hidden="true"
+			className="rtl:-scale-x-100 inline-block text-muted-foreground [details[open]>summary_&]:hidden"
+		>
+			▸
+		</span>
+		<span
+			aria-hidden="true"
+			className="hidden text-muted-foreground [details[open]>summary_&]:inline-block"
+		>
+			▾
+		</span>
+	</>
+);
+
+/**
+ * Words under a row that came from the server or the model, such as an
+ * error: in their own direction, and only as wide as they are, so that in a
+ * right-to-left console English sits under its row rather than across the
+ * page from it. The indent is the console's, since one on the words' own
+ * block would be on their side instead.
+ */
+const UnderRow = ({
+	className,
+	children,
+}: {
+	className: string;
+	children: string;
+}) => (
+	<div className="ps-6">
+		<p
+			className={cn(
+				"w-fit max-w-full whitespace-pre-wrap break-words",
+				className,
+			)}
+			dir="auto"
+		>
+			{children}
+		</p>
+	</div>
+);
+
 /**
  * A tool call: its status, name and argument, then the size of its output,
  * and its error.
@@ -113,22 +167,7 @@ const ToolLineView = ({
 					</span>
 				)
 			)}
-			{opens && (
-				<>
-					<span
-						aria-hidden="true"
-						className="rtl:-scale-x-100 inline-block text-muted-foreground group-open:hidden"
-					>
-						▸
-					</span>
-					<span
-						aria-hidden="true"
-						className="hidden text-muted-foreground group-open:inline-block"
-					>
-						▾
-					</span>
-				</>
-			)}
+			{opens && <DisclosureMarker />}
 		</Row>
 	);
 
@@ -147,12 +186,7 @@ const ToolLineView = ({
 	);
 
 	const error = line.error !== undefined && (
-		<p
-			className="whitespace-pre-wrap break-words ps-6 text-destructive"
-			dir="auto"
-		>
-			{line.error}
-		</p>
+		<UnderRow className="text-destructive">{line.error}</UnderRow>
 	);
 
 	if (!opens) {
@@ -167,8 +201,8 @@ const ToolLineView = ({
 
 	return (
 		<div className="flex flex-col">
-			<details className="group">
-				<summary className="flex w-fit max-w-full cursor-pointer list-none flex-col rounded-sm focus-visible:outline-2 focus-visible:outline-foreground [&::-webkit-details-marker]:hidden">
+			<details>
+				<summary className={SUMMARY_CLASS}>
 					{head}
 					{size}
 				</summary>
@@ -205,39 +239,73 @@ const ToolLineView = ({
 	);
 };
 
-/** A subagent the run spawned: its status and name, then its result or error. */
+/**
+ * A subagent the run spawned: its status and name, then its result or error.
+ *
+ * One the console follows carries its own run's lines, drawn as a run's are,
+ * and is a disclosure over them, open from the start, with a rule down their
+ * side at each level. Closing it leaves the row in sight, and the result or
+ * error, which are there only while its own lines do not say how it ended.
+ */
 const SubagentLineView = ({
 	line,
 	labels,
 }: {
 	line: Extract<Line, { kind: "subagent" }>;
 	labels: LineLabels;
-}) => (
-	<div className="flex flex-col">
-		<p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+}) => {
+	const children = line.children ?? [];
+	const opens = children.length > 0;
+	// A disclosure's summary may hold phrasing content only.
+	const Row = opens ? "span" : "p";
+
+	const head = (
+		<Row className="flex min-w-0 flex-wrap items-baseline gap-x-2">
 			<StatusGlyph status={line.status} />
 			<span className="sr-only">{labels.subagent}</span>
 			<bdi className="font-bold">{line.label}</bdi>
 			<span className="sr-only">{labels.status(line.status)}</span>
-		</p>
-		{line.resultPreview !== undefined && (
-			<p
-				className="whitespace-pre-wrap break-words ps-6 text-muted-foreground"
-				dir="auto"
-			>
-				{line.resultPreview}
-			</p>
-		)}
-		{line.error !== undefined && (
-			<p
-				className="whitespace-pre-wrap break-words ps-6 text-destructive"
-				dir="auto"
-			>
-				{line.error}
-			</p>
-		)}
-	</div>
-);
+			{opens && <DisclosureMarker />}
+		</Row>
+	);
+
+	const end = (
+		<>
+			{line.resultPreview !== undefined && (
+				<UnderRow className="text-muted-foreground">
+					{line.resultPreview}
+				</UnderRow>
+			)}
+			{line.error !== undefined && (
+				<UnderRow className="text-destructive">{line.error}</UnderRow>
+			)}
+		</>
+	);
+
+	if (!opens) {
+		return (
+			<div className="flex flex-col">
+				{head}
+				{end}
+			</div>
+		);
+	}
+
+	return (
+		<div className="flex flex-col">
+			<details open>
+				<summary className={SUMMARY_CLASS}>{head}</summary>
+				<div className="ms-2 flex flex-col gap-1 border-s ps-4 pt-1">
+					{children.map((child, index) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: a subagent's lines are a run's, keyed as EntryView keys them
+						<LineView key={index} line={child} labels={labels} />
+					))}
+				</div>
+			</details>
+			{end}
+		</div>
+	);
+};
 
 /**
  * One transcript line.
@@ -323,41 +391,48 @@ const LineView = ({ line, labels }: { line: Line; labels: LineLabels }) => {
  * Memoised, because the session replaces only the entries a change touched:
  * a streaming run redraws itself, and every other entry is left alone. The
  * translate function and the labels change with the language, which redraws
- * every entry in it.
+ * every entry in it, and so does the call the approval keys act on, which
+ * changes only as calls come to wait and are decided.
  *
  * @name EntryView
  * @param props.entry - The entry to draw.
  * @param props.translate - Translate for the lines agent-core writes.
  * @param props.labels - The transcript's own words, from useLineLabels.
+ * @param props.keyedActionId - The call the approval keys act on, from
+ * keyedApproval, so that the hint on how to decide goes under that call
+ * alone, in whichever entry it is.
  */
 export const EntryView = memo(
 	({
 		entry,
 		translate,
 		labels,
+		keyedActionId,
 	}: {
 		entry: SessionEntry;
 		translate: Translate;
 		labels: LineLabels;
+		keyedActionId?: string;
 	}) => (
 		<div
 			className="flex flex-col gap-1"
 			data-testid={`lineView-entry-${entry.id}`}
 		>
-			{entryLines(entry, translate, RUN_LINES_OPTIONS).map(
-				(line, index) => (
-					<LineView
-						// An item has one line, and a run's items are only ever
-						// appended, so a line keeps its index for as long as it is
-						// shown. That matters for the disclosures, reasoning and
-						// tool calls, which keep their own open state.
-						// biome-ignore lint/suspicious/noArrayIndexKey: lines have no id, and the index is stable as described above
-						key={index}
-						line={line}
-						labels={labels}
-					/>
-				),
-			)}
+			{entryLines(entry, translate, {
+				...RUN_LINES_OPTIONS,
+				keyedActionId,
+			}).map((line, index) => (
+				<LineView
+					// An item has one line, and a run's items are only ever
+					// appended, so a line keeps its index for as long as it is
+					// shown. That matters for the disclosures, reasoning and
+					// tool calls, which keep their own open state.
+					// biome-ignore lint/suspicious/noArrayIndexKey: lines have no id, and the index is stable as described above
+					key={index}
+					line={line}
+					labels={labels}
+				/>
+			))}
 		</div>
 	),
 );

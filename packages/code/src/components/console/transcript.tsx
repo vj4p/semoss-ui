@@ -31,13 +31,17 @@ const nearBottom = (log: HTMLElement) =>
  * @name Transcript
  * @param props.entries - The session's entries.
  * @param props.translate - Translate for the lines agent-core writes.
+ * @param props.keyedActionId - The call the approval keys act on, from
+ * keyedApproval, for the hint under it.
  */
 export const Transcript = ({
 	entries,
 	translate,
+	keyedActionId,
 }: {
 	entries: readonly SessionEntry[];
 	translate: Translate;
+	keyedActionId?: string;
 }) => {
 	const { t } = useTranslation("code");
 	const labels = useLineLabels();
@@ -106,6 +110,7 @@ export const Transcript = ({
 							entry={entry}
 							translate={translate}
 							labels={labels}
+							keyedActionId={keyedActionId}
 						/>
 					))}
 				</div>
