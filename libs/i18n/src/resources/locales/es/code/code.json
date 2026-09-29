@@ -80,7 +80,8 @@
 	"core": {
 		"transcript": {
 			"droppedEvents": "Se descartaron eventos anteriores del flujo en directo ({{n}}).",
-			"unknownItem": "Este elemento no se puede mostrar aquí ({{kind}})."
+			"unknownItem": "Este elemento no se puede mostrar aquí ({{kind}}).",
+			"subagent": "subagente {{id}}"
 		},
 		"run": {
 			"failed": "La ejecución falló: {{message}}",
@@ -93,7 +94,12 @@
 			"approvalKeys": "Con la indicación vacía, presiona {{approve}} para permitirla, {{deny}} para rechazarla, {{edit}} para cambiar sus argumentos, o {{always}} para permitirla siempre.",
 			"awaitingAnswer": "El agente espera tu respuesta.",
 			"stopping": "Deteniendo…",
-			"reconnecting": "No se puede conectar con el servidor. Reintentando… ({{message}})"
+			"reconnecting": "No se puede conectar con el servidor. Reintentando… ({{message}})",
+			"subagentTooDeep": "Sus pasos no se muestran: los subagentes se siguen hasta una profundidad de {{n}}.",
+			"subagentLimit": "Sus pasos no se muestran: ya se alcanzó el límite de subagentes seguidos a la vez ({{n}}).",
+			"subagentFailed": "Sus pasos no se pueden mostrar: {{message}}",
+			"parentEnded": "La ejecución principal ha terminado y no usará el resultado de este subagente. Decidir permite que el subagente continúe, y lo que haga se muestra aquí.",
+			"subagentAwaitingAnswer": "{{subagent}} espera tu respuesta."
 		},
 		"session": {
 			"harnessChanged": "arnés → {{name}}",
@@ -110,6 +116,7 @@
 			"switchModelHint": "Escribe :model seguido de un nombre o un id para cambiar.",
 			"nothingRunning": "No hay nada en ejecución.",
 			"stopFailed": "No se pudo detener la ejecución: {{message}}",
+			"stopSubagentFailed": "No se pudo detener {{subagent}}: {{message}}",
 			"nothingPending": "No hay nada esperando aprobación.",
 			"answerInForm": "El agente hizo una pregunta. Respóndela en el formulario o escribe :deny para descartarla.",
 			"approved": "Aprobado: {{tool}}.",
@@ -130,6 +137,7 @@
 			"decisionFailed": "No se pudo enviar la decisión: {{message}}",
 			"saveFailed": "No se pudo guardar la configuración de la sala: {{message}}",
 			"newRoom": "Sala nueva. Se guarda cuando envías la primera indicación.",
+			"stoppedFollowing": "Se dejó de seguir a los subagentes sin terminar ({{n}}). No se detuvieron en el servidor.",
 			"nothingToExport": "Todavía no hay ninguna ejecución que exportar.",
 			"exported": "Se exportaron los eventos de la ejecución {{runId}}."
 		},

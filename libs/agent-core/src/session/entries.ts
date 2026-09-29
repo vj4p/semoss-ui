@@ -26,13 +26,11 @@ import type { Line } from "../transcript/line";
  */
 export type RunStatus = "STARTING" | AgentRunStatusValue | "LOST";
 
-export interface RunEntry {
-	kind: "run";
-	id: string;
-	prompt: string;
-	/** What the run was started with. A later switch changes the next run, not this one. */
-	harness: string;
-	modelId: string;
+/**
+ * What the console knows about one run it follows: the run a prompt started,
+ * or a subagent of it.
+ */
+export interface RunProgress {
 	/** Set once the backend accepts the run. */
 	runId?: string;
 	status: RunStatus;
@@ -43,8 +41,6 @@ export interface RunEntry {
 	pendingActions: readonly PendingAgentAction[];
 	finalText?: string;
 	errorMessage?: string;
-	/** Why the run never started: the room or the run could not be created. */
-	startError?: string;
 	/** The last poll's failure, cleared by the next poll that succeeds. */
 	transportError?: string;
 	stopRequested?: boolean;
@@ -54,10 +50,51 @@ export interface RunEntry {
 	 * tool's time from this.
 	 */
 	runningSince?: Readonly<Record<string, number>>;
-	startedAt: number;
 	/** Set when the console stops following the run, whatever the reason. */
 	endedAt?: number;
+	/**
+	 * By child run id, what the console did about each subagent the run
+	 * spawned: followed it, or why not. A subagent the console never decided
+	 * about, because the host cannot follow runs, has no record.
+	 */
+	subagents?: Readonly<Record<string, SubagentRun>>;
 }
+
+export interface RunEntry extends RunProgress {
+	kind: "run";
+	id: string;
+	prompt: string;
+	/** What the run was started with. A later switch changes the next run, not this one. */
+	harness: string;
+	modelId: string;
+	/** Why the run never started: the room or the run could not be created. */
+	startError?: string;
+	startedAt: number;
+}
+
+/**
+ * A subagent the console follows through its own run.
+ *
+ * Its status is STARTING until the first poll of that run lands, and a host
+ * reads that as not heard from yet: the parent's item says more meanwhile.
+ */
+export interface SubagentProgress extends RunProgress {
+	followed: true;
+	runId: string;
+}
+
+/**
+ * What the console did about one subagent. It follows each one until it ends,
+ * not until its parent does, which is usually first: a parent that completes
+ * leaves its subagents running on the server. One it does not follow is drawn
+ * as its parent reports it, with a line that says why its steps are missing.
+ */
+export type SubagentRun =
+	| SubagentProgress
+	/** Past the depth the console follows to, or past how many it follows at once. */
+	| { followed: false; reason: "depth" | "limit"; limit: number }
+	/** The host could not make a store for the run. */
+	| { followed: false; reason: "failed"; message: string };
 
 /** A command, echoed as it was typed. */
 export interface InputEntry {

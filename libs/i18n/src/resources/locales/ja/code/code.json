@@ -78,7 +78,8 @@
 	"core": {
 		"transcript": {
 			"droppedEvents": "以前のイベントがライブフィードから破棄されました ({{n}} 件)。",
-			"unknownItem": "この項目はここでは表示できません ({{kind}})。"
+			"unknownItem": "この項目はここでは表示できません ({{kind}})。",
+			"subagent": "サブエージェント {{id}}"
 		},
 		"run": {
 			"failed": "実行に失敗しました: {{message}}",
@@ -91,7 +92,12 @@
 			"approvalKeys": "プロンプトが空の状態で、許可するには {{approve}}、拒否するには {{deny}}、引数を変更するには {{edit}}、常に許可するには {{always}} を押してください。",
 			"awaitingAnswer": "エージェントがあなたの入力を求めています。",
 			"stopping": "停止しています…",
-			"reconnecting": "サーバーに接続できません。再試行しています… ({{message}})"
+			"reconnecting": "サーバーに接続できません。再試行しています… ({{message}})",
+			"subagentTooDeep": "ステップは表示されません。サブエージェントは深さ {{n}} まで追跡されます。",
+			"subagentLimit": "ステップは表示されません。同時に追跡できるサブエージェントの上限 ({{n}}) に達しています。",
+			"subagentFailed": "ステップを表示できません: {{message}}",
+			"parentEnded": "親の実行は終了しているため、このサブエージェントの結果は使われません。判断するとサブエージェントは処理を続け、その内容はここに表示されます。",
+			"subagentAwaitingAnswer": "{{subagent}} があなたの入力を求めています。"
 		},
 		"session": {
 			"harnessChanged": "ハーネス → {{name}}",
@@ -108,6 +114,7 @@
 			"switchModelHint": "切り替えるには、:model に続けて名前または ID を入力してください。",
 			"nothingRunning": "実行中のものはありません。",
 			"stopFailed": "実行を停止できませんでした: {{message}}",
+			"stopSubagentFailed": "{{subagent}} を停止できませんでした: {{message}}",
 			"nothingPending": "承認待ちのものはありません。",
 			"answerInForm": "エージェントが質問しています。フォームで回答するか、:deny と入力して閉じてください。",
 			"approved": "{{tool}} を承認しました。",
@@ -128,6 +135,7 @@
 			"decisionFailed": "判断を送信できませんでした: {{message}}",
 			"saveFailed": "ルームの設定を保存できませんでした: {{message}}",
 			"newRoom": "新しいルームです。最初のプロンプトを送信すると保存されます。",
+			"stoppedFollowing": "未完了のサブエージェントの追跡を停止しました ({{n}} 件)。サーバー上では停止されていません。",
 			"nothingToExport": "エクスポートできる実行はまだありません。",
 			"exported": "実行 {{runId}} のイベントをエクスポートしました。"
 		},

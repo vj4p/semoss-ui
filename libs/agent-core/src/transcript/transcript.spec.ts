@@ -345,6 +345,198 @@ describe("lineForItem", () => {
 	});
 });
 
+describe("a subagent the host follows", () => {
+	const subagent = (
+		extra: Partial<Extract<AgentRunItem, { kind: "subagent" }>> = {},
+	): AgentRunItem => ({
+		id: "child-run-1",
+		kind: "subagent",
+		childRunId: "child-run-1",
+		alias: "reviewer",
+		roomId: "room-child",
+		status: "COMPLETED",
+		resultPreview: "Looks fine.",
+		...extra,
+	});
+
+	const children: Line[] = [
+		{ kind: "text", segments: [{ text: "Reading the tests." }] },
+	];
+
+	it("carries the subagent's own run under its line", () => {
+		expect(
+			lineForItem(subagent(), undefined, { subagent: { children } }),
+		).toEqual({
+			kind: "subagent",
+			label: "reviewer",
+			status: "COMPLETED",
+			resultPreview: "Looks fine.",
+			children,
+		});
+	});
+
+	it("has no children when the host does not follow subagents", () => {
+		expect("children" in lineForItem(subagent())).toBe(false);
+	});
+
+	it("draws the run's own status once the host has heard it, over the parent's", () => {
+		// The parent stops reporting a subagent once the parent ends.
+		expect(
+			lineForItem(subagent({ status: "RUNNING" }), undefined, {
+				subagent: { status: "COMPLETED", children, endShown: true },
+			}),
+		).toMatchObject({ status: "COMPLETED" });
+	});
+
+	it("leaves out the parent's preview and error once the children say how it ended", () => {
+		const line = lineForItem(
+			subagent({ status: "FAILED", error: "boom" }),
+			undefined,
+			{ subagent: { status: "FAILED", children, endShown: true } },
+		);
+		expect(line).toMatchObject({ kind: "subagent", status: "FAILED" });
+		expect(
+			line.kind === "subagent" ? [line.resultPreview, line.error] : null,
+		).toEqual([undefined, undefined]);
+	});
+
+	it("keeps them while the children do not say it", () => {
+		// A run not heard from yet, or one the host could not follow.
+		expect(
+			lineForItem(
+				subagent({
+					status: "FAILED",
+					resultPreview: undefined,
+					error: "boom",
+				}),
+				undefined,
+				{ subagent: { children } },
+			),
+		).toMatchObject({ status: "FAILED", error: "boom" });
+		expect(
+			lineForItem(subagent(), undefined, { subagent: { children } }),
+		).toMatchObject({ resultPreview: "Looks fine." });
+	});
+
+	it("names an anonymous subagent through the host's translation", () => {
+		expect(
+			lineForItem(
+				subagent({ alias: undefined, childRunId: "0123456789abcdef" }),
+				(key, params) => `${key}|${params?.id}`,
+			),
+		).toMatchObject({ label: "transcript.subagent|01234567" });
+	});
+
+	it("asks the host about subagent items, and no others", () => {
+		const asked: string[] = [];
+		const lines = toTranscript(
+			{
+				itemsById: {
+					m1: {
+						id: "m1",
+						kind: "message",
+						role: "assistant",
+						text: "Handing this to a reviewer.",
+					},
+					"child-run-1": subagent(),
+				},
+				itemOrder: ["m1", "child-run-1"],
+			},
+			{
+				subagent: (item) => {
+					asked.push(item.childRunId);
+					return { children };
+				},
+			},
+		);
+		expect(asked).toEqual(["child-run-1"]);
+		expect(lines.at(-1)).toMatchObject({ kind: "subagent", children });
+	});
+
+	describe("in the terminal", () => {
+		const tree: Line[] = [
+			{
+				kind: "subagent",
+				label: "reviewer",
+				status: "RUNNING",
+				children: [
+					{
+						kind: "tool",
+						label: "Bash",
+						status: "COMPLETED",
+						durationMs: 1200,
+					},
+					{ kind: "text", segments: [{ text: "First.\n\nSecond." }] },
+					{
+						kind: "subagent",
+						label: "checker",
+						status: "COMPLETED",
+						children: [{ kind: "divider", label: "x" }],
+					},
+				],
+			},
+			{
+				kind: "tool",
+				label: "Read",
+				status: "COMPLETED",
+				durationMs: 300,
+			},
+		];
+		const rows = formatTranscript(tree, { colour: false });
+
+		it("draws its steps behind a rule, one rule per level", () => {
+			expect(rows.map((row) => row.slice(0, 12))).toEqual([
+				"⑂ reviewer  ",
+				"│ ⏵ Bash    ",
+				"│ First.",
+				"│",
+				"│ Second.",
+				"│ ⑂ checker ",
+				"│ │ ────────",
+				"⏵ Read      ",
+			]);
+		});
+
+		it("keeps every status column where the parent's is", () => {
+			const top = formatTranscript([tree[1]], { colour: false })[0];
+			for (const index of [0, 1, 5, 7]) {
+				expect(rows[index]).toHaveLength(top.length);
+			}
+			expect(rows[1].endsWith("1.2s  ✔")).toBe(true);
+			expect(rows[5].endsWith("✔")).toBe(true);
+		});
+
+		it("draws a nested divider narrower, so it ends where the parent's would", () => {
+			const top = formatTranscript([{ kind: "divider", label: "x" }], {
+				colour: false,
+			})[0];
+			expect(rows[6]).toHaveLength(top.length);
+		});
+
+		it("carries no content in its colour", () => {
+			const ansi = formatTranscript(tree, { colour: true });
+			expect(ansi.map(stripAnsi)).toEqual(rows);
+			expect(ansi[1]).not.toEqual(rows[1]);
+		});
+
+		it("draws a subagent with nothing to show as its line alone", () => {
+			expect(
+				formatTranscript(
+					[
+						{
+							kind: "subagent",
+							label: "reviewer",
+							status: "RUNNING",
+							children: [],
+						},
+					],
+					{ colour: false },
+				),
+			).toHaveLength(1);
+		});
+	});
+});
+
 describe("describeArguments", () => {
 	it("returns primary key first, then other keys in object order", () => {
 		const args = { other: "value", command: "ls -la", extra: "data" };

@@ -24,7 +24,7 @@ import {
 } from "../../../sdk/src/stores/agent/agent.store";
 import type { AgentWatchHandlers } from "../run/run-registry";
 import { type Line, textLine } from "../transcript/line";
-import type { RunEntry } from "./entries";
+import type { RunEntry, RunProgress, SubagentRun } from "./entries";
 import { entryLines } from "./run-lines";
 import {
 	activeRunEntry,
@@ -33,6 +33,8 @@ import {
 	currentModel,
 	EXPORT_EVENT_LIMIT,
 	keyedApproval,
+	MAX_FOLLOWED_SUBAGENTS,
+	MAX_SUBAGENT_DEPTH,
 	type RunExport,
 	type RunRequest,
 	type Session,
@@ -40,6 +42,7 @@ import {
 	type SessionCatalog,
 	type SessionOptions,
 	type SessionState,
+	waitingActions,
 } from "./session";
 
 const CATALOG: SessionCatalog = {
@@ -111,10 +114,10 @@ let eventCount = 0;
  * It keeps the two behaviours of the real store the session depends on.
  * `done` reads as already settled until `watch` is called, and `stop` settles
  * it. Run ids are unique across the file because the run registry is
- * module-level.
+ * module-level. A subagent's store is given the run id its parent's item
+ * names.
  */
-const fakeAgent = (roomId = "room-new") => {
-	const runId = `run-${++runCount}`;
+const fakeAgent = (roomId = "room-new", runId = `run-${++runCount}`) => {
 	let handlers: AgentWatchHandlers | undefined;
 	let done: Promise<AgentRunSnapshot | null> | undefined;
 	let finish: (snapshot: AgentRunSnapshot | null) => void = () => undefined;
@@ -200,6 +203,17 @@ const fakeAgent = (roomId = "room-new") => {
 			itemId,
 			kind: "tool",
 			patch: { status: "RUNNING" },
+		}),
+		/** A subagent's item changed, as its parent's feed reports it. */
+		patched: (
+			itemId: string,
+			patch: Record<string, unknown>,
+		): AgentRunItemEvent => ({
+			...nextEvent(),
+			type: "item.updated",
+			itemId,
+			kind: "subagent",
+			patch,
 		}),
 		/** One poll, as `watch` delivers it: each event folded, then the snapshot. */
 		poll: (
@@ -1876,5 +1890,781 @@ describe("always allowing a tool", () => {
 		expect(notices(session)).toEqual([
 			"New room. It is saved when you send the first prompt.",
 		]);
+	});
+});
+
+describe("following subagents", () => {
+	type SubagentItem = Extract<AgentRunItem, { kind: "subagent" }>;
+	type SetupOptions = NonNullable<Parameters<typeof setup>[0]>;
+
+	let childCount = 0;
+	/** Unique across the file, as run ids are: the run registry is module-level. */
+	const childId = () => `child-${++childCount}`;
+
+	const subagentItem = (
+		childRunId: string,
+		extra: Partial<SubagentItem> = {},
+	): SubagentItem => ({
+		id: childRunId,
+		kind: "subagent",
+		childRunId,
+		roomId: `room-${childRunId}`,
+		status: "RUNNING",
+		...extra,
+	});
+
+	/** A poll of `run` that brings a subagent it spawned. */
+	const spawn = (run: FakeRun, childRunId: string, alias?: string) =>
+		run.poll({ status: "RUNNING" }, [
+			run.started(subagentItem(childRunId, { alias })),
+		]);
+
+	/** A session whose backend can follow a run: a fake store for each it follows. */
+	const following = ({ backend, ...options }: SetupOptions = {}) => {
+		const followed = new Map<string, FakeRun>();
+		const followRun = vi.fn(
+			({ runId, roomId }: { runId: string; roomId: string }) => {
+				const run = fakeAgent(roomId, runId);
+				followed.set(runId, run);
+				return run.agent;
+			},
+		);
+		const context = setup({
+			...options,
+			backend: { followRun, ...backend },
+		});
+		const child = (runId: string) => {
+			const run = followed.get(runId);
+			if (run === undefined) {
+				throw new Error(`${runId} is not followed`);
+			}
+			return run;
+		};
+		return { ...context, followRun, child };
+	};
+
+	/** A session whose run has spawned "reviewer", and follows it. */
+	const followingReviewer = async (options?: SetupOptions) => {
+		const context = following(options);
+		await start(context.session);
+		const root = context.latest();
+		const id = childId();
+		spawn(root, id, "reviewer");
+		return { ...context, root, id, reviewer: context.child(id) };
+	};
+
+	/** Lines as the words on screen, each subagent's own under it, indented. */
+	const tree = (lines: readonly Line[], indent = ""): string[] =>
+		lines.flatMap((line) => [
+			`${indent}${plain(line)}`,
+			...(line.kind === "subagent"
+				? tree(line.children ?? [], `${indent}  `)
+				: []),
+		]);
+
+	const treeScreen = (session: Session) =>
+		tree(
+			session
+				.getState()
+				.entries.flatMap((entry) =>
+					entryLines(entry, session.translate),
+				),
+		);
+
+	/** What the last run knows of the subagent at `path` under it. */
+	const recordAt = (session: Session, ...path: string[]) => {
+		let run: RunProgress | undefined = lastRun(session);
+		let record: SubagentRun | undefined;
+		for (const id of path) {
+			record = run?.subagents?.[id];
+			run = record?.followed ? record : undefined;
+		}
+		return record;
+	};
+
+	const bash = action({ actionId: "child-bash", toolCallId: "t1" });
+
+	describe("which it follows", () => {
+		it("follows a subagent in its own room, and draws its run under its line", async () => {
+			const { session, latest, followRun, child } = following();
+			await start(session);
+			const id = childId();
+			spawn(latest(), id, "reviewer");
+
+			expect(followRun).toHaveBeenCalledTimes(1);
+			expect(followRun).toHaveBeenCalledWith({
+				runId: id,
+				roomId: `room-${id}`,
+			});
+			const reviewer = child(id);
+			expect(reviewer.fake.watch).toHaveBeenCalledTimes(1);
+			expect(recordAt(session, id)).toMatchObject({
+				followed: true,
+				runId: id,
+				status: "STARTING",
+			});
+
+			reviewer.poll({ status: "RUNNING" }, [
+				reviewer.started(message("m1", "Reading the tests.")),
+			]);
+			expect(recordAt(session, id)).toMatchObject({ status: "RUNNING" });
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Reading the tests.",
+			]);
+		});
+
+		it("follows each subagent once, whatever its parent says of it after", async () => {
+			const { session, root, id, followRun, reviewer } =
+				await followingReviewer();
+			root.poll({ status: "RUNNING" }, [
+				root.patched(id, {
+					status: "COMPLETED",
+					resultPreview: "Fine.",
+				}),
+			]);
+			root.poll({ status: "RUNNING" });
+			expect(followRun).toHaveBeenCalledTimes(1);
+			expect(reviewer.fake.watch).toHaveBeenCalledTimes(1);
+			expect(recordAt(session, id)).toMatchObject({
+				followed: true,
+				status: "STARTING",
+			});
+		});
+
+		it("follows one that has already ended, for the steps the server still keeps", async () => {
+			const { session, latest, followRun } = following();
+			await start(session);
+			const root = latest();
+			const id = childId();
+			root.poll({ status: "RUNNING" }, [
+				root.started(subagentItem(id, { status: "COMPLETED" })),
+			]);
+			expect(followRun).toHaveBeenCalledTimes(1);
+			expect(recordAt(session, id)).toMatchObject({ followed: true });
+		});
+
+		it("draws a subagent only as its parent reports it, when the host cannot follow a run", async () => {
+			const { session, latest } = setup();
+			await start(session);
+			spawn(latest(), childId(), "reviewer");
+			expect(lastRun(session).subagents).toBeUndefined();
+			const line = entryLines(lastRun(session)).at(-1);
+			expect(line).toMatchObject({ kind: "subagent", label: "reviewer" });
+			expect(line !== undefined && "children" in line).toBe(false);
+		});
+
+		it("does not follow one deeper than the host allows, and says so under it", async () => {
+			const { session, followRun, child, id } = await followingReviewer({
+				subagents: { maxDepth: 1 },
+			});
+			const deeper = childId();
+			spawn(child(id), deeper, "checker");
+			expect(followRun).toHaveBeenCalledTimes(1);
+			expect(recordAt(session, id, deeper)).toEqual({
+				followed: false,
+				reason: "depth",
+				limit: 1,
+			});
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  checker",
+				"    Its steps are not shown: subagents are followed to a depth of 1.",
+			]);
+		});
+
+		it("follows MAX_SUBAGENT_DEPTH levels by default", async () => {
+			const { session, latest, followRun, child } = following();
+			await start(session);
+			const path: string[] = [];
+			let parent = latest();
+			for (let level = 0; level <= MAX_SUBAGENT_DEPTH; level++) {
+				const id = childId();
+				spawn(parent, id);
+				path.push(id);
+				if (level < MAX_SUBAGENT_DEPTH) {
+					parent = child(id);
+				}
+			}
+			expect(followRun).toHaveBeenCalledTimes(MAX_SUBAGENT_DEPTH);
+			expect(recordAt(session, ...path)).toEqual({
+				followed: false,
+				reason: "depth",
+				limit: MAX_SUBAGENT_DEPTH,
+			});
+		});
+
+		it("follows no more runs at once than the host allows, and another once one ends", async () => {
+			const { session, latest, followRun, child } = following({
+				subagents: { maxFollowed: 2 },
+			});
+			await start(session);
+			const root = latest();
+			const [a, b, c, d] = [childId(), childId(), childId(), childId()];
+			root.poll(
+				{ status: "RUNNING" },
+				[a, b, c].map((id) => root.started(subagentItem(id))),
+			);
+			expect(followRun).toHaveBeenCalledTimes(2);
+			expect(recordAt(session, c)).toEqual({
+				followed: false,
+				reason: "limit",
+				limit: 2,
+			});
+			expect(treeScreen(session).at(-1)).toBe(
+				"  Its steps are not shown: subagents are followed at most 2 at a time.",
+			);
+
+			child(a).reconcile({ status: "COMPLETED" });
+			spawn(root, d);
+			expect(followRun).toHaveBeenCalledTimes(3);
+			expect(recordAt(session, d)).toMatchObject({ followed: true });
+			// Each subagent is decided once: the one left out stays out.
+			expect(recordAt(session, c)).toMatchObject({ followed: false });
+		});
+
+		it("follows MAX_FOLLOWED_SUBAGENTS runs at once by default, counting every run's", async () => {
+			const { session, latest, followRun } = following();
+			await start(session);
+			const first = latest();
+			first.poll(
+				{ status: "RUNNING" },
+				Array.from({ length: MAX_FOLLOWED_SUBAGENTS - 1 }, () =>
+					first.started(subagentItem(childId())),
+				),
+			);
+			first.reconcile({ status: "COMPLETED" });
+
+			await start(session, "Next");
+			const second = latest();
+			const [last, over] = [childId(), childId()];
+			second.poll({ status: "RUNNING" }, [
+				second.started(subagentItem(last)),
+				second.started(subagentItem(over)),
+			]);
+			expect(followRun).toHaveBeenCalledTimes(MAX_FOLLOWED_SUBAGENTS);
+			expect(recordAt(session, last)).toMatchObject({ followed: true });
+			expect(recordAt(session, over)).toEqual({
+				followed: false,
+				reason: "limit",
+				limit: MAX_FOLLOWED_SUBAGENTS,
+			});
+		});
+
+		it("says why it could not follow one, and does not try again", async () => {
+			const followRun = vi.fn((): AgentStore => {
+				throw new Error("No insight");
+			});
+			const { session, latest } = setup({ backend: { followRun } });
+			await start(session);
+			const root = latest();
+			const id = childId();
+			spawn(root, id, "reviewer");
+			root.poll({ status: "RUNNING" });
+			expect(followRun).toHaveBeenCalledTimes(1);
+			expect(recordAt(session, id)).toEqual({
+				followed: false,
+				reason: "failed",
+				message: "No insight",
+			});
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Its steps cannot be shown: No insight",
+			]);
+		});
+	});
+
+	describe("for as long as it runs", () => {
+		it("keeps following it after its parent ends, in the parent's entry, and frees the prompt", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({
+				status: "COMPLETED",
+				finalText: "Handed it over.",
+			});
+			expect(session.getState().activeEntryId).toBeUndefined();
+
+			reviewer.poll({ status: "RUNNING" }, [
+				reviewer.started(message("m1", "Still reading.")),
+			]);
+			expect(await start(session, "Next")).toMatchObject({
+				kind: "started",
+			});
+			reviewer.poll({ status: "RUNNING" }, [
+				reviewer.started(message("m2", "Found it.")),
+			]);
+
+			const [first] = session
+				.getState()
+				.entries.filter(
+					(entry): entry is RunEntry => entry.kind === "run",
+				);
+			expect(tree(entryLines(first))).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Still reading.",
+				"  Found it.",
+				"Handed it over.",
+			]);
+		});
+
+		it("stops following it when its own run ends, and ignores what arrives after", async () => {
+			const { session, reviewer, id } = await followingReviewer();
+			reviewer.reconcile({
+				status: "COMPLETED",
+				finalText: "Looks fine.",
+			});
+			expect(recordAt(session, id)).toMatchObject({
+				status: "COMPLETED",
+				endedAt: 1000,
+			});
+			expect(reviewer.fake.stop).toHaveBeenCalled();
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Looks fine.",
+			]);
+
+			const before = session.getState();
+			reviewer.poll({ status: "RUNNING" }, [
+				reviewer.started(message("m1", "late")),
+			]);
+			await settle();
+			expect(session.getState()).toBe(before);
+		});
+
+		it("says when it loses a subagent's run", async () => {
+			const { session, reviewer, id } = await followingReviewer();
+			reviewer.poll({ status: "RUNNING" });
+			reviewer.endPolling();
+			await settle();
+			expect(recordAt(session, id)).toMatchObject({
+				status: "LOST",
+				endedAt: 1000,
+			});
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Lost contact with this run. It may still be running on the server.",
+			]);
+		});
+
+		it("says under a subagent when its polls fail, until one gets through", async () => {
+			const { session, reviewer } = await followingReviewer();
+			reviewer.fail(new Error("offline"));
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Cannot reach the server. Retrying… (offline)",
+			]);
+			reviewer.poll({ status: "RUNNING" });
+			expect(treeScreen(session)).toEqual([PROMPT, "reviewer"]);
+		});
+	});
+
+	describe("a call it waits on", () => {
+		const question = action({
+			actionId: "child-question",
+			toolName: "RequestUserInput",
+		});
+
+		/** "reviewer" waiting on `pending`, the tool `t1` drawn. */
+		const reviewerWaiting = async (...pending: PendingAgentAction[]) => {
+			const context = await followingReviewer();
+			const { reviewer } = context;
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: pending },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			return context;
+		};
+
+		it("is offered with the rest, named by the subagent it is under", async () => {
+			const { session } = await reviewerWaiting(bash);
+			expect(keyedApproval(session.getState())).toEqual(bash);
+			expect(waitingActions(session.getState())).toMatchObject([
+				{
+					action: bash,
+					subagents: ["reviewer"],
+					tool: "Run a command",
+					label: "reviewer › Run a command",
+					parentEnded: false,
+				},
+			]);
+		});
+
+		it("is approved through the subagent's own store", async () => {
+			const { session, root, reviewer, id } = await reviewerWaiting(bash);
+			expect(await session.approve()).toBe(true);
+			expect(reviewer.fake.decide).toHaveBeenCalledWith(
+				bash,
+				"submit",
+				undefined,
+			);
+			expect(root.fake.decide).not.toHaveBeenCalled();
+			expect(recordAt(session, id)).toMatchObject({ pendingActions: [] });
+			expect(notices(session)).toEqual([
+				"Approved reviewer › Run a command.",
+			]);
+		});
+
+		it("is denied there too", async () => {
+			const { session, reviewer } = await reviewerWaiting(bash);
+			expect(await session.deny()).toBe(true);
+			expect(reviewer.fake.decide).toHaveBeenCalledWith(
+				bash,
+				"reject",
+				undefined,
+			);
+			expect(notices(session)).toEqual([
+				"Denied reviewer › Run a command.",
+			]);
+		});
+
+		it("is answered there, when it is a question", async () => {
+			const { session, reviewer } = await reviewerWaiting(question);
+			expect(await session.respond(question, { q1: "yes" })).toBe(true);
+			expect(reviewer.fake.decide).toHaveBeenCalledWith(
+				question,
+				"respond",
+				{
+					q1: "yes",
+				},
+			);
+		});
+
+		it("goes to the store of the run that lists it, of several", async () => {
+			const { session, root, reviewer, child } =
+				await followingReviewer();
+			const otherId = childId();
+			spawn(root, otherId, "checker");
+			const checker = child(otherId);
+			const other = action({
+				actionId: "checker-bash",
+				toolCallId: "t1",
+			});
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			checker.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [other] },
+				[checker.started(tool("t1", "Run a command"))],
+			);
+
+			expect(await session.approve(other)).toBe(true);
+			expect(checker.fake.decide).toHaveBeenCalledWith(
+				other,
+				"submit",
+				undefined,
+			);
+			expect(reviewer.fake.decide).not.toHaveBeenCalled();
+			expect(notices(session)).toEqual([
+				"Approved checker › Run a command.",
+			]);
+		});
+
+		it("is offered again in the subagent when the decision does not reach the backend", async () => {
+			const { session, reviewer, id } = await reviewerWaiting(bash);
+			reviewer.fake.decide.mockRejectedValueOnce(
+				new Error("Action already decided"),
+			);
+			expect(await session.approve()).toBe(false);
+			expect(recordAt(session, id)).toMatchObject({
+				pendingActions: [bash],
+			});
+			expect(notices(session)).toEqual([
+				"Could not send the decision: Action already decided",
+			]);
+		});
+
+		it("is offered after its parent has ended, which will not use the subagent's result", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Run a command",
+				"  Run a command is waiting for approval.",
+				"  Type :approve to allow it, or :deny to reject it.",
+				"  The parent run has ended and will not use this subagent's result. Deciding lets the subagent carry on, and what it does is shown here.",
+			]);
+			expect(waitingActions(session.getState())).toMatchObject([
+				{ action: bash, parentEnded: true },
+			]);
+			expect(await session.approve()).toBe(true);
+			expect(reviewer.fake.decide).toHaveBeenCalledWith(
+				bash,
+				"submit",
+				undefined,
+			);
+		});
+
+		it("comes after the calls of the run in progress", async () => {
+			const { session, latest, root, reviewer } =
+				await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			await start(session, "Next");
+			const next = latest();
+			const write = action({
+				actionId: "next-write",
+				toolCallId: "t1",
+				toolName: "Write",
+			});
+			next.poll({ status: "INPUT_REQUIRED", pendingActions: [write] }, [
+				next.started(tool("t1", "Write a file")),
+			]);
+
+			expect(
+				waitingActions(session.getState()).map(
+					(waiting) => waiting.label,
+				),
+			).toEqual(["Write a file", "reviewer › Run a command"]);
+			expect(keyedApproval(session.getState())).toEqual(write);
+		});
+	});
+
+	describe("stopping", () => {
+		it("stops the run in progress, which stops its subagents on the server", async () => {
+			const { session, root, reviewer, id } = await followingReviewer();
+			await session.interrupt();
+			expect(root.fake.cancel).toHaveBeenCalledTimes(1);
+			expect(reviewer.fake.cancel).not.toHaveBeenCalled();
+			expect(lastRun(session).stopRequested).toBe(true);
+			expect(recordAt(session, id)).not.toHaveProperty("stopRequested");
+		});
+
+		it("stops the subagents a finished run left running", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			const stopping = session.interrupt();
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Stopping…",
+			]);
+			await stopping;
+			expect(root.fake.cancel).not.toHaveBeenCalled();
+			expect(reviewer.fake.cancel).toHaveBeenCalledTimes(1);
+			expect(reviewer.fake.pokeNow).toHaveBeenCalledTimes(1);
+
+			reviewer.reconcile({ status: "CANCELLED" });
+			expect(treeScreen(session)).toEqual([
+				PROMPT,
+				"reviewer",
+				"  Run cancelled.",
+			]);
+		});
+
+		it("stops them while the finished run drains its last events", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.poll({ status: "COMPLETED" });
+			await session.interrupt();
+			expect(root.fake.cancel).not.toHaveBeenCalled();
+			expect(reviewer.fake.cancel).toHaveBeenCalledTimes(1);
+		});
+
+		it("says a subagent's stop failed, naming it by its path, and takes its stopping line back", async () => {
+			const { session, root, child, id } = await followingReviewer();
+			const deeper = childId();
+			spawn(child(id), deeper, "checker");
+			root.reconcile({ status: "COMPLETED" });
+			child(deeper).fake.cancel.mockRejectedValueOnce(
+				new Error("Forbidden"),
+			);
+
+			await session.interrupt();
+			expect(child(id).fake.cancel).toHaveBeenCalledTimes(1);
+			expect(notices(session)).toEqual([
+				"Could not stop reviewer › checker: Forbidden",
+			]);
+			expect(recordAt(session, id)).toMatchObject({
+				stopRequested: true,
+			});
+			expect(recordAt(session, id, deeper)).toMatchObject({
+				stopRequested: false,
+			});
+		});
+
+		it("says nothing is running once every subagent has ended", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			reviewer.reconcile({ status: "COMPLETED" });
+			await session.interrupt();
+			expect(reviewer.fake.cancel).not.toHaveBeenCalled();
+			expect(notices(session)).toEqual(["Nothing is running."]);
+		});
+	});
+
+	describe("leaving, clearing, closing and exporting", () => {
+		it("stops following the subagents a new room leaves behind, and does not stop them", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			expect(session.newRoom()).toBe(true);
+			expect(reviewer.fake.stop).toHaveBeenCalled();
+			expect(reviewer.fake.cancel).not.toHaveBeenCalled();
+			expect(notices(session)).toEqual([
+				"New room. It is saved when you send the first prompt.",
+				"Stopped following the unfinished subagents (1). They were not stopped on the server.",
+			]);
+
+			const before = session.getState();
+			reviewer.poll({ status: "RUNNING" }, [
+				reviewer.started(message("m1", "late")),
+			]);
+			await settle();
+			expect(session.getState()).toBe(before);
+		});
+
+		it("says nothing of subagents when none was left", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			reviewer.reconcile({ status: "COMPLETED" });
+			root.reconcile({ status: "COMPLETED" });
+			expect(session.newRoom()).toBe(true);
+			expect(notices(session)).toEqual([
+				"New room. It is saved when you send the first prompt.",
+			]);
+		});
+
+		it("keeps a run's entry on clearing while it follows one of its subagents", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.reconcile({ status: "COMPLETED" });
+			session.notice([textLine("A notice")]);
+			session.clear();
+			expect(
+				session.getState().entries.map((entry) => entry.kind),
+			).toEqual(["run"]);
+
+			reviewer.reconcile({ status: "COMPLETED" });
+			session.clear();
+			expect(session.getState().entries).toEqual([]);
+		});
+
+		it("stops following every run on closing, and stops none of them", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			session.dispose();
+			expect(root.fake.stop).toHaveBeenCalled();
+			expect(reviewer.fake.stop).toHaveBeenCalled();
+			expect(root.fake.cancel).not.toHaveBeenCalled();
+			expect(reviewer.fake.cancel).not.toHaveBeenCalled();
+		});
+
+		it("exports the prompt's own run, and none of its subagents' events", async () => {
+			const saveExport = vi.fn((_data: RunExport) => undefined);
+			const { session, latest, child } = following({
+				host: { saveExport },
+			});
+			await start(session);
+			const root = latest();
+			const id = childId();
+			const spawned = root.started(
+				subagentItem(id, { alias: "reviewer" }),
+			);
+			root.poll({ status: "RUNNING" }, [spawned]);
+			const reviewer = child(id);
+			reviewer.poll(
+				{ status: "RUNNING" },
+				[reviewer.started(message("m1", "Reading."))],
+				3,
+			);
+			root.reconcile({ status: "COMPLETED" });
+
+			await session.exportLastRun();
+			expect(saveExport.mock.lastCall?.[0]).toMatchObject({
+				runId: root.runId,
+				events: [spawned],
+				droppedEvents: 0,
+			});
+		});
+	});
+
+	describe("always allowing a tool", () => {
+		const rootBash = action({ actionId: "root-bash", toolCallId: "r1" });
+		const bash2 = action({ actionId: "child-bash-2", toolCallId: "t2" });
+
+		it("allows it in every run the session follows", async () => {
+			const { session, root, reviewer } = await followingReviewer();
+			root.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [rootBash] },
+				[root.started(tool("r1", "Run a command"))],
+			);
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+
+			expect(await session.alwaysAllow(rootBash)).toBe(true);
+			expect(root.fake.decide).toHaveBeenCalledWith(
+				rootBash,
+				"submit",
+				undefined,
+			);
+			expect(reviewer.fake.decide).toHaveBeenCalledWith(
+				bash,
+				"submit",
+				undefined,
+			);
+			expect(waitingActions(session.getState())).toEqual([]);
+			expect(session.getState().alwaysAllowed).toEqual([
+				{ toolName: "Bash", label: "Run a command" },
+			]);
+			expect(notices(session)).toEqual([
+				"Approved Run a command. It runs without asking until you type :revoke, start a new room or reload.",
+			]);
+		});
+
+		it("approves a subagent's later call of it without asking", async () => {
+			const { session, reviewer, id } = await followingReviewer();
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			await session.alwaysAllow();
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash2] },
+				[reviewer.started(tool("t2", "Another command"))],
+			);
+			await settle();
+			expect(reviewer.fake.decide).toHaveBeenLastCalledWith(
+				bash2,
+				"submit",
+				undefined,
+			);
+			expect(recordAt(session, id)).toMatchObject({ pendingActions: [] });
+			expect(notices(session)).toHaveLength(1);
+		});
+
+		it("names the call by its path when an automatic approval is refused", async () => {
+			const { session, reviewer, id } = await followingReviewer();
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash] },
+				[reviewer.started(tool("t1", "Run a command"))],
+			);
+			await session.alwaysAllow();
+			reviewer.fake.decide.mockRejectedValueOnce(
+				new Error("Action stale"),
+			);
+			reviewer.poll(
+				{ status: "INPUT_REQUIRED", pendingActions: [bash2] },
+				[reviewer.started(tool("t2", "Another command"))],
+			);
+			await settle();
+			expect(recordAt(session, id)).toMatchObject({
+				pendingActions: [bash2],
+			});
+			expect(notices(session).at(-1)).toBe(
+				"Could not approve reviewer › Another command automatically: Action stale. It is waiting for you.",
+			);
+		});
 	});
 });

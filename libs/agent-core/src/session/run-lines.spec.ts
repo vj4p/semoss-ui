@@ -8,8 +8,14 @@ import type { AgentRunItem, PendingAgentAction } from "@semoss/sdk";
 import { translateEnglish } from "../i18n/messages";
 import type { ApprovalKeyLabels } from "../keymap/keymap";
 import type { Line } from "../transcript/line";
-import type { RunEntry } from "./entries";
-import { actionLabel, approvalHint, entryLines, runLines } from "./run-lines";
+import type { RunEntry, SubagentProgress } from "./entries";
+import {
+	actionLabel,
+	approvalHint,
+	entryLines,
+	runLines,
+	waitingIn,
+} from "./run-lines";
 
 const itemsOf = (...items: AgentRunItem[]) => ({
 	itemsById: Object.fromEntries(items.map((item) => [item.id, item])),
@@ -414,6 +420,574 @@ describe("runLines", () => {
 			"run.awaitingApproval|Bash",
 			"run.approvalHint|",
 		]);
+	});
+});
+
+const subagent = (
+	childRunId: string,
+	extra: Partial<Extract<AgentRunItem, { kind: "subagent" }>> = {},
+): AgentRunItem => ({
+	id: childRunId,
+	kind: "subagent",
+	childRunId,
+	roomId: `room-${childRunId}`,
+	status: "RUNNING",
+	...extra,
+});
+
+/** A subagent's run as the console follows it. */
+const followed = (
+	runId: string,
+	overrides: Partial<SubagentProgress> = {},
+): SubagentProgress => ({
+	followed: true,
+	runId,
+	status: "RUNNING",
+	items: itemsOf(),
+	droppedEvents: 0,
+	pendingActions: [],
+	...overrides,
+});
+
+/** A prompt's run that spawned `reviewer`, which the console follows as `child`. */
+const withReviewer = (
+	child: Partial<SubagentProgress> = {},
+	overrides: Partial<RunEntry> = {},
+) =>
+	run({
+		items: itemsOf(
+			message("m1", "Handing this to a reviewer."),
+			subagent("child-1", { alias: "reviewer" }),
+		),
+		subagents: { "child-1": followed("child-1", child) },
+		...overrides,
+	});
+
+/** The words on screen, with each subagent's own lines indented under it. */
+const tree = (lines: readonly Line[], indent = ""): string[] =>
+	lines.flatMap((line) => [
+		`${indent}${plain(line)}`,
+		...(line.kind === "subagent"
+			? tree(line.children ?? [], `${indent}  `)
+			: []),
+	]);
+
+/** The one subagent line labelled `label`, however deep. */
+const subagentLine = (
+	lines: readonly Line[],
+	label: string,
+): Line | undefined => {
+	for (const line of lines) {
+		if (line.kind !== "subagent") {
+			continue;
+		}
+		if (line.label === label) {
+			return line;
+		}
+		const found = subagentLine(line.children ?? [], label);
+		if (found !== undefined) {
+			return found;
+		}
+	}
+	return undefined;
+};
+
+const HINT = "Type :approve to allow it, or :deny to reject it.";
+const PARENT_ENDED =
+	"The parent run has ended and will not use this subagent's result. Deciding lets the subagent carry on, and what it does is shown here.";
+
+describe("a subagent the console follows", () => {
+	it("is drawn as its own run, under its line in the parent's", () => {
+		expect(
+			tree(
+				runLines(
+					withReviewer({
+						items: itemsOf(message("c1", "Reading the tests.")),
+					}),
+				),
+			),
+		).toEqual([
+			"Find the flaky test",
+			"Handing this to a reviewer.",
+			"reviewer",
+			"  Reading the tests.",
+		]);
+	});
+
+	it("nests as deep as the console follows", () => {
+		const entry = withReviewer({
+			items: itemsOf(subagent("grandchild-1", { alias: "checker" })),
+			subagents: {
+				"grandchild-1": followed("grandchild-1", {
+					items: itemsOf(message("g1", "Checked.")),
+				}),
+			},
+		});
+		expect(tree(runLines(entry)).slice(2)).toEqual([
+			"reviewer",
+			"  checker",
+			"    Checked.",
+		]);
+	});
+
+	it("is drawn as the parent reports it when the host does not follow subagents", () => {
+		const entry = run({
+			items: itemsOf(subagent("child-1", { alias: "reviewer" })),
+		});
+		expect(subagentLine(runLines(entry), "reviewer")).not.toHaveProperty(
+			"children",
+		);
+	});
+
+	describe("one the console does not follow", () => {
+		const unfollowed = (record: Parameters<typeof run>[0]) =>
+			tree(
+				runLines(
+					run({
+						items: itemsOf(
+							subagent("child-1", { alias: "reviewer" }),
+						),
+						...record,
+					}),
+				),
+			).slice(1);
+
+		it("says it is too deep to follow", () => {
+			expect(
+				unfollowed({
+					subagents: {
+						"child-1": {
+							followed: false,
+							reason: "depth",
+							limit: 3,
+						},
+					},
+				}),
+			).toEqual([
+				"reviewer",
+				"  Its steps are not shown: subagents are followed to a depth of 3.",
+			]);
+		});
+
+		it("says too many are followed already", () => {
+			expect(
+				unfollowed({
+					subagents: {
+						"child-1": {
+							followed: false,
+							reason: "limit",
+							limit: 8,
+						},
+					},
+				}),
+			).toEqual([
+				"reviewer",
+				"  Its steps are not shown: subagents are followed at most 8 at a time.",
+			]);
+		});
+
+		it("says why the host could not follow it", () => {
+			const entry = run({
+				items: itemsOf(subagent("child-1", { alias: "reviewer" })),
+				subagents: {
+					"child-1": {
+						followed: false,
+						reason: "failed",
+						message: "No insight",
+					},
+				},
+			});
+			const line = subagentLine(runLines(entry), "reviewer");
+			expect(line).toMatchObject({
+				children: [
+					{
+						kind: "text",
+						segments: [
+							{
+								text: "Its steps cannot be shown: No insight",
+								emphasis: "dim",
+							},
+						],
+					},
+				],
+			});
+		});
+
+		it("keeps what the parent reports about it", () => {
+			const entry = run({
+				items: itemsOf(
+					subagent("child-1", {
+						alias: "reviewer",
+						status: "COMPLETED",
+						resultPreview: "Looks fine.",
+					}),
+				),
+				subagents: {
+					"child-1": { followed: false, reason: "limit", limit: 8 },
+				},
+			});
+			expect(subagentLine(runLines(entry), "reviewer")).toMatchObject({
+				status: "COMPLETED",
+				resultPreview: "Looks fine.",
+			});
+		});
+	});
+
+	describe("its line", () => {
+		const reviewerLine = (
+			child: Partial<SubagentProgress>,
+			item: Partial<Extract<AgentRunItem, { kind: "subagent" }>> = {},
+		) =>
+			subagentLine(
+				runLines(
+					run({
+						items: itemsOf(
+							subagent("child-1", { alias: "reviewer", ...item }),
+						),
+						subagents: { "child-1": followed("child-1", child) },
+					}),
+				),
+				"reviewer",
+			);
+
+		it("says what the parent reports until the console hears from the run", () => {
+			expect(
+				reviewerLine(
+					{ status: "STARTING" },
+					{ status: "COMPLETED", resultPreview: "Looks fine." },
+				),
+			).toMatchObject({
+				status: "COMPLETED",
+				resultPreview: "Looks fine.",
+				children: [],
+			});
+		});
+
+		it("says what the run itself reports once the console hears it", () => {
+			// The parent stops reporting its subagents once it ends.
+			expect(
+				reviewerLine(
+					{ status: "INPUT_REQUIRED" },
+					{ status: "RUNNING" },
+				),
+			).toMatchObject({ status: "INPUT_REQUIRED" });
+		});
+
+		it("leaves the ending to the run's own lines once it has one", () => {
+			const line = reviewerLine(
+				{
+					status: "FAILED",
+					errorMessage: "Out of budget",
+					endedAt: 5,
+				},
+				{ status: "FAILED", error: "Out of budget" },
+			);
+			expect(line).toMatchObject({ status: "FAILED" });
+			expect(
+				line?.kind === "subagent" ? line.error : null,
+			).toBeUndefined();
+			expect(tree([line as Line]).slice(1)).toEqual([
+				"  Run failed: Out of budget",
+			]);
+		});
+
+		it("falls back on the parent's report when the console lost the run", () => {
+			const line = reviewerLine(
+				{ status: "LOST", endedAt: 5 },
+				{ status: "COMPLETED", resultPreview: "Looks fine." },
+			);
+			expect(line).toMatchObject({
+				status: "COMPLETED",
+				resultPreview: "Looks fine.",
+			});
+			expect(tree([line as Line]).slice(1)).toEqual([
+				"  Lost contact with this run. It may still be running on the server.",
+			]);
+		});
+	});
+
+	it("shows the run's final text when its feed did not", () => {
+		expect(
+			tree(
+				runLines(
+					withReviewer({
+						status: "COMPLETED",
+						finalText: "Looks fine.",
+						endedAt: 5,
+					}),
+				),
+			).slice(2),
+		).toEqual(["reviewer", "  Looks fine."]);
+	});
+
+	it("counts its running tool up only while it runs", () => {
+		const running = (child: Partial<SubagentProgress>) => {
+			const line = subagentLine(
+				runLines(
+					withReviewer({
+						items: itemsOf(tool("call-1", { status: "RUNNING" })),
+						runningSince: { "call-1": 5_000 },
+						...child,
+					}),
+				),
+				"reviewer",
+			);
+			const [first] =
+				line?.kind === "subagent" ? (line.children ?? []) : [];
+			return first?.kind === "tool" ? first.runningSince : null;
+		};
+		expect(running({})).toBe(5_000);
+		expect(running({ status: "CANCELLED", endedAt: 6 })).toBeUndefined();
+	});
+
+	it("goes on after its parent ended", () => {
+		expect(
+			tree(
+				runLines(
+					withReviewer(
+						{ items: itemsOf(message("c1", "Still reading.")) },
+						{ status: "COMPLETED", endedAt: 2 },
+					),
+				),
+			).slice(2),
+		).toEqual(["reviewer", "  Still reading."]);
+	});
+
+	describe("waiting on the user", () => {
+		const childCall = action({
+			actionId: "child-a1",
+			runId: "child-1",
+			toolName: "Bash",
+		});
+		const rootCall = action({ actionId: "root-a1", toolName: "Write" });
+
+		it("names its call under it, with the hint", () => {
+			expect(
+				tree(
+					runLines(
+						withReviewer({
+							status: "INPUT_REQUIRED",
+							pendingActions: [childCall],
+						}),
+					),
+				).slice(2),
+			).toEqual([
+				"reviewer",
+				"  Bash is waiting for approval.",
+				`  ${HINT}`,
+			]);
+		});
+
+		it("gives the hint to the call the keys act on, and no other", () => {
+			const both = withReviewer(
+				{ status: "INPUT_REQUIRED", pendingActions: [childCall] },
+				{ status: "INPUT_REQUIRED", pendingActions: [rootCall] },
+			);
+			// Without a keyed call, the first drawn: the subagent's, which is
+			// drawn with the parent's items and before its waiting calls.
+			expect(tree(runLines(both)).slice(2)).toEqual([
+				"reviewer",
+				"  Bash is waiting for approval.",
+				`  ${HINT}`,
+				"Write is waiting for approval.",
+			]);
+			expect(
+				tree(
+					runLines(both, translateEnglish, {
+						keyedActionId: "root-a1",
+					}),
+				).slice(2),
+			).toEqual([
+				"reviewer",
+				"  Bash is waiting for approval.",
+				"Write is waiting for approval.",
+				HINT,
+			]);
+			// The keys act on a call in another entry.
+			expect(
+				tree(
+					runLines(both, translateEnglish, {
+						keyedActionId: "elsewhere",
+					}),
+				),
+			).not.toContain(HINT);
+		});
+
+		it("asks for an answer to its question", () => {
+			expect(
+				tree(
+					runLines(
+						withReviewer({
+							status: "INPUT_REQUIRED",
+							pendingActions: [
+								action({
+									actionId: "child-q1",
+									runId: "child-1",
+									toolName: "RequestUserInput",
+								}),
+							],
+						}),
+					),
+				).slice(3),
+			).toEqual(["  The agent is asking for your input."]);
+		});
+
+		it("says what deciding does when the parent has ended", () => {
+			const lines = tree(
+				runLines(
+					withReviewer(
+						{
+							status: "INPUT_REQUIRED",
+							pendingActions: [childCall],
+						},
+						{ status: "COMPLETED", endedAt: 2 },
+					),
+				),
+			);
+			expect(lines.slice(2)).toEqual([
+				"reviewer",
+				"  Bash is waiting for approval.",
+				`  ${HINT}`,
+				`  ${PARENT_ENDED}`,
+			]);
+		});
+
+		it("says nothing of the parent when the console only lost it", () => {
+			// A lost run may still be running, and may yet use the result.
+			expect(
+				tree(
+					runLines(
+						withReviewer(
+							{
+								status: "INPUT_REQUIRED",
+								pendingActions: [childCall],
+							},
+							{ status: "LOST", endedAt: 2 },
+						),
+					),
+				),
+			).not.toContain(`  ${PARENT_ENDED}`);
+		});
+	});
+});
+
+describe("waitingIn", () => {
+	const childCall = action({
+		actionId: "child-a1",
+		runId: "child-1",
+		toolName: "Bash",
+		toolCallId: "c-t1",
+	});
+	const rootCall = action({ actionId: "root-a1", toolName: "Write" });
+
+	it("lists the prompt's run's calls by their tool", () => {
+		expect(
+			waitingIn(
+				run({ status: "INPUT_REQUIRED", pendingActions: [rootCall] }),
+			),
+		).toEqual([
+			{
+				action: rootCall,
+				entryId: "run-entry-1",
+				subagents: [],
+				tool: "Write",
+				label: "Write",
+				parentEnded: false,
+			},
+		]);
+	});
+
+	it("names a subagent's call by its path, from the subagent's own items", () => {
+		const [waiting] = waitingIn(
+			withReviewer({
+				status: "INPUT_REQUIRED",
+				items: itemsOf(tool("c-t1", { title: "Run a command" })),
+				pendingActions: [childCall],
+			}),
+		);
+		expect(waiting).toEqual({
+			action: childCall,
+			entryId: "run-entry-1",
+			subagents: ["reviewer"],
+			tool: "Run a command",
+			label: "reviewer › Run a command",
+			parentEnded: false,
+		});
+	});
+
+	it("lists them in the order they are drawn: a subagent's before its parent's own", () => {
+		const grandchildCall = action({
+			actionId: "grandchild-a1",
+			runId: "grandchild-1",
+			toolName: "Read",
+		});
+		const entry = withReviewer(
+			{
+				status: "INPUT_REQUIRED",
+				items: itemsOf(subagent("grandchild-1")),
+				pendingActions: [childCall],
+				subagents: {
+					"grandchild-1": followed("grandchild-1", {
+						status: "INPUT_REQUIRED",
+						pendingActions: [grandchildCall],
+					}),
+				},
+			},
+			{ status: "INPUT_REQUIRED", pendingActions: [rootCall] },
+		);
+		expect(waitingIn(entry).map((waiting) => waiting.label)).toEqual([
+			"reviewer › subagent grandchi › Read",
+			"reviewer › Bash",
+			"Write",
+		]);
+	});
+
+	it("says which calls' parents have ended, and a lost parent has not", () => {
+		const parentIs = (status: RunEntry["status"]) =>
+			waitingIn(
+				withReviewer(
+					{ status: "INPUT_REQUIRED", pendingActions: [childCall] },
+					{ status, endedAt: 2 },
+				),
+			)[0]?.parentEnded;
+		expect(parentIs("COMPLETED")).toBe(true);
+		expect(parentIs("FAILED")).toBe(true);
+		expect(parentIs("CANCELLED")).toBe(true);
+		expect(parentIs("LOST")).toBe(false);
+		expect(parentIs("RUNNING")).toBe(false);
+	});
+
+	it("skips a subagent the console does not follow", () => {
+		expect(
+			waitingIn(
+				run({
+					items: itemsOf(subagent("child-1")),
+					subagents: {
+						"child-1": {
+							followed: false,
+							reason: "limit",
+							limit: 8,
+						},
+					},
+				}),
+			),
+		).toEqual([]);
+	});
+
+	it("names subagents through the host's translation", () => {
+		const [waiting] = waitingIn(
+			run({
+				items: itemsOf(subagent("child-1")),
+				subagents: {
+					"child-1": followed("child-1", {
+						status: "INPUT_REQUIRED",
+						pendingActions: [childCall],
+					}),
+				},
+			}),
+			(key, params) => `${key}|${params?.id ?? ""}`,
+		);
+		expect(waiting?.subagents).toEqual(["transcript.subagent|child-1"]);
 	});
 });
 

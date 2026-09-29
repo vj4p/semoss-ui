@@ -79,7 +79,8 @@
 	"core": {
 		"transcript": {
 			"droppedEvents": "Eerdere gebeurtenissen zijn uit de live feed verwijderd ({{n}}).",
-			"unknownItem": "Dit item kan hier niet worden weergegeven ({{kind}})."
+			"unknownItem": "Dit item kan hier niet worden weergegeven ({{kind}}).",
+			"subagent": "subagent {{id}}"
 		},
 		"run": {
 			"failed": "Uitvoering mislukt: {{message}}",
@@ -92,7 +93,12 @@
 			"approvalKeys": "Druk met een lege prompt op {{approve}} om het toe te staan, {{deny}} om het te weigeren, {{edit}} om de argumenten te wijzigen, of {{always}} om het altijd toe te staan.",
 			"awaitingAnswer": "De agent vraagt om uw invoer.",
 			"stopping": "Bezig met stoppen…",
-			"reconnecting": "Kan de server niet bereiken. Opnieuw proberen… ({{message}})"
+			"reconnecting": "Kan de server niet bereiken. Opnieuw proberen… ({{message}})",
+			"subagentTooDeep": "De stappen worden niet getoond: subagents worden gevolgd tot een diepte van {{n}}.",
+			"subagentLimit": "De stappen worden niet getoond: de limiet voor subagents die tegelijk worden gevolgd ({{n}}) is bereikt.",
+			"subagentFailed": "De stappen kunnen niet worden getoond: {{message}}",
+			"parentEnded": "De bovenliggende uitvoering is beëindigd en gebruikt het resultaat van deze subagent niet. Door te beslissen kan de subagent verder, en wat hij doet wordt hier getoond.",
+			"subagentAwaitingAnswer": "{{subagent}} vraagt om uw invoer."
 		},
 		"session": {
 			"harnessChanged": "harness → {{name}}",
@@ -109,6 +115,7 @@
 			"switchModelHint": "Typ :model gevolgd door een naam of een id om te wisselen.",
 			"nothingRunning": "Er wordt niets uitgevoerd.",
 			"stopFailed": "Kan de uitvoering niet stoppen: {{message}}",
+			"stopSubagentFailed": "Kan {{subagent}} niet stoppen: {{message}}",
 			"nothingPending": "Er wacht niets op goedkeuring.",
 			"answerInForm": "De agent heeft een vraag gesteld. Beantwoord deze in het formulier, of typ :deny om de vraag te sluiten.",
 			"approved": "{{tool}} goedgekeurd.",
@@ -129,6 +136,7 @@
 			"decisionFailed": "Kan de beslissing niet verzenden: {{message}}",
 			"saveFailed": "Kan de ruimte-instellingen niet opslaan: {{message}}",
 			"newRoom": "Nieuwe ruimte. Deze wordt opgeslagen zodra u de eerste prompt verstuurt.",
+			"stoppedFollowing": "De onvoltooide subagents worden niet meer gevolgd ({{n}}). Ze zijn niet gestopt op de server.",
 			"nothingToExport": "Nog geen uitvoering om te exporteren.",
 			"exported": "De gebeurtenissen van uitvoering {{runId}} zijn geëxporteerd."
 		},

@@ -102,17 +102,27 @@ export type Line =
 	 *
 	 * No `depth` — the original sketch assumed one, but `AgentRunItem` of kind
 	 * "subagent" carries only `childRunId`/`roomId`/`alias`. Every subagent in
-	 * ONE run's stream is a direct child. Real nesting means recursively
-	 * watching each `childRunId`, and the host that does that owns the indent.
+	 * ONE run's stream is a direct child. Nesting is a tree instead: a
+	 * subagent the console follows through its own run carries that run's
+	 * lines in `children`, and each host indents them its own way.
 	 */
 	| {
 			kind: "subagent";
 			label: string;
 			status: ItemStatus;
-			/** Set on COMPLETED, capped at MAX_RESULT_PREVIEW_CHARS (2,000). */
+			/**
+			 * Set on COMPLETED, capped at MAX_RESULT_PREVIEW_CHARS (2,000). Left
+			 * out when `children` show how the subagent ended, which would say
+			 * it twice.
+			 */
 			resultPreview?: string;
 			/** Set on FAILED. Omitting this rendered a failed subagent as a bare glyph. */
 			error?: string;
+			/**
+			 * The subagent's own run, drawn under it, or why it is not. Absent
+			 * when the host does not follow subagents.
+			 */
+			children?: Line[];
 	  }
 	/** A structural marker: harness switch, a gap, end of run. */
 	| { kind: "divider"; label?: string; emphasis?: Emphasis };

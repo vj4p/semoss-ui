@@ -135,6 +135,8 @@ export const describeArguments = (
 const countLines = (output: string): number =>
 	output === "" ? 0 : output.split("\n").length;
 
+export type SubagentItem = Extract<AgentRunItem, { kind: "subagent" }>;
+
 /**
  * Label a subagent by the name a human gave it, else its run id.
  *
@@ -142,8 +144,32 @@ const countLines = (output: string): number =>
  * so the fallback is load-bearing rather than defensive. The id is clipped
  * because a full run id is a UUID and eats the line.
  */
-const subagentLabel = (item: Extract<AgentRunItem, { kind: "subagent" }>) =>
-	item.alias ?? `subagent ${item.childRunId.slice(0, 8)}`;
+export const subagentLabel = (
+	item: SubagentItem,
+	translate: Translate = translateEnglish,
+): string =>
+	item.alias ??
+	translate("transcript.subagent", { id: item.childRunId.slice(0, 8) });
+
+/**
+ * What a host knows about a subagent beyond its item: the subagent's own run,
+ * when the host follows it.
+ */
+export interface SubagentDetail {
+	/**
+	 * The run's own status, when the host has heard it. It wins over the
+	 * item's, which the parent reports, and stops reporting once the parent
+	 * ends: a subagent can finish long after that.
+	 */
+	status?: ItemStatus;
+	/** The run's lines, or a line that says why they are missing. */
+	children: Line[];
+	/**
+	 * The children say how the run ended, so the item's result preview and
+	 * error would say it twice.
+	 */
+	endShown?: boolean;
+}
 
 /**
  * The name to show for a tool call.
@@ -179,12 +205,13 @@ export const toolLabel = (item: Extract<AgentRunItem, { kind: "tool" }>) => {
  * transcript.
  *
  * `options.runningSince` is when the host first drew the item running, which
- * a tool's line carries while it is running.
+ * a tool's line carries while it is running. `options.subagent` is what the
+ * host knows about a subagent item's own run.
  */
 export const lineForItem = (
 	item: AgentRunItem,
 	translate: Translate = translateEnglish,
-	options: { runningSince?: number } = {},
+	options: { runningSince?: number; subagent?: SubagentDetail } = {},
 ): Line => {
 	switch (item.kind) {
 		case "message":
@@ -226,14 +253,18 @@ export const lineForItem = (
 			};
 		}
 
-		case "subagent":
+		case "subagent": {
+			const detail = options.subagent;
+			const endShown = detail?.endShown === true;
 			return {
 				kind: "subagent",
-				label: subagentLabel(item),
-				status: item.status satisfies ItemStatus,
-				resultPreview: item.resultPreview,
-				error: item.error,
+				label: subagentLabel(item, translate),
+				status: detail?.status ?? (item.status satisfies ItemStatus),
+				resultPreview: endShown ? undefined : item.resultPreview,
+				error: endShown ? undefined : item.error,
+				...(detail === undefined ? {} : { children: detail.children }),
 			};
+		}
 
 		default: {
 			const unknown: never = item;
@@ -266,6 +297,8 @@ export const lineForItem = (
  *                              projection writes itself; English when omitted
  * @param options.runningSince  by item id, when the host first drew each
  *                              item running, in epoch milliseconds
+ * @param options.subagent      what the host knows about a subagent item's
+ *                              own run, when it follows subagents
  * @return the transcript, append-only and safe to re-render from scratch
  */
 export const toTranscript = (
@@ -275,6 +308,7 @@ export const toTranscript = (
 		droppedEvents?: number;
 		translate?: Translate;
 		runningSince?: Readonly<Record<string, number>>;
+		subagent?: (item: SubagentItem) => SubagentDetail | undefined;
 	} = {},
 ): Line[] => {
 	const lines: Line[] = [];
@@ -294,6 +328,10 @@ export const toTranscript = (
 			lines.push(
 				lineForItem(item, translate, {
 					runningSince: options.runningSince?.[id],
+					subagent:
+						item.kind === "subagent"
+							? options.subagent?.(item)
+							: undefined,
 				}),
 			);
 		}

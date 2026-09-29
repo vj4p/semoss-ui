@@ -5,6 +5,9 @@
  * console knows about the run that no item carries: that a tool call is
  * waiting on the user, that a stop was asked for, that the server cannot be
  * reached, and how the run ended.
+ *
+ * A subagent the console follows is drawn the same way, as its own run, under
+ * its line in the parent's: a tree, as deep as the console follows.
  */
 
 import {
@@ -14,9 +17,25 @@ import {
 } from "@semoss/sdk";
 import { type Translate, translateEnglish } from "../i18n/messages";
 import type { ApprovalKeyLabels } from "../keymap/keymap";
-import { type Line, textLine } from "../transcript/line";
-import { lineForItem, toolLabel, toTranscript } from "../transcript/transcript";
-import type { RunEntry, SessionEntry } from "./entries";
+import { type ItemStatus, type Line, textLine } from "../transcript/line";
+import {
+	lineForItem,
+	type SubagentDetail,
+	type SubagentItem,
+	subagentLabel,
+	toolLabel,
+	toTranscript,
+} from "../transcript/transcript";
+import type {
+	RunEntry,
+	RunProgress,
+	RunStatus,
+	SessionEntry,
+	SubagentRun,
+} from "./entries";
+
+/** Between the names in a call's path: the subagents it is under, then the tool. */
+export const SUBAGENT_PATH_SEPARATOR = " › ";
 
 /**
  * The name to show for a tool call that is waiting on a decision.
@@ -63,7 +82,7 @@ const squash = (text: string) => text.replace(/\s+/g, "");
  * Only once the run has ended, so a run still draining its last events does
  * not show the text twice for a moment.
  */
-const recoveredFinalText = (run: RunEntry): string | undefined => {
+const recoveredFinalText = (run: RunProgress): string | undefined => {
 	const finalText = run.finalText?.trim();
 	if (!finalText || run.endedAt === undefined) {
 		return undefined;
@@ -82,7 +101,7 @@ const recoveredFinalText = (run: RunEntry): string | undefined => {
  * still going.
  */
 export const runEndLine = (
-	run: RunEntry,
+	run: RunProgress & { startError?: string },
 	translate: Translate = translateEnglish,
 ): Line | undefined => {
 	if (run.startError !== undefined) {
@@ -115,6 +134,12 @@ export interface RunLinesOptions {
 	 * the hint under a waiting call then names the keys instead of the commands.
 	 */
 	approvalKeys?: ApprovalKeyLabels;
+	/**
+	 * The call the approval keys and commands act on, from `keyedApproval`. The
+	 * hint goes under its run's approvals and no other, so that "it" means that
+	 * call. Without one, it goes under the entry's own first approval.
+	 */
+	keyedActionId?: string;
 }
 
 /**
@@ -138,18 +163,146 @@ export const approvalHint = (
 			});
 };
 
-export const runLines = (
-	run: RunEntry,
+/**
+ * A tool call waiting on the user, wherever it is in an entry's tree: in the
+ * run a prompt started, or in a subagent the console follows.
+ */
+export interface WaitingAction {
+	action: PendingAgentAction;
+	/** The entry the call is drawn in. */
+	entryId: string;
+	/** The subagents the call is under, outermost first, by label. Empty for the prompt's own run. */
+	subagents: readonly string[];
+	/** The tool's own label, from `actionLabel`. */
+	tool: string;
+	/** The subagents and the tool, joined by {@link SUBAGENT_PATH_SEPARATOR}. */
+	label: string;
+	/**
+	 * The run that spawned the call's subagent has ended, so it will not use
+	 * the subagent's result. Deciding the call still lets the subagent carry on.
+	 */
+	parentEnded: boolean;
+}
+
+/** A run that ended on the server. LOST is not one: the console only stopped hearing. */
+const isEnded = (status: RunStatus) =>
+	status === "COMPLETED" || status === "FAILED" || status === "CANCELLED";
+
+/** A run's status as an item's, once the console has heard it. */
+const heardStatus = (status: RunStatus): ItemStatus | undefined =>
+	status === "STARTING" || status === "LOST" ? undefined : status;
+
+const notFollowed = (
+	record: Exclude<SubagentRun, { followed: true }>,
+	translate: Translate,
+): string => {
+	switch (record.reason) {
+		case "depth":
+			return translate("run.subagentTooDeep", { n: record.limit });
+		case "limit":
+			return translate("run.subagentLimit", { n: record.limit });
+		case "failed":
+			return translate("run.subagentFailed", { message: record.message });
+	}
+};
+
+interface DrawContext {
+	translate: Translate;
+	options: RunLinesOptions;
+	/** The call the approval keys act on, whose run's approvals get the hint. */
+	keyed: string | undefined;
+}
+
+/**
+ * The calls waiting in `entry`'s tree, in the order they are drawn: a
+ * subagent's before its parent's own, since a subagent is drawn with the
+ * parent's items and the parent's waiting calls after them.
+ */
+export const waitingIn = (
+	entry: RunEntry,
 	translate: Translate = translateEnglish,
-	options: RunLinesOptions = {},
+): WaitingAction[] => {
+	const waiting: WaitingAction[] = [];
+	const walk = (
+		run: RunProgress,
+		subagents: readonly string[],
+		parentEnded: boolean,
+	) => {
+		const { subagents: records } = run;
+		if (records !== undefined) {
+			for (const id of run.items.itemOrder) {
+				const item = run.items.itemsById[id];
+				if (item?.kind !== "subagent") {
+					continue;
+				}
+				const record = records[item.childRunId];
+				if (record?.followed) {
+					walk(
+						record,
+						[...subagents, subagentLabel(item, translate)],
+						isEnded(run.status),
+					);
+				}
+			}
+		}
+		for (const action of run.pendingActions) {
+			const tool = actionLabel(action, run.items);
+			waiting.push({
+				action,
+				entryId: entry.id,
+				subagents,
+				tool,
+				label: [...subagents, tool].join(SUBAGENT_PATH_SEPARATOR),
+				parentEnded,
+			});
+		}
+	};
+	walk(entry, [], false);
+	return waiting;
+};
+
+/** What `parent` knows about the subagent `item` is, for its line. */
+const subagentDetail = (
+	parent: RunProgress,
+	item: SubagentItem,
+	context: DrawContext,
+): SubagentDetail | undefined => {
+	const record = parent.subagents?.[item.childRunId];
+	if (record === undefined) {
+		return undefined;
+	}
+	if (!record.followed) {
+		return {
+			children: [textLine(notFollowed(record, context.translate), "dim")],
+		};
+	}
+	const status = heardStatus(record.status);
+	return {
+		status,
+		// Once the console has heard from the run, its own lines say how it
+		// ended: its answer, or the line under it.
+		endShown: status !== undefined,
+		children: progressLines(record, record.runId, context, {
+			parentEnded: isEnded(parent.status),
+		}),
+	};
+};
+
+const progressLines = (
+	run: RunProgress & { startError?: string },
+	id: string,
+	context: DrawContext,
+	place: { prompt?: string; parentEnded: boolean },
 ): Line[] => {
+	const { translate } = context;
 	const lines = toTranscript(run.items, {
-		prompt: run.prompt,
+		prompt: place.prompt,
 		droppedEvents: run.droppedEvents,
 		translate,
 		// Once the run has ended nothing in it is running, whatever its last
 		// items said, so nothing counts up.
 		runningSince: run.endedAt === undefined ? run.runningSince : undefined,
+		subagent: (item) => subagentDetail(run, item, context),
 	});
 
 	const recovered = recoveredFinalText(run);
@@ -157,7 +310,7 @@ export const runLines = (
 		lines.push(
 			lineForItem(
 				{
-					id: `${run.id}:final`,
+					id: `${id}:final`,
 					kind: "message",
 					role: "assistant",
 					text: recovered,
@@ -182,11 +335,14 @@ export const runLines = (
 			),
 		);
 	}
-	if (approvals.length > 0) {
-		lines.push(textLine(approvalHint(translate, options), "dim"));
+	if (approvals.some((action) => action.actionId === context.keyed)) {
+		lines.push(textLine(approvalHint(translate, context.options), "dim"));
 	}
 	if (approvals.length < run.pendingActions.length) {
 		lines.push(textLine(translate("run.awaitingAnswer"), "accent"));
+	}
+	if (place.parentEnded && run.pendingActions.length > 0) {
+		lines.push(textLine(translate("run.parentEnded"), "dim"));
 	}
 
 	if (run.endedAt === undefined) {
@@ -212,6 +368,26 @@ export const runLines = (
 	}
 	return lines;
 };
+
+export const runLines = (
+	run: RunEntry,
+	translate: Translate = translateEnglish,
+	options: RunLinesOptions = {},
+): Line[] =>
+	progressLines(
+		run,
+		run.id,
+		{
+			translate,
+			options,
+			keyed:
+				options.keyedActionId ??
+				waitingIn(run, translate).find(
+					(waiting) => !isRequestUserInputAction(waiting.action),
+				)?.action.actionId,
+		},
+		{ prompt: run.prompt, parentEnded: false },
+	);
 
 /** Any entry as lines, for a host that draws the session as one transcript. */
 export const entryLines = (

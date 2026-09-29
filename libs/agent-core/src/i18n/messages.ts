@@ -27,6 +27,7 @@ export const MESSAGES = {
 	"transcript.droppedEvents":
 		"Earlier events were dropped from the live feed ({{n}}).",
 	"transcript.unknownItem": "This item cannot be shown here ({{kind}}).",
+	"transcript.subagent": "subagent {{id}}",
 
 	"run.failed": "Run failed: {{message}}",
 	"run.failedUnknown": "Run failed. The server gave no reason.",
@@ -41,6 +42,14 @@ export const MESSAGES = {
 	"run.awaitingAnswer": "The agent is asking for your input.",
 	"run.stopping": "Stopping…",
 	"run.reconnecting": "Cannot reach the server. Retrying… ({{message}})",
+	"run.subagentTooDeep":
+		"Its steps are not shown: subagents are followed to a depth of {{n}}.",
+	"run.subagentLimit":
+		"Its steps are not shown: subagents are followed at most {{n}} at a time.",
+	"run.subagentFailed": "Its steps cannot be shown: {{message}}",
+	"run.parentEnded":
+		"The parent run has ended and will not use this subagent's result. Deciding lets the subagent carry on, and what it does is shown here.",
+	"run.subagentAwaitingAnswer": "{{subagent}} is asking for your input.",
 
 	"session.harnessChanged": "harness → {{name}}",
 	"session.modelChanged": "model → {{name}}",
@@ -61,6 +70,7 @@ export const MESSAGES = {
 		"Type :model followed by a name or an id to switch.",
 	"session.nothingRunning": "Nothing is running.",
 	"session.stopFailed": "Could not stop the run: {{message}}",
+	"session.stopSubagentFailed": "Could not stop {{subagent}}: {{message}}",
 	"session.nothingPending": "Nothing is waiting for approval.",
 	"session.answerInForm":
 		"The agent asked a question. Answer it in the form, or type :deny to dismiss it.",
@@ -88,6 +98,8 @@ export const MESSAGES = {
 	"session.decisionFailed": "Could not send the decision: {{message}}",
 	"session.saveFailed": "Could not save the room settings: {{message}}",
 	"session.newRoom": "New room. It is saved when you send the first prompt.",
+	"session.stoppedFollowing":
+		"Stopped following the unfinished subagents ({{n}}). They were not stopped on the server.",
 	"session.nothingToExport": "No run to export yet.",
 	"session.exported": "Exported the events of run {{runId}}.",
 

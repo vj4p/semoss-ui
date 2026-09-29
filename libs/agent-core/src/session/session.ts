@@ -30,6 +30,19 @@
  * the console has stopped following it and says so, rather than spinning
  * forever or claiming the run failed.
  *
+ * <h4>Subagents</h4>
+ *
+ * A host that can follow a run by its id passes `followRun`, and the session
+ * then follows each subagent a run spawns through a store of its own, drawn
+ * under the subagent's line: a tree, to {@link MAX_SUBAGENT_DEPTH} levels and
+ * {@link MAX_FOLLOWED_SUBAGENTS} runs at once unless the host says otherwise.
+ * It follows one until it ends, not until its parent does. A parent that
+ * completes leaves its subagents running on the server, and one of them can
+ * still stop to ask for approval, so its waiting calls are offered with the
+ * rest, named by the subagents they are under. A decision goes to the store
+ * of the run that lists the call. Only the prompt's own run blocks the prompt,
+ * and only it is exported.
+ *
  * <h4>What the session never does</h4>
  *
  * Cancel a run because the console went away. `dispose` stops polling and
@@ -70,10 +83,23 @@ import {
 	watchAgentRun,
 } from "../run/run-registry";
 import { type Emphasis, type Line, textLine } from "../transcript/line";
+import { subagentLabel } from "../transcript/transcript";
 import { describeError } from "../util/describe-error";
 import { escapeInvisibleInJson } from "../util/invisible";
-import type { RunEntry, RunStatus, SessionEntry } from "./entries";
-import { actionLabel } from "./run-lines";
+import type {
+	RunEntry,
+	RunProgress,
+	RunStatus,
+	SessionEntry,
+	SubagentProgress,
+	SubagentRun,
+} from "./entries";
+import {
+	actionLabel,
+	SUBAGENT_PATH_SEPARATOR,
+	type WaitingAction,
+	waitingIn,
+} from "./run-lines";
 import { createSessionCommands } from "./session-commands";
 
 export interface HarnessOption {
@@ -125,6 +151,12 @@ export interface SessionBackend {
 	 * events.
 	 */
 	startRun: (request: RunRequest) => Promise<AgentStore>;
+	/**
+	 * A store for a subagent's run, not yet watched, for a host that can follow
+	 * a run it did not start. Without it, a subagent is drawn only as far as
+	 * its parent reports it. `roomId` is the subagent's own room.
+	 */
+	followRun?: (run: { runId: string; roomId: string }) => AgentStore;
 }
 
 /** A run's raw events, to check the transcript against what the backend really sent. */
@@ -179,6 +211,12 @@ export interface SessionOptions {
 	/** More commands, after the built-in ones. */
 	commands?: readonly CommandSpec<Session>[];
 	watchOptions?: AgentWatchOptions;
+	/**
+	 * How deep, and how many subagent runs at once, the session follows when
+	 * the backend has `followRun`: {@link MAX_SUBAGENT_DEPTH} and
+	 * {@link MAX_FOLLOWED_SUBAGENTS} by default.
+	 */
+	subagents?: { maxDepth?: number; maxFollowed?: number };
 	now?: () => number;
 }
 
@@ -221,7 +259,10 @@ export interface Session {
 	readonly commands: CommandRegistry<Session>;
 	readonly translate: Translate;
 	submit: (raw: string) => Promise<SubmitResult>;
-	/** Stop the run in progress, or say nothing is running. */
+	/**
+	 * Stop the run in progress. When there is none, stop the subagents still
+	 * running that an earlier run left behind, or say nothing is running.
+	 */
 	interrupt: () => Promise<void>;
 	/** Allow a waiting tool call: `action`, or else the first one waiting. */
 	approve: (action?: PendingAgentAction) => Promise<boolean>;
@@ -264,6 +305,19 @@ export interface Session {
  */
 export const EXPORT_EVENT_LIMIT = 20_000;
 
+/**
+ * How many levels of subagents the session follows by default: a prompt's
+ * run's own subagents are the first. The backend lets only the first spawn by
+ * default, so the rest is headroom, and a bound on a runaway tree.
+ */
+export const MAX_SUBAGENT_DEPTH = 3;
+
+/**
+ * How many subagent runs the session follows at once by default, across every
+ * run. Each is polled on its own, so this bounds the requests a console makes.
+ */
+export const MAX_FOLLOWED_SUBAGENTS = 8;
+
 const EMPTY_ITEMS: AgentRunItemsState = { itemsById: {}, itemOrder: [] };
 
 const isOver = (status: RunStatus) =>
@@ -283,9 +337,9 @@ const sameActions = (
  * `next`, or `run` itself when nothing about it differs, so that a poll that
  * brought nothing new does not make the host redraw the run.
  */
-const unlessSame = (run: RunEntry, next: RunEntry): RunEntry => {
+const unlessSame = <P extends RunProgress>(run: P, next: P): P => {
 	const keys = new Set([...Object.keys(run), ...Object.keys(next)]);
-	for (const key of keys as Set<keyof RunEntry>) {
+	for (const key of keys as Set<keyof P>) {
 		const differs =
 			key === "pendingActions"
 				? !sameActions(run.pendingActions, next.pendingActions)
@@ -322,11 +376,61 @@ const noteRunning = (
 	return next ?? since;
 };
 
-/** What the session keeps about a run that nothing draws. */
-interface RunControl {
+/** What changes about a run, or undefined when nothing does. */
+type Changes = (run: RunProgress) => Partial<RunProgress> | undefined;
+
+/** The run at `path` under `run`, which is `run` itself for an empty path. */
+const progressAt = (
+	run: RunProgress,
+	path: readonly string[],
+): RunProgress | undefined => {
+	let at: RunProgress = run;
+	for (const runId of path) {
+		const record = at.subagents?.[runId];
+		if (!record?.followed) {
+			return undefined;
+		}
+		at = record;
+	}
+	return at;
+};
+
+/**
+ * `run` with `changes` made to the run at `path` under it. It is `run` itself
+ * when they change nothing, or when there is no longer a run there, so that
+ * a poll that brought nothing new does not make the host redraw the entry.
+ */
+const updateAt = <P extends RunProgress>(
+	run: P,
+	path: readonly string[],
+	changes: Changes,
+): P => {
+	if (path.length === 0) {
+		const next = changes(run);
+		return next === undefined ? run : unlessSame(run, { ...run, ...next });
+	}
+	const [runId, ...rest] = path;
+	const record = run.subagents?.[runId];
+	if (!record?.followed) {
+		return run;
+	}
+	const updated = updateAt(record, rest, changes);
+	return updated === record
+		? run
+		: { ...run, subagents: { ...run.subagents, [runId]: updated } };
+};
+
+/** What the session keeps about a run it follows that nothing draws. */
+interface Followed {
+	/** The entry the run is drawn in. */
 	entryId: string;
-	prompt: string;
-	settings: RoomSettings;
+	/**
+	 * The subagent run ids from the entry's run down to this one: none for the
+	 * run a prompt started, one for its subagent, and so on.
+	 */
+	path: readonly string[];
+	/** The labels of the subagents along `path`, to name a call this run waits on. */
+	labels: readonly string[];
 	agent?: AgentStore;
 	/** The items as of the last event, committed with the snapshot that follows it. */
 	items?: AgentRunItemsState;
@@ -335,8 +439,6 @@ interface RunControl {
 	 * it, since the items are drawn then and not before.
 	 */
 	runningSince: Readonly<Record<string, number>>;
-	events: AgentRunItemEvent[];
-	omittedEvents: number;
 	droppedEvents: number;
 	snapshot?: AgentRunSnapshot;
 	/**
@@ -350,10 +452,21 @@ interface RunControl {
 	 * and if the backend refuses it, it waits for the user.
 	 */
 	autoTried: Set<string>;
-	/** A stop asked for before the backend had a run to stop. */
-	stopWhenStarted: boolean;
 	cancelling: boolean;
 }
+
+/** A run a prompt started. */
+interface RunControl extends Followed {
+	prompt: string;
+	settings: RoomSettings;
+	events: AgentRunItemEvent[];
+	omittedEvents: number;
+	/** A stop asked for before the backend had a run to stop. */
+	stopWhenStarted: boolean;
+}
+
+const isPromptRun = (control: Followed): control is RunControl =>
+	control.path.length === 0;
 
 export const createSession = (options: SessionOptions): Session => {
 	const {
@@ -396,6 +509,15 @@ export const createSession = (options: SessionOptions): Session => {
 	let disposed = false;
 	/** The run in progress. One at a time, which is what makes this a single slot. */
 	let active: RunControl | undefined;
+	/**
+	 * Every run the session follows: the one in progress, and subagents, which
+	 * can outlive their parent. A run leaves when the session stops following
+	 * it, and anything its store reports after that is ignored.
+	 */
+	const controls = new Set<Followed>();
+	const maxDepth = options.subagents?.maxDepth ?? MAX_SUBAGENT_DEPTH;
+	const maxFollowed =
+		options.subagents?.maxFollowed ?? MAX_FOLLOWED_SUBAGENTS;
 	/** The last run the backend accepted, for `:export`. */
 	let exportable: RunControl | undefined;
 	let saving: Promise<void> = Promise.resolve();
@@ -430,16 +552,28 @@ export const createSession = (options: SessionOptions): Session => {
 				entry.kind === "run" && entry.id === entryId,
 		);
 
+	/** What `control` draws: its entry's run, or a subagent's record in it. */
+	const progressOf = (control: Followed) => {
+		const entry = findRun(control.entryId);
+		return entry === undefined
+			? undefined
+			: progressAt(entry, control.path);
+	};
+
 	/**
-	 * Replace a run's entry with `update(entry)`. With `end`, the run also
-	 * stops being the one in progress, in the same commit, so no host ever sees
-	 * a run that has ended but still blocks the prompt.
+	 * Replace a run's entry with `update(entry)`. With `end`, the session stops
+	 * following the run, and a prompt's run stops being the one in progress, in
+	 * the same commit, so no host ever sees a run that has ended but still
+	 * blocks the prompt.
 	 */
-	const patchRun = (
-		control: RunControl,
-		update: (run: RunEntry) => RunEntry,
-		end = false,
+	const replace = (
+		control: Followed,
+		update: (entry: RunEntry) => RunEntry,
+		end: boolean,
 	) => {
+		if (end) {
+			controls.delete(control);
+		}
 		const ending = end && active === control;
 		if (ending) {
 			active = undefined;
@@ -463,7 +597,15 @@ export const createSession = (options: SessionOptions): Session => {
 		});
 	};
 
-	const pendingOf = (control: RunControl, snapshot: AgentRunSnapshot) =>
+	/** Change the run `control` draws, wherever in its entry's tree it is. */
+	const patch = (control: Followed, changes: Changes, end = false) =>
+		replace(
+			control,
+			(entry) => updateAt(entry, control.path, changes),
+			end,
+		);
+
+	const pendingOf = (control: Followed, snapshot: AgentRunSnapshot) =>
 		(snapshot.pendingActions ?? []).filter(
 			(action) => !control.decided.has(action.actionId),
 		);
@@ -476,10 +618,109 @@ export const createSession = (options: SessionOptions): Session => {
 		return true;
 	};
 
-	const follow = (control: RunControl, agent: AgentStore) => {
+	/**
+	 * Decide about each subagent in `control`'s items that has no record yet:
+	 * follow it through a store of its own, or say why not. Each is decided
+	 * once, whatever its status: one that has already ended still has steps to
+	 * show while the server keeps its events.
+	 */
+	const discover = (
+		control: Followed,
+	): { records?: Record<string, SubagentRun>; followed: Followed[] } => {
+		const followed: Followed[] = [];
+		const { followRun } = backend;
+		const { items } = control;
+		const run = progressOf(control);
+		if (
+			followRun === undefined ||
+			items === undefined ||
+			run === undefined
+		) {
+			return { followed };
+		}
+		let records: Record<string, SubagentRun> | undefined;
+		let live = [...controls].filter((each) => !isPromptRun(each)).length;
+		for (const id of items.itemOrder) {
+			const item = items.itemsById[id];
+			if (
+				item?.kind !== "subagent" ||
+				run.subagents?.[item.childRunId] !== undefined ||
+				records?.[item.childRunId] !== undefined
+			) {
+				continue;
+			}
+			records ??= {};
+			if (control.path.length >= maxDepth) {
+				records[item.childRunId] = {
+					followed: false,
+					reason: "depth",
+					limit: maxDepth,
+				};
+				continue;
+			}
+			if (live >= maxFollowed) {
+				records[item.childRunId] = {
+					followed: false,
+					reason: "limit",
+					limit: maxFollowed,
+				};
+				continue;
+			}
+			let agent: AgentStore;
+			try {
+				agent = followRun({
+					runId: item.childRunId,
+					roomId: item.roomId,
+				});
+			} catch (error) {
+				records[item.childRunId] = {
+					followed: false,
+					reason: "failed",
+					message: describeError(error),
+				};
+				continue;
+			}
+			registerAgent(agent);
+			const child: Followed = {
+				entryId: control.entryId,
+				path: [...control.path, item.childRunId],
+				labels: [...control.labels, subagentLabel(item, translate)],
+				agent,
+				runningSince: {},
+				droppedEvents: 0,
+				decided: new Set(),
+				autoTried: new Set(),
+				cancelling: false,
+			};
+			controls.add(child);
+			live++;
+			followed.push(child);
+			records[item.childRunId] = {
+				followed: true,
+				runId: item.childRunId,
+				status: "STARTING",
+				items: EMPTY_ITEMS,
+				droppedEvents: 0,
+				pendingActions: [],
+				runningSince: child.runningSince,
+			} satisfies SubagentProgress;
+		}
+		return { records, followed };
+	};
+
+	const watch = (control: Followed, agent: AgentStore) => {
+		// Every handler first checks that the session still follows the run:
+		// once it has ended, or the room was left, nothing more is drawn.
 		const handlers: AgentWatchHandlers = {
 			onEvent: (event, items) => {
+				if (!controls.has(control)) {
+					return;
+				}
 				control.items = items;
+				// `:export` is the prompt's run's, so only its events are kept.
+				if (!isPromptRun(control)) {
+					return;
+				}
 				if (control.events.length < EXPORT_EVENT_LIMIT) {
 					control.events.push(event);
 				} else {
@@ -487,6 +728,9 @@ export const createSession = (options: SessionOptions): Session => {
 				}
 			},
 			onSnapshot: (snapshot, { droppedEvents }) => {
+				if (!controls.has(control)) {
+					return;
+				}
 				control.snapshot = snapshot;
 				control.droppedEvents += droppedEvents;
 				control.runningSince = noteRunning(
@@ -498,31 +742,40 @@ export const createSession = (options: SessionOptions): Session => {
 					control,
 					pendingOf(control, snapshot),
 				);
-				patchRun(control, (run) =>
-					unlessSame(run, {
-						...run,
-						items: control.items ?? run.items,
-						status: snapshot.status,
-						pendingActions: pendingOf(control, snapshot),
-						droppedEvents: control.droppedEvents,
-						runningSince: control.runningSince,
-						finalText: snapshot.finalText ?? run.finalText,
-						errorMessage: snapshot.errorMessage ?? run.errorMessage,
-						transportError: undefined,
-					}),
-				);
+				const { records, followed } = discover(control);
+				patch(control, (run) => ({
+					items: control.items ?? run.items,
+					status: snapshot.status,
+					pendingActions: pendingOf(control, snapshot),
+					droppedEvents: control.droppedEvents,
+					runningSince: control.runningSince,
+					finalText: snapshot.finalText ?? run.finalText,
+					errorMessage: snapshot.errorMessage ?? run.errorMessage,
+					transportError: undefined,
+					...(records === undefined
+						? {}
+						: { subagents: { ...run.subagents, ...records } }),
+				}));
+				// Watched once their records are drawn, for their polls to land in.
+				for (const child of followed) {
+					if (child.agent !== undefined) {
+						watch(child, child.agent);
+					}
+				}
 				approveAllowed(control, agent, allowed);
 			},
 			onReconcile: (snapshot) => {
+				if (!controls.has(control)) {
+					return;
+				}
 				control.snapshot = snapshot;
 				const over = isOver(snapshot.status);
 				const allowed = over
 					? []
 					: takeAllowed(control, pendingOf(control, snapshot));
-				patchRun(
+				patch(
 					control,
 					(run) => ({
-						...run,
 						status: snapshot.status,
 						pendingActions: over
 							? []
@@ -538,12 +791,12 @@ export const createSession = (options: SessionOptions): Session => {
 				approveAllowed(control, agent, allowed);
 			},
 			onError: (error) => {
-				patchRun(control, (run) =>
-					unlessSame(run, {
-						...run,
-						transportError: describeError(error),
-					}),
-				);
+				if (!controls.has(control)) {
+					return;
+				}
+				patch(control, () => ({
+					transportError: describeError(error),
+				}));
 			},
 		};
 		// Rejects when the run ends FAILED or CANCELLED, which onReconcile has
@@ -552,13 +805,15 @@ export const createSession = (options: SessionOptions): Session => {
 		// Read only after watching: before, `done` is a promise already
 		// resolved, and every run would look lost at once.
 		void agent.done.then(() => {
-			patchRun(
+			if (!controls.has(control)) {
+				return;
+			}
+			patch(
 				control,
 				(run) =>
 					run.endedAt !== undefined
-						? run
+						? undefined
 						: {
-								...run,
 								status: isOver(run.status)
 									? run.status
 									: "LOST",
@@ -571,7 +826,7 @@ export const createSession = (options: SessionOptions): Session => {
 		});
 	};
 
-	const cancel = async (control: RunControl) => {
+	const cancel = async (control: Followed) => {
 		const { agent } = control;
 		if (agent === undefined || control.cancelling) {
 			return;
@@ -583,14 +838,24 @@ export const createSession = (options: SessionOptions): Session => {
 		} catch (error) {
 			// A run that ended meanwhile is why the stop failed, and it needs no
 			// explaining.
-			const run = findRun(control.entryId);
+			const run = progressOf(control);
 			if (run?.endedAt === undefined && !isOver(run?.status ?? "LOST")) {
-				patchRun(control, (run) => ({ ...run, stopRequested: false }));
-				say(
-					"session.stopFailed",
-					{ message: describeError(error) },
-					"error",
-				);
+				patch(control, () => ({ stopRequested: false }));
+				const message = describeError(error);
+				if (isPromptRun(control)) {
+					say("session.stopFailed", { message }, "error");
+				} else {
+					say(
+						"session.stopSubagentFailed",
+						{
+							subagent: control.labels.join(
+								SUBAGENT_PATH_SEPARATOR,
+							),
+							message,
+						},
+						"error",
+					);
+				}
 			}
 		} finally {
 			control.cancelling = false;
@@ -615,7 +880,7 @@ export const createSession = (options: SessionOptions): Session => {
 				command: control.prompt,
 			});
 		} catch (error) {
-			patchRun(
+			replace(
 				control,
 				(run) => ({
 					...run,
@@ -633,12 +898,8 @@ export const createSession = (options: SessionOptions): Session => {
 		control.agent = agent;
 		exportable = control;
 		registerAgent(agent);
-		patchRun(control, (run) => ({
-			...run,
-			runId: agent.runId,
-			status: "SUBMITTED",
-		}));
-		follow(control, agent);
+		patch(control, () => ({ runId: agent.runId, status: "SUBMITTED" }));
+		watch(control, agent);
 		if (control.stopWhenStarted) {
 			await cancel(control);
 		}
@@ -659,6 +920,8 @@ export const createSession = (options: SessionOptions): Session => {
 		}
 		const control: RunControl = {
 			entryId: newId("run"),
+			path: [],
+			labels: [],
 			prompt,
 			settings: { harness, modelId },
 			runningSince: {},
@@ -671,6 +934,7 @@ export const createSession = (options: SessionOptions): Session => {
 			cancelling: false,
 		};
 		active = control;
+		controls.add(control);
 		commit({
 			...state,
 			entries: [
@@ -701,7 +965,7 @@ export const createSession = (options: SessionOptions): Session => {
 	 * ended, and the error comes back for the caller to explain.
 	 */
 	const send = async (
-		control: RunControl,
+		control: Followed,
 		agent: AgentStore,
 		action: PendingAgentAction,
 		decision: "submit" | "reject" | "respond",
@@ -713,13 +977,10 @@ export const createSession = (options: SessionOptions): Session => {
 		} catch (error) {
 			control.decided.delete(action.actionId);
 			const { snapshot } = control;
-			patchRun(control, (current) =>
+			patch(control, (current) =>
 				current.endedAt !== undefined || snapshot === undefined
-					? current
-					: {
-							...current,
-							pendingActions: pendingOf(control, snapshot),
-						},
+					? undefined
+					: { pendingActions: pendingOf(control, snapshot) },
 			);
 			return { ok: false, error };
 		}
@@ -732,7 +993,7 @@ export const createSession = (options: SessionOptions): Session => {
 	 * shows as waiting: no card flashes, and the announcer never announces it.
 	 */
 	const takeAllowed = (
-		control: RunControl,
+		control: Followed,
 		waiting: readonly PendingAgentAction[],
 	): PendingAgentAction[] => {
 		const allowed: PendingAgentAction[] = [];
@@ -764,15 +1025,16 @@ export const createSession = (options: SessionOptions): Session => {
 	 * not retry it.
 	 */
 	const approveAllowed = (
-		control: RunControl,
+		control: Followed,
 		agent: AgentStore,
 		actions: readonly PendingAgentAction[],
 	) => {
 		for (const action of actions) {
-			const run = findRun(control.entryId);
-			const label = run
-				? actionLabel(action, run.items)
-				: action.actionId;
+			const run = progressOf(control);
+			const label = [
+				...control.labels,
+				run ? actionLabel(action, run.items) : action.actionId,
+			].join(SUBAGENT_PATH_SEPARATOR);
 			void send(control, agent, action, "submit").then((result) => {
 				if (!result.ok) {
 					say(
@@ -785,29 +1047,32 @@ export const createSession = (options: SessionOptions): Session => {
 		}
 	};
 
+	/** The run that lists `actionId` as waiting, which is the run the call is in. */
+	const waitingControl = (actionId: string) =>
+		[...controls].find((control) =>
+			progressOf(control)?.pendingActions.some(
+				(action) => action.actionId === actionId,
+			),
+		);
+
 	/**
-	 * Send a decision on a waiting action. It disappears from the run at once,
-	 * so it cannot be decided twice, and comes back if the backend refuses.
+	 * Send a decision on a waiting action, to the store of the run it waits in.
+	 * It disappears from the run at once, so it cannot be decided twice, and
+	 * comes back if the backend refuses.
 	 */
 	const decide = async (
 		action: PendingAgentAction,
 		decision: "submit" | "reject" | "respond",
 		paramValues?: Record<string, unknown>,
 	): Promise<boolean> => {
-		const control = active;
-		const run = control && findRun(control.entryId);
+		const control = waitingControl(action.actionId);
 		const agent = control?.agent;
-		if (
-			control === undefined ||
-			agent === undefined ||
-			!run?.pendingActions.some((a) => a.actionId === action.actionId)
-		) {
+		if (control === undefined || agent === undefined) {
 			say("session.nothingPending", undefined, "dim");
 			return false;
 		}
 		control.decided.add(action.actionId);
-		patchRun(control, (current) => ({
-			...current,
+		patch(control, (current) => ({
 			pendingActions: current.pendingActions.filter(
 				(a) => a.actionId !== action.actionId,
 			),
@@ -837,20 +1102,29 @@ export const createSession = (options: SessionOptions): Session => {
 	 * The waiting call a key or a command decides: the one given, or else the
 	 * first that is not a question. Says why there is none.
 	 */
-	const approvalTarget = (action?: PendingAgentAction) => {
-		const run = activeRun();
-		if (run === undefined || run.pendingActions.length === 0) {
+	const approvalTarget = (
+		action?: PendingAgentAction,
+	): WaitingAction | undefined => {
+		const waiting = waitingActions(state, translate);
+		const target =
+			action === undefined
+				? (waiting.find(
+						(each) => !isRequestUserInputAction(each.action),
+					) ?? waiting[0])
+				: waiting.find(
+						(each) => each.action.actionId === action.actionId,
+					);
+		if (target === undefined) {
 			say("session.nothingPending", undefined, "dim");
 			return undefined;
 		}
-		const target = action ?? keyedApproval(state);
 		// A question is answered, not approved: approving it would send the
 		// tool's own arguments back as the answer.
-		if (target === undefined || isRequestUserInputAction(target)) {
+		if (isRequestUserInputAction(target.action)) {
 			say("session.answerInForm");
 			return undefined;
 		}
-		return { run, target };
+		return target;
 	};
 
 	/**
@@ -863,16 +1137,15 @@ export const createSession = (options: SessionOptions): Session => {
 		if (editTarget === undefined) {
 			return approvalTarget();
 		}
-		const run = activeRun();
-		const target = run?.pendingActions.find(
-			(action) => action.actionId === editTarget,
+		const target = waitingActions(state, translate).find(
+			(each) => each.action.actionId === editTarget,
 		);
-		if (run === undefined || target === undefined) {
+		if (target === undefined) {
 			editTarget = undefined;
 			say("session.editGone", undefined, "error");
 			return undefined;
 		}
-		return { run, target };
+		return target;
 	};
 
 	const save = () => {
@@ -1010,23 +1283,38 @@ export const createSession = (options: SessionOptions): Session => {
 			const control = active;
 			const run = activeRun();
 			// A run whose status is already final is only draining its last
-			// events, and there is nothing left to stop.
+			// events, and there is nothing left to stop in it. Stopping a run
+			// stops its subagents too, on the server.
 			if (
-				control === undefined ||
-				run === undefined ||
-				isOver(run.status)
+				control !== undefined &&
+				run !== undefined &&
+				!isOver(run.status)
 			) {
+				patch(control, () => ({ stopRequested: true }));
+				if (control.agent === undefined) {
+					control.stopWhenStarted = true;
+					return;
+				}
+				await cancel(control);
+				return;
+			}
+			// Subagents a finished run left running have only their own stores.
+			const running = [...controls].filter((each) => {
+				const progress = progressOf(each);
+				return (
+					!isPromptRun(each) &&
+					progress !== undefined &&
+					!isOver(progress.status)
+				);
+			});
+			if (running.length === 0) {
 				say("session.nothingRunning", undefined, "dim");
 				return;
 			}
-			patchRun(control, (run) =>
-				run.stopRequested ? run : { ...run, stopRequested: true },
-			);
-			if (control.agent === undefined) {
-				control.stopWhenStarted = true;
-				return;
+			for (const each of running) {
+				patch(each, () => ({ stopRequested: true }));
 			}
-			await cancel(control);
+			await Promise.all(running.map((each) => cancel(each)));
 		},
 
 		approve: async (action) => {
@@ -1034,26 +1322,29 @@ export const createSession = (options: SessionOptions): Session => {
 			if (found === undefined) {
 				return false;
 			}
-			const tool = actionLabel(found.target, found.run.items);
-			if (!(await decide(found.target, "submit"))) {
+			if (!(await decide(found.action, "submit"))) {
 				return false;
 			}
-			say("session.approved", { tool }, "dim");
+			say("session.approved", { tool: found.label }, "dim");
 			return true;
 		},
 
 		deny: async (action) => {
-			const run = activeRun();
-			const target = action ?? run?.pendingActions[0];
+			const waiting = waitingActions(state, translate);
+			const target =
+				action === undefined
+					? waiting[0]
+					: waiting.find(
+							(each) => each.action.actionId === action.actionId,
+						);
 			if (target === undefined) {
 				say("session.nothingPending", undefined, "dim");
 				return false;
 			}
-			const tool = run ? actionLabel(target, run.items) : target.actionId;
-			if (!(await decide(target, "reject"))) {
+			if (!(await decide(target.action, "reject"))) {
 				return false;
 			}
-			say("session.denied", { tool }, "dim");
+			say("session.denied", { tool: target.label }, "dim");
 			return true;
 		},
 
@@ -1064,9 +1355,10 @@ export const createSession = (options: SessionOptions): Session => {
 			if (found === undefined) {
 				return false;
 			}
-			const { run, target } = found;
+			// What is allowed is the tool, wherever it is called, so the notices
+			// name the tool alone rather than the call.
+			const { action: target, tool } = found;
 			const { toolName } = target;
-			const tool = actionLabel(target, run.items);
 			if (target.hasUi || !toolName) {
 				say("session.cannotAlwaysAllow", { tool });
 				return false;
@@ -1088,21 +1380,19 @@ export const createSession = (options: SessionOptions): Session => {
 				});
 			}
 			say("session.alwaysAllowed", { tool }, "dim");
-			// A parallel call of the same tool need not wait for the next poll.
-			const control = active;
-			const agent = control?.agent;
-			const current = activeRun();
-			if (
-				control !== undefined &&
-				agent !== undefined &&
-				current !== undefined
-			) {
+			// A parallel call of the same tool need not wait for the next poll,
+			// in this run or in any other the session follows.
+			for (const control of controls) {
+				const { agent } = control;
+				const current = progressOf(control);
+				if (agent === undefined || current === undefined) {
+					continue;
+				}
 				const allowed = takeAllowed(control, current.pendingActions);
 				if (allowed.length > 0) {
 					const taken = new Set(allowed.map((each) => each.actionId));
-					patchRun(control, (entry) => ({
-						...entry,
-						pendingActions: entry.pendingActions.filter(
+					patch(control, (run) => ({
+						pendingActions: run.pendingActions.filter(
 							(waiting) => !taken.has(waiting.actionId),
 						),
 					}));
@@ -1150,8 +1440,8 @@ export const createSession = (options: SessionOptions): Session => {
 			if (found === undefined) {
 				return undefined;
 			}
-			editTarget = found.target.actionId;
-			const args = JSON.stringify(found.target.toolArgs ?? {}, null, 2);
+			editTarget = found.action.actionId;
+			const args = JSON.stringify(found.action.toolArgs ?? {}, null, 2);
 			return `:edit ${escapeInvisibleInJson(args)}`;
 		},
 
@@ -1160,7 +1450,7 @@ export const createSession = (options: SessionOptions): Session => {
 			if (found === undefined) {
 				return false;
 			}
-			const { run, target } = found;
+			const { action: target, label: tool } = found;
 			let parsed: unknown;
 			try {
 				parsed = JSON.parse(json);
@@ -1185,7 +1475,6 @@ export const createSession = (options: SessionOptions): Session => {
 			const unchanged =
 				JSON.stringify(paramValues) ===
 				JSON.stringify(target.toolArgs ?? {});
-			const tool = actionLabel(target, run.items);
 			if (!(await decide(target, "submit", paramValues))) {
 				return false;
 			}
@@ -1219,6 +1508,13 @@ export const createSession = (options: SessionOptions): Session => {
 			if (refuseWhileBusy()) {
 				return false;
 			}
+			// Only subagents can be left, and they belong to the room being
+			// left. They are no longer followed, and are not stopped either.
+			const following = controls.size;
+			for (const control of controls) {
+				control.agent?.stop();
+			}
+			controls.clear();
 			exportable = undefined;
 			editTarget = undefined;
 			const hadAllowed = state.alwaysAllowed.length > 0;
@@ -1230,21 +1526,27 @@ export const createSession = (options: SessionOptions): Session => {
 			});
 			host.onRoomChange?.(undefined);
 			say("session.newRoom", undefined, "dim");
+			if (following > 0) {
+				say("session.stoppedFollowing", { n: following }, "dim");
+			}
 			if (hadAllowed) {
 				say("session.revokedAll", undefined, "dim");
 			}
 			return true;
 		},
 
-		clear: () =>
+		clear: () => {
+			// A run still followed, the prompt's or a subagent's, keeps its entry.
+			const followed = new Set(
+				[...controls].map((control) => control.entryId),
+			);
 			commit({
 				...state,
 				entries: state.entries.filter(
-					(entry) =>
-						entry.kind === "run" &&
-						entry.id === state.activeEntryId,
+					(entry) => entry.kind === "run" && followed.has(entry.id),
 				),
-			}),
+			});
+		},
 
 		notice,
 
@@ -1278,7 +1580,9 @@ export const createSession = (options: SessionOptions): Session => {
 			}
 			disposed = true;
 			listeners.clear();
-			active?.agent?.stop();
+			for (const control of controls) {
+				control.agent?.stop();
+			}
 		},
 	};
 	return session;
@@ -1299,12 +1603,27 @@ export const activeRunEntry = (state: SessionState) =>
 			entry.kind === "run" && entry.id === state.activeEntryId,
 	);
 
-/** The call the approval keys act on. */
+/**
+ * Every call waiting on the user, in the run in progress first, then in the
+ * other entries, oldest first: a subagent can wait long after its parent ended.
+ */
+export const waitingActions = (
+	state: SessionState,
+	translate: Translate = translateEnglish,
+): WaitingAction[] => {
+	const runs = state.entries.filter(
+		(entry): entry is RunEntry => entry.kind === "run",
+	);
+	return [
+		...runs.filter((entry) => entry.id === state.activeEntryId),
+		...runs.filter((entry) => entry.id !== state.activeEntryId),
+	].flatMap((entry) => waitingIn(entry, translate));
+};
+
+/** The call the approval keys act on: the first waiting that is not a question. */
 export const keyedApproval = (
 	state: SessionState,
-): PendingAgentAction | undefined => {
-	const run = activeRunEntry(state);
-	return run?.pendingActions.find(
-		(action) => !isRequestUserInputAction(action),
-	);
-};
+): PendingAgentAction | undefined =>
+	waitingActions(state).find(
+		(waiting) => !isRequestUserInputAction(waiting.action),
+	)?.action;

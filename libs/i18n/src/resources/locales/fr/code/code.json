@@ -80,7 +80,8 @@
 	"core": {
 		"transcript": {
 			"droppedEvents": "Des événements antérieurs ont été retirés du flux en direct ({{n}}).",
-			"unknownItem": "Cet élément ne peut pas être affiché ici ({{kind}})."
+			"unknownItem": "Cet élément ne peut pas être affiché ici ({{kind}}).",
+			"subagent": "sous-agent {{id}}"
 		},
 		"run": {
 			"failed": "L'exécution a échoué : {{message}}",
@@ -93,7 +94,12 @@
 			"approvalKeys": "Avec l'invite vide, appuyez sur {{approve}} pour l'autoriser, {{deny}} pour le refuser, {{edit}} pour modifier ses arguments, ou {{always}} pour toujours l'autoriser.",
 			"awaitingAnswer": "L'agent attend votre réponse.",
 			"stopping": "Arrêt en cours…",
-			"reconnecting": "Impossible de joindre le serveur. Nouvelle tentative… ({{message}})"
+			"reconnecting": "Impossible de joindre le serveur. Nouvelle tentative… ({{message}})",
+			"subagentTooDeep": "Ses étapes ne sont pas affichées : les sous-agents sont suivis jusqu'à une profondeur de {{n}}.",
+			"subagentLimit": "Ses étapes ne sont pas affichées : la limite de sous-agents suivis à la fois ({{n}}) est atteinte.",
+			"subagentFailed": "Ses étapes ne peuvent pas être affichées : {{message}}",
+			"parentEnded": "L'exécution parente est terminée et n'utilisera pas le résultat de ce sous-agent. Décider permet au sous-agent de continuer, et ce qu'il fait s'affiche ici.",
+			"subagentAwaitingAnswer": "{{subagent}} attend votre réponse."
 		},
 		"session": {
 			"harnessChanged": "harnais → {{name}}",
@@ -110,6 +116,7 @@
 			"switchModelHint": "Tapez :model suivi d'un nom ou d'un id pour changer.",
 			"nothingRunning": "Rien n'est en cours d'exécution.",
 			"stopFailed": "Impossible d'arrêter l'exécution : {{message}}",
+			"stopSubagentFailed": "Impossible d'arrêter {{subagent}} : {{message}}",
 			"nothingPending": "Rien n'attend d'approbation.",
 			"answerInForm": "L'agent a posé une question. Répondez-y dans le formulaire, ou tapez :deny pour l'ignorer.",
 			"approved": "{{tool}} approuvé.",
@@ -130,6 +137,7 @@
 			"decisionFailed": "Impossible d'envoyer la décision : {{message}}",
 			"saveFailed": "Impossible d'enregistrer les paramètres de la salle : {{message}}",
 			"newRoom": "Nouvelle salle. Elle est enregistrée à l'envoi de la première invite.",
+			"stoppedFollowing": "Les sous-agents non terminés ne sont plus suivis ({{n}}). Ils n'ont pas été arrêtés sur le serveur.",
 			"nothingToExport": "Aucune exécution à exporter pour l'instant.",
 			"exported": "Événements de l'exécution {{runId}} exportés."
 		},

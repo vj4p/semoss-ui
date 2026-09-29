@@ -41,9 +41,14 @@ const duration = (ms: number | undefined): string =>
 
 /**
  * Right-align the status column the way a build tool does, so a reader scans
- * one column for state instead of reading every line.
+ * one column for state instead of reading every line. A subagent's own steps
+ * are drawn narrower, behind a rule, so every column still lines up.
  */
 const WIDTH = 74;
+
+/** Before each row of a subagent's own steps: a rule, and a space after it. */
+const NEST_RULE = "│";
+const NEST_WIDTH = 2;
 
 /**
  * Every SGR sequence this module can emit.
@@ -76,9 +81,10 @@ const statusColumn = (
 	glyph: string,
 	colour: boolean,
 	emphasis: Emphasis | undefined,
+	width: number,
 ): string => {
 	const tail = right === "" ? glyph : `${right}  ${glyph}`;
-	const pad = Math.max(1, WIDTH - visibleWidth(left) - visibleWidth(tail));
+	const pad = Math.max(1, width - visibleWidth(left) - visibleWidth(tail));
 	return `${left}${" ".repeat(pad)}${paint(tail, emphasis, colour)}`;
 };
 
@@ -98,14 +104,10 @@ const emphasisForStatus = (status: keyof typeof STATUS_GLYPH): Emphasis => {
 	}
 };
 
-/**
- * @param lines  the transcript
- * @param colour false to emit plain text — for a pipe, a log, or a test
- * @return one string per rendered row, ready to join with newlines
- */
-export const formatTranscript = (
-	lines: Line[],
-	{ colour = true }: { colour?: boolean } = {},
+const format = (
+	lines: readonly Line[],
+	colour: boolean,
+	width: number,
 ): string[] => {
 	const out: string[] = [];
 
@@ -148,6 +150,7 @@ export const formatTranscript = (
 						STATUS_GLYPH[line.status],
 						colour,
 						emphasisForStatus(line.status),
+						width,
 					),
 				);
 				// The output's size, not the output. A tool is capped at
@@ -185,6 +188,7 @@ export const formatTranscript = (
 						STATUS_GLYPH[line.status],
 						colour,
 						emphasisForStatus(line.status),
+						width,
 					),
 				);
 				if (line.resultPreview !== undefined) {
@@ -205,13 +209,23 @@ export const formatTranscript = (
 						),
 					);
 				}
+				// Its own steps, when its run is followed: behind a rule, so
+				// they read as the subagent's and not its parent's.
+				const rule = paint(NEST_RULE, "dim", colour);
+				for (const row of format(
+					line.children ?? [],
+					colour,
+					width - NEST_WIDTH,
+				)) {
+					out.push(row === "" ? rule : `${rule} ${row}`);
+				}
 				break;
 			}
 
 			case "divider": {
 				const label = line.label === undefined ? "" : ` ${line.label} `;
 				const rule = "─".repeat(
-					Math.max(4, (WIDTH - label.length) / 2),
+					Math.max(4, (width - label.length) / 2),
 				);
 				out.push(
 					paint(
@@ -234,3 +248,13 @@ export const formatTranscript = (
 
 	return out;
 };
+
+/**
+ * @param lines  the transcript
+ * @param colour false to emit plain text — for a pipe, a log, or a test
+ * @return one string per rendered row, ready to join with newlines
+ */
+export const formatTranscript = (
+	lines: Line[],
+	{ colour = true }: { colour?: boolean } = {},
+): string[] => format(lines, colour, WIDTH);
