@@ -58,16 +58,17 @@ An application, so it uses the `src/` layout from the root AGENTS.md including `
 | Folder / file | Purpose |
 |---------------|---------|
 | `api/` | Pixel calls by domain: `rooms.ts` (open, create, read and write a room's options), `engines.ts` (the models, the user's default) |
-| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `argument-list.tsx` is a tool call's arguments, on its approval card and in its opened line; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel. `prompt-input`, `pending-actions`, `status-bar`, `line-view` and `transcript` have component tests beside them |
-| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-session-state`, `use-line-labels` (the words the transcript adds to agent-core's lines), `use-elapsed-seconds` (a run's time, and a running tool call's), `use-ready-approval` (when the approval keys may act) |
+| `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `argument-list.tsx` is a tool call's arguments, on its approval card and in its opened line; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel; `completion-menu.tsx` shows Tab completion suggestions. `prompt-input`, `pending-actions`, `status-bar`, `line-view` and `transcript` have component tests beside them |
+| `components/overlay/` | Full-screen overlay views: `overlay-container.tsx` (base pattern), `help-overlay.tsx` (categorized help), `history-search-overlay.tsx` (Ctrl+R), `files-overlay.tsx`, `diff-overlay.tsx`, `runs-overlay.tsx`, `packs-overlay.tsx`, `cost-overlay.tsx`, `inbox-overlay.tsx`. All dismissed with `q` or Escape |
+| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-completions` (Tab completion provider), `use-session-state`, `use-line-labels` (the words the transcript adds to agent-core's lines), `use-elapsed-seconds` (a run's time, and a running tool call's), `use-ready-approval` (when the approval keys may act) |
 | `pages/` | `router.tsx`, `initialized.layout.tsx`, `authenticated.layout.tsx`, `console.page.tsx`, `login.page.tsx`, `error.page.tsx` |
 | `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts`, `keyboard.ts` (the platform, and the approval keys that the hints and buttons name) |
 | `app.tsx`, `main.tsx`, `index.css` | App entry files |
 
 ## Key Dependencies
 
-- `@semoss/agent-core` — the session, the transcript lines, the commands, the keymap, and
-  the English of every message they produce
+- `@semoss/agent-core` — the session, the transcript lines, the commands, the keymap, the
+  completion system (`commands/completion.ts`), and the English of every message they produce
 - `@semoss/sdk/react` — the only SDK entry imported here (for example `runPixel`, `Env`,
   `InsightProvider` and the agent-run types)
 - `@semoss/ui/next` — every component, including `AgentUserInputCard` for a run's questions
@@ -252,6 +253,111 @@ Contrast decisions, measured against the tokens:
   no id.
 - **`index.html` ships the `semoss-env` tag** and the no-cache metas. The comment there says
   why a plain rebuild must not lose them.
+
+## Commands and Overlays
+
+The console offers built-in commands (`:help`, `:harness`, `:model`, etc.) and full-screen overlay views for information browsing. All commands are discoverable via `:help`.
+
+### Overlay Commands
+
+Six overlay commands provide full-screen information views, following a consistent pattern:
+- Dismissed with `q` key or Escape
+- Full-screen with backdrop (OverlayContainer pattern from Phase 4)
+- Keyboard-first navigation within each overlay
+
+| Command | Description | Status |
+|---------|-------------|--------|
+| `:files` | Browse files in workspace | Placeholder (hardcoded tree) |
+| `:diff` | Git diff viewer | Functional (parses `git diff HEAD`) |
+| `:runs` | Run history browser | Functional (from session entries) |
+| `:packs` | Capability packs display | Functional (calls `readCapabilityPacks`) |
+| `:cost` | Cost/usage breakdown | Placeholder (structure defined) |
+| `:inbox` | Notifications/messages | Placeholder (roadmap shown) |
+
+**Implementation notes:**
+- `DiffOverlay`: Runs `git diff HEAD` via `runPixel`, parses output, syntax-highlights additions/deletions
+- `RunsOverlay`: Extracts from `session.getState().entries` (RunEntry and InputEntry types)
+- `PacksOverlay`: Calls `readCapabilityPacks` from agent-core, displays tool counts and engine requirements
+- `CostOverlay` and `InboxOverlay`: Placeholder components with "implementation pending" notes
+- All overlays are wired through `onShowOverlay` callback from session commands to console state
+
+### Ergonomics Features (Phase 6)
+
+Three keyboard-first ergonomics features enhance the terminal experience:
+
+#### Ctrl+R History Search (Phase 6a)
+
+- **Trigger**: `Ctrl+R` (Windows/Linux) or `Cmd+R` (Mac)
+- **What it does**: Opens full-screen fuzzy search through command and prompt history
+- **Features**:
+  - Live filtering as you type (substring match, case-insensitive)
+  - Keyboard navigation (↑↓ arrows, Enter to select, Escape to dismiss)
+  - Highlights matching text (yellow background)
+  - Type badges show "cmd" or "prompt" for each item
+  - Auto-submits selected command/prompt
+- **Source**: Extracts from `session.getState().entries` (RunEntry.prompt, InputEntry.text)
+- **Component**: `HistorySearchOverlay`
+
+#### Tab Completion (Phase 6b)
+
+- **Trigger**: `Tab` key when text exists in prompt
+- **What it does**: Context-aware completion for commands and arguments
+- **Completes**:
+  - Command names after `:` (all registered commands)
+  - Harness names after `:harness ` (from catalog.harnesses)
+  - Model names/IDs after `:model ` (from catalog.models)
+  - Tool names after `:revoke ` (from alwaysAllowed list)
+- **Navigation**:
+  - Tab/Shift+Tab: Navigate through completions
+  - Arrow keys: Navigate when menu is open
+  - Enter or Tab at end: Select completion
+  - Escape: Dismiss menu
+- **Implementation**:
+  - Completion logic in `libs/agent-core/src/commands/completion.ts`
+  - `useCompletions` hook provides session-aware completions
+  - `CompletionMenu` component shows popup below input
+  - `parseCommandContext` analyzes cursor position for context
+- **Non-modal**: Tab still works for focus navigation when no text or no matches
+
+#### Improved :help Overlay (Phase 6c)
+
+- **Trigger**: `:help` command
+- **What it does**: Shows categorized command and keyboard shortcut reference
+- **Features**:
+  - Search/filter functionality (searches commands, shortcuts, categories)
+  - Categorized commands:
+    - Control: stop, approve, deny, edit, always
+    - Navigation: clear
+    - Information: help, files, diff, runs, packs, cost, inbox
+    - Session: harness, model, new, allowed, revoke, export
+  - Keyboard shortcuts section with platform-aware formatting (Mac symbols ⌃⌥⇧ vs Ctrl+Alt+Shift+)
+  - Tips section (e.g., "Type :: to send a prompt starting with :")
+- **Component**: `HelpOverlay`
+- **Backwards compatible**: Falls back to transcript output if overlay not available
+
+### Control Commands
+
+| Command | Aliases | Description |
+|---------|---------|-------------|
+| `:stop` | - | Stop the running agent |
+| `:approve` | `:allow` | Allow the waiting tool call |
+| `:deny` | `:reject` | Reject the waiting tool call |
+| `:edit <json…>` | - | Change the waiting call's arguments, then approve it |
+| `:always` | - | Approve the waiting call, and stop asking about its tool |
+
+### Session Commands
+
+| Command | Aliases | Description |
+|---------|---------|-------------|
+| `:harness [name…]` | - | Show harnesses, or switch to one |
+| `:model [name…]` | - | Show models, or switch to one |
+| `:new` | - | Start a new room |
+| `:clear` | - | Clear the screen (keeps history) |
+| `:allowed` | - | List tools that run without asking |
+| `:revoke [tool…]` | - | Ask about a tool again, or all when none named |
+| `:export` | - | Save the last run's raw events as JSON |
+
+All commands have i18n support across 7 languages (ar, en, es, fr, hi, ja, nl).
 
 ## Agent Guardrails
 
