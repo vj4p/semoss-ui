@@ -4,11 +4,12 @@ import type { SessionCatalog } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
 import { useCatalog, useConsoleSession } from "@/hooks";
-import { createTranslate } from "@/utility";
+import { createTranslate, DEFAULT_KEYMAP, PLATFORM } from "@/utility";
 import {
 	CostOverlay,
 	DiffOverlay,
 	FilesOverlay,
+	HelpOverlay,
 	HistorySearchOverlay,
 	InboxOverlay,
 	PacksOverlay,
@@ -112,6 +113,13 @@ const RoomLoader = ({
 							void room.session.submit(text);
 						}}
 						session={room.session}
+					/>
+					<HelpOverlay
+						open={activeOverlay === "help"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
+						keymap={DEFAULT_KEYMAP}
+						platform={PLATFORM}
 					/>
 				</>
 			);

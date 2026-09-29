@@ -172,7 +172,15 @@ export const createSessionCommands = ({
 	{
 		name: "help",
 		describe: "command.help",
-		run: (session) => session.notice(helpLines(session, keymap, platform)),
+		run: (session) => {
+			// Phase 6c: :help now shows an overlay instead of printing to transcript
+			if (onShowOverlay) {
+				onShowOverlay("help");
+			} else {
+				// Fallback to transcript if overlay not available
+				session.notice(helpLines(session, keymap, platform));
+			}
+		},
 	},
 	{
 		name: "harness",

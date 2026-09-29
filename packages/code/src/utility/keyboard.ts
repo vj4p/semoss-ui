@@ -5,6 +5,9 @@ import {
 	type RunLinesOptions,
 } from "@semoss/agent-core";
 
+// Re-export DEFAULT_KEYMAP for use in HelpOverlay
+export { DEFAULT_KEYMAP };
+
 /**
  * Which keyboard the console names keys for, in `:help` and in the approval
  * hints: a Mac's Alt key says Option.
