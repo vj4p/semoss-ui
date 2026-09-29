@@ -35,6 +35,7 @@
  * needs them, and then they get generalised deliberately.
  */
 
+export * from "./commands/completion";
 export * from "./commands/dispatch";
 export * from "./commands/parse";
 export * from "./commands/registry";

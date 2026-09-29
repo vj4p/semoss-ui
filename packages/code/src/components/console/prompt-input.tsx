@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import {
+	type CompletionItem,
 	createInputHistory,
 	historyNext,
 	historyPrev,
@@ -20,7 +21,9 @@ import {
 import { useTranslation } from "@semoss/i18n";
 import type { PendingAgentAction } from "@semoss/sdk/react";
 import { Button, Label, Textarea } from "@semoss/ui/next";
+import { useCompletions } from "@/hooks";
 import { APPROVAL_KEYS } from "@/utility";
+import { CompletionMenu } from "./completion-menu";
 
 /**
  * What the keymap needs to know about the prompt when a key is pressed.
@@ -107,6 +110,12 @@ export const PromptInput = ({
 	const [text, setText] = useState("");
 	const historyRef = useRef(createInputHistory());
 
+	// Completion state
+	const complete = useCompletions(session);
+	const [completions, setCompletions] = useState<CompletionItem[]>([]);
+	const [completionIndex, setCompletionIndex] = useState(0);
+	const [showCompletions, setShowCompletions] = useState(false);
+
 	/** Text in the prompt as the user's own draft, off any walk of history. */
 	const fill = (value: string) => {
 		historyRef.current = createInputHistory(historyRef.current.entries);
@@ -128,6 +137,100 @@ export const PromptInput = ({
 
 	const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
 		const input = event.currentTarget;
+
+		// Handle Tab for completions (before other key handling)
+		if (event.key === "Tab") {
+			if (showCompletions && completions.length > 0) {
+				// Navigate through completions or select
+				event.preventDefault();
+				if (event.shiftKey) {
+					// Shift+Tab: previous completion
+					setCompletionIndex((prev) =>
+						prev === 0 ? completions.length - 1 : prev - 1,
+					);
+				} else {
+					// Tab: next completion or select if at end
+					if (completionIndex === completions.length - 1) {
+						// Select current completion
+						const selected = completions[completionIndex];
+						const result = complete({
+							text: input.value,
+							position: input.selectionStart,
+						});
+						if (result && selected) {
+							const before = input.value.slice(
+								0,
+								result.range.start,
+							);
+							const after = input.value.slice(result.range.end);
+							const newText = before + selected.value + after;
+							setText(newText);
+							setShowCompletions(false);
+						}
+					} else {
+						setCompletionIndex((prev) => prev + 1);
+					}
+				}
+				return;
+			} else if (input.value.trim()) {
+				// Show completions if text exists
+				event.preventDefault();
+				const result = complete({
+					text: input.value,
+					position: input.selectionStart,
+				});
+				if (result && result.items.length > 0) {
+					setCompletions(result.items);
+					setCompletionIndex(0);
+					setShowCompletions(true);
+				}
+				return;
+			}
+			// Otherwise allow normal Tab (focus navigation)
+			return;
+		}
+
+		// Handle arrow keys when completions are showing
+		if (showCompletions && completions.length > 0) {
+			if (event.key === "ArrowDown") {
+				event.preventDefault();
+				setCompletionIndex((prev) =>
+					prev === completions.length - 1 ? 0 : prev + 1,
+				);
+				return;
+			}
+			if (event.key === "ArrowUp") {
+				event.preventDefault();
+				setCompletionIndex((prev) =>
+					prev === 0 ? completions.length - 1 : prev - 1,
+				);
+				return;
+			}
+			if (event.key === "Enter") {
+				// Select completion instead of submitting
+				event.preventDefault();
+				const selected = completions[completionIndex];
+				const result = complete({
+					text: input.value,
+					position: input.selectionStart,
+				});
+				if (result && selected) {
+					const before = input.value.slice(0, result.range.start);
+					const after = input.value.slice(result.range.end);
+					const newText = before + selected.value + after;
+					setText(newText);
+					setShowCompletions(false);
+				}
+				return;
+			}
+			if (event.key === "Escape") {
+				// Dismiss completions
+				event.preventDefault();
+				setShowCompletions(false);
+				return;
+			}
+		}
+
 		const keyed = keyedApproval(session.getState());
 		const target =
 			ready !== undefined && keyed?.actionId === ready.actionId
@@ -207,29 +310,56 @@ export const PromptInput = ({
 			: t("input.placeholder");
 
 	return (
-		<div className="flex items-start gap-2 border-t px-4 py-3 md:px-6">
+		<div className="relative flex items-start gap-2 border-t px-4 py-3 md:px-6">
 			<span aria-hidden="true" className="py-2 text-muted-foreground">
 				❯
 			</span>
 			<Label htmlFor={inputId} className="sr-only">
 				{t("input.label")}
 			</Label>
-			<Textarea
-				ref={inputRef}
-				id={inputId}
-				value={text}
-				onChange={(event) => setText(event.target.value)}
-				onKeyDown={onKeyDown}
-				placeholder={placeholder}
-				rows={1}
-				dir="auto"
-				spellCheck={false}
-				autoCapitalize="off"
-				autoComplete="off"
-				autoCorrect="off"
-				className="max-h-48 min-h-9 min-w-0 flex-1 resize-none"
-				data-testid="promptInput-textarea"
-			/>
+			<div className="relative min-w-0 flex-1">
+				<Textarea
+					ref={inputRef}
+					id={inputId}
+					value={text}
+					onChange={(event) => setText(event.target.value)}
+					onKeyDown={onKeyDown}
+					placeholder={placeholder}
+					rows={1}
+					dir="auto"
+					spellCheck={false}
+					autoCapitalize="off"
+					autoComplete="off"
+					autoCorrect="off"
+					className="max-h-48 min-h-9 w-full resize-none"
+					data-testid="promptInput-textarea"
+				/>
+				{showCompletions && completions.length > 0 && (
+					<CompletionMenu
+						items={completions}
+						selectedIndex={completionIndex}
+						onSelect={(item) => {
+							const result = complete({
+								text,
+								position:
+									inputRef.current?.selectionStart ??
+									text.length,
+							});
+							if (result) {
+								const before = text.slice(
+									0,
+									result.range.start,
+								);
+								const after = text.slice(result.range.end);
+								const newText = before + item.value + after;
+								setText(newText);
+								setShowCompletions(false);
+							}
+						}}
+						onDismiss={() => setShowCompletions(false)}
+					/>
+				)}
+			</div>
 			{running && (
 				<Button
 					variant="outline"
