@@ -20,6 +20,8 @@ export interface SessionCommandOptions {
 	platform?: Platform;
 	/** Whether the host can save an export. Without it `:export` is left out, rather than offered and then failing. */
 	canExport: boolean;
+	/** Called when an overlay command is invoked. */
+	onShowOverlay?: (name: string) => void;
 }
 
 const INDENT = "  ";
@@ -165,6 +167,7 @@ export const createSessionCommands = ({
 	keymap,
 	platform,
 	canExport,
+	onShowOverlay,
 }: SessionCommandOptions): CommandSpec<Session>[] => [
 	{
 		name: "help",
@@ -254,6 +257,13 @@ export const createSessionCommands = ({
 		describe: "command.revoke",
 		run: (session, { rest }) => {
 			session.revoke(rest);
+		},
+	},
+	{
+		name: "files",
+		describe: "command.files",
+		run: () => {
+			onShowOverlay?.("files");
 		},
 	},
 	...(canExport

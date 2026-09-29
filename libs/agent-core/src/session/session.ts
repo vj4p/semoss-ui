@@ -185,6 +185,8 @@ export interface SessionHost {
 	platform?: Platform;
 	/** The keys `:help` lists, when the host binds its own. */
 	keymap?: readonly KeyBinding[];
+	/** An overlay command was invoked: `:files`, `:diff`, `:runs`, etc. */
+	onShowOverlay?: (name: string) => void;
 }
 
 export interface SessionOptions {
@@ -1256,6 +1258,7 @@ export const createSession = (options: SessionOptions): Session => {
 				keymap: host.keymap ?? DEFAULT_KEYMAP,
 				platform: host.platform,
 				canExport: host.saveExport !== undefined,
+				onShowOverlay: host.onShowOverlay,
 			}),
 			...(options.commands ?? []),
 		]),

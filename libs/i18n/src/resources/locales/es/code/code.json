@@ -159,6 +159,7 @@
 			"always": "Aprobar la llamada en espera y dejar de preguntar sobre su herramienta",
 			"allowed": "Mostrar las herramientas que se ejecutan sin preguntar",
 			"revoke": "Preguntar sobre una herramienta de nuevo, o sobre todas si no se nombra ninguna",
+			"files": "Browse files",
 			"export": "Guardar los eventos sin procesar de la última ejecución como JSON"
 		},
 		"help": {

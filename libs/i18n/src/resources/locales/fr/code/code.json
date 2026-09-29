@@ -159,6 +159,7 @@
 			"always": "Approuver l'appel en attente, et ne plus demander d'approbation pour son outil",
 			"allowed": "Lister les outils qui s'exécutent sans approbation",
 			"revoke": "Redemander l'approbation pour un outil, ou pour tous si aucun n'est nommé",
+			"files": "Browse files",
 			"export": "Enregistrer les événements bruts de la dernière exécution au format JSON"
 		},
 		"help": {

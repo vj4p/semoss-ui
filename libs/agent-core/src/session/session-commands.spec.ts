@@ -112,6 +112,7 @@ describe(":help", () => {
 				":revoke [tool…]",
 				"Ask about a tool again, or every tool when none is named",
 			],
+			[":files", "Browse files"],
 		]);
 	});
 

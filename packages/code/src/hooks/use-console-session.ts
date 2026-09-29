@@ -34,6 +34,7 @@ import { createSessionBackend, downloadRunExport, PLATFORM } from "@/utility";
  * @param options.defaultModelId - The user's default model, if they have one.
  * @param options.roomId - The room the URL names.
  * @param options.translate - Translate for the session's own messages.
+ * @param options.onShowOverlay - Called when an overlay command is invoked.
  * @return Opening the room, failed with a message, or ready with the session,
  * a number that is different for each session it creates, to key a console
  * on, and, for a room it opened, that room's id and name.
@@ -43,11 +44,13 @@ export const useConsoleSession = ({
 	defaultModelId,
 	roomId,
 	translate,
+	onShowOverlay,
 }: {
 	catalog: SessionCatalog;
 	defaultModelId?: string;
 	roomId?: string;
 	translate: Translate;
+	onShowOverlay?: (name: string) => void;
 }):
 	| { status: "opening" }
 	| { status: "failed"; message: string }
@@ -65,10 +68,22 @@ export const useConsoleSession = ({
 	const generationRef = useRef(0);
 	/** Where the session is, which is where the URL should be. */
 	const sessionRoomRef = useRef<string | undefined>(undefined);
-	const latest = useRef({ catalog, defaultModelId, translate, navigate });
+	const latest = useRef({
+		catalog,
+		defaultModelId,
+		translate,
+		navigate,
+		onShowOverlay,
+	});
 
 	useLayoutEffect(() => {
-		latest.current = { catalog, defaultModelId, translate, navigate };
+		latest.current = {
+			catalog,
+			defaultModelId,
+			translate,
+			navigate,
+			onShowOverlay,
+		};
 	});
 
 	// A layout effect, so that a console with no room to open never paints
@@ -85,7 +100,8 @@ export const useConsoleSession = ({
 		sessionRoomRef.current = roomId;
 
 		const start = (room?: OpenedRoom) => {
-			const { catalog, defaultModelId, translate } = latest.current;
+			const { catalog, defaultModelId, translate, onShowOverlay } =
+				latest.current;
 			const session = createSession({
 				backend: createSessionBackend(room?.insightId),
 				host: {
@@ -109,6 +125,7 @@ export const useConsoleSession = ({
 					},
 					saveExport: downloadRunExport,
 					platform: PLATFORM,
+					onShowOverlay,
 				},
 				catalog,
 				roomId: room?.roomId,

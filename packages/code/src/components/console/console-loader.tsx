@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import type { SessionCatalog } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
 import { useCatalog, useConsoleSession } from "@/hooks";
 import { createTranslate } from "@/utility";
+import { FilesOverlay } from "../overlay";
 import { Console } from "./console";
 import { ConsoleFailure, ConsolePending } from "./console-status";
 
@@ -20,6 +21,7 @@ const RoomLoader = ({
 }) => {
 	const { t, i18n } = useTranslation("code");
 	const navigate = useNavigate();
+	const [activeOverlay, setActiveOverlay] = useState<string | null>(null);
 	// The instance changes identity when the language does, and only then.
 	const translate = useMemo(() => createTranslate(i18n), [i18n]);
 	const room = useConsoleSession({
@@ -27,6 +29,7 @@ const RoomLoader = ({
 		defaultModelId,
 		roomId,
 		translate,
+		onShowOverlay: setActiveOverlay,
 	});
 
 	switch (room.status) {
@@ -43,12 +46,18 @@ const RoomLoader = ({
 			);
 		case "ready":
 			return (
-				<Console
-					key={room.generation}
-					session={room.session}
-					openedRoom={room.openedRoom}
-					translate={translate}
-				/>
+				<>
+					<Console
+						key={room.generation}
+						session={room.session}
+						openedRoom={room.openedRoom}
+						translate={translate}
+					/>
+					<FilesOverlay
+						open={activeOverlay === "files"}
+						onDismiss={() => setActiveOverlay(null)}
+					/>
+				</>
 			);
 	}
 };

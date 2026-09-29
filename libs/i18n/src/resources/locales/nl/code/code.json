@@ -158,6 +158,7 @@
 			"always": "De wachtende aanroep goedkeuren, en de tool voortaan zonder vragen toestaan",
 			"allowed": "De tools weergeven die zonder te vragen worden uitgevoerd",
 			"revoke": "Weer om goedkeuring vragen voor een tool, of voor alle tools als er geen wordt genoemd",
+			"files": "Browse files",
 			"export": "De onbewerkte gebeurtenissen van de laatste uitvoering als JSON opslaan"
 		},
 		"help": {
