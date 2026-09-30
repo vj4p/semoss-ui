@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { AgentsPage } from "./agents.page";
 import { AuthenticatedLayout } from "./authenticated.layout";
@@ -9,7 +9,7 @@ import { LoginPage } from "./login.page";
 import { MCPPage } from "./mcp.page";
 import { SettingsPage } from "./settings.page";
 
-const router = createHashRouter([
+const router = createBrowserRouter([
 	{
 		element: <InitializedLayout />,
 		errorElement: <ErrorPage />,
