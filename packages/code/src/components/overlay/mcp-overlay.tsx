@@ -39,7 +39,6 @@ export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
 			open={open}
 			onDismiss={onDismiss}
 			title={t("mcp.title")}
-			icon={HammerIcon}
 		>
 			<ScrollArea className="h-full">
 				<div className="space-y-6 p-6">
@@ -135,12 +134,6 @@ export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
 							</p>
 						</CardContent>
 					</Card>
-
-					<div className="flex justify-end">
-						<Button onClick={onDismiss}>
-							{t("common:close")}
-						</Button>
-					</div>
 				</div>
 			</ScrollArea>
 		</OverlayContainer>

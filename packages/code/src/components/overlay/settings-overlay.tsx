@@ -1,4 +1,3 @@
-import { Settings2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Session } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
@@ -94,7 +93,6 @@ export const SettingsOverlay = ({
 			open={open}
 			onDismiss={onDismiss}
 			title={t("settings.title")}
-			icon={Settings2Icon}
 		>
 			<ScrollArea className="h-full">
 				<div className="space-y-6 p-6">

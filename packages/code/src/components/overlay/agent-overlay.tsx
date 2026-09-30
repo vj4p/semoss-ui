@@ -52,7 +52,6 @@ export const AgentOverlay = ({
 			open={open}
 			onDismiss={onDismiss}
 			title={t("agent.title")}
-			icon={BotIcon}
 		>
 			<ScrollArea className="h-full">
 				<div className="space-y-6 p-6">
@@ -85,7 +84,8 @@ export const AgentOverlay = ({
 					) : (
 						<div className="grid gap-4 md:grid-cols-2">
 							{harnesses.map((harness) => {
-								const isSelected = harness.name === selectedHarness;
+								const isSelected =
+									harness.name === selectedHarness;
 
 								return (
 									<Card
@@ -95,7 +95,9 @@ export const AgentOverlay = ({
 												? "border-primary bg-accent"
 												: "border-border"
 										}`}
-										onClick={() => handleSelect(harness.name)}
+										onClick={() =>
+											handleSelect(harness.name)
+										}
 									>
 										<CardHeader>
 											<div className="flex items-start justify-between">
@@ -106,7 +108,9 @@ export const AgentOverlay = ({
 													</CardTitle>
 													{harness.description && (
 														<CardDescription className="text-xs">
-															{harness.description}
+															{
+																harness.description
+															}
 														</CardDescription>
 													)}
 												</div>
@@ -121,7 +125,7 @@ export const AgentOverlay = ({
 						</div>
 					)}
 
-					<div className="border-muted-foreground/20 rounded-lg border bg-muted/50 p-4">
+					<div className="rounded-lg border border-muted-foreground/20 bg-muted/50 p-4">
 						<div className="space-y-2 text-sm">
 							<p className="font-medium">
 								{t("agent.aboutHarnesses")}
