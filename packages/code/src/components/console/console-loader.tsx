@@ -6,12 +6,14 @@ import { useInsight } from "@semoss/sdk/react";
 import { useCatalog, useConsoleSession } from "@/hooks";
 import { createTranslate, DEFAULT_KEYMAP, PLATFORM } from "@/utility";
 import {
+	AgentOverlay,
 	CostOverlay,
 	DiffOverlay,
 	FilesOverlay,
 	HelpOverlay,
 	HistorySearchOverlay,
 	InboxOverlay,
+	MCPOverlay,
 	PacksOverlay,
 	RunsOverlay,
 	SettingsOverlay,
@@ -124,6 +126,16 @@ const RoomLoader = ({
 					/>
 					<SettingsOverlay
 						open={activeOverlay === "settings"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
+					/>
+					<AgentOverlay
+						open={activeOverlay === "agent"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
+					/>
+					<MCPOverlay
+						open={activeOverlay === "mcp"}
 						onDismiss={() => setActiveOverlay(null)}
 						session={room.session}
 					/>

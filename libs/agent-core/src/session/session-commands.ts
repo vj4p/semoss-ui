@@ -317,6 +317,22 @@ export const createSessionCommands = ({
 			onShowOverlay?.("settings");
 		},
 	},
+	{
+		name: "agent",
+		describe: "command.agent",
+		aliases: ["agents"],
+		run: () => {
+			onShowOverlay?.("agent");
+		},
+	},
+	{
+		name: "mcp",
+		describe: "command.mcp",
+		aliases: ["tools"],
+		run: () => {
+			onShowOverlay?.("mcp");
+		},
+	},
 	...(canExport
 		? [
 				{

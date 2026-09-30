@@ -132,6 +132,9 @@ export const MESSAGES = {
 	"command.packs": "List capability packs",
 	"command.cost": "Show cost and usage breakdown",
 	"command.inbox": "View notifications and messages",
+	"command.settings": "Configure room settings and preferences",
+	"command.agent": "Select agent harness type",
+	"command.mcp": "Manage MCP tools and integrations",
 	"command.export": "Save the last run's raw events as JSON",
 
 	"help.commands": "Commands",
