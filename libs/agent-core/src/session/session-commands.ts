@@ -309,6 +309,14 @@ export const createSessionCommands = ({
 			onShowOverlay?.("inbox");
 		},
 	},
+	{
+		name: "settings",
+		describe: "command.settings",
+		aliases: ["config"],
+		run: () => {
+			onShowOverlay?.("settings");
+		},
+	},
 	...(canExport
 		? [
 				{

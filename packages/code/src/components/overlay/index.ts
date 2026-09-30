@@ -7,3 +7,4 @@ export { InboxOverlay } from "./inbox-overlay";
 export { OverlayContainer } from "./overlay-container";
 export { PacksOverlay } from "./packs-overlay";
 export { RunsOverlay } from "./runs-overlay";
+export { SettingsOverlay } from "./settings-overlay";

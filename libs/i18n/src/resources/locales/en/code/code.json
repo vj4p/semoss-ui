@@ -164,7 +164,36 @@
 			"packs": "List capability packs",
 			"cost": "Show cost and usage breakdown",
 			"inbox": "View notifications and messages",
+			"settings": "Configure room settings",
 			"export": "Save the last run's raw events as JSON"
+		},
+		"settings": {
+			"title": "Settings",
+			"model": {
+				"title": "Model Configuration",
+				"label": "Model",
+				"description": "Choose which model to use for agent runs"
+			},
+			"harness": {
+				"label": "Agent Harness",
+				"description": "Select the agent harness type for this room"
+			},
+			"temperature": {
+				"label": "Temperature",
+				"description": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative"
+			},
+			"workspace": {
+				"title": "Workspace",
+				"label": "Select Workspace",
+				"description": "Connect this room to a workspace to inherit its MCP tools, prompts, and settings",
+				"none": "No workspace",
+				"comingSoon": "Workspace selection coming soon"
+			},
+			"mcp": {
+				"title": "MCP Tools",
+				"description": "Configure Model Context Protocol tools for this room",
+				"comingSoon": "MCP tool configuration coming soon"
+			}
 		},
 		"help": {
 			"commands": "Commands",

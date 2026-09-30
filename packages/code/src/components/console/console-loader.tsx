@@ -14,6 +14,7 @@ import {
 	InboxOverlay,
 	PacksOverlay,
 	RunsOverlay,
+	SettingsOverlay,
 } from "../overlay";
 import { Console } from "./console";
 import { ConsoleFailure, ConsolePending } from "./console-status";
@@ -120,6 +121,11 @@ const RoomLoader = ({
 						session={room.session}
 						keymap={DEFAULT_KEYMAP}
 						platform={PLATFORM}
+					/>
+					<SettingsOverlay
+						open={activeOverlay === "settings"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
 					/>
 				</>
 			);
