@@ -1,3 +1,4 @@
+import { ArrowLeftIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "@semoss/i18n";
@@ -19,7 +20,6 @@ import {
 	SelectValue,
 	Slider,
 } from "@semoss/ui/next";
-import { ArrowLeftIcon } from "lucide-react";
 
 /**
  * Settings page for configuring room defaults and preferences
@@ -72,7 +72,7 @@ export const SettingsPage = () => {
 	return (
 		<div className="flex h-full flex-col bg-background text-foreground">
 			{/* Header */}
-			<div className="border-b border-border bg-card">
+			<div className="border-border border-b bg-card">
 				<div className="flex items-center gap-4 p-4">
 					<Button
 						variant="ghost"
@@ -93,7 +93,8 @@ export const SettingsPage = () => {
 					<FieldSet>
 						<FieldLegend>Model Configuration</FieldLegend>
 						<FieldDescription>
-							Configure the default model and behavior for new sessions
+							Configure the default model and behavior for new
+							sessions
 						</FieldDescription>
 
 						<FieldGroup>
@@ -108,7 +109,9 @@ export const SettingsPage = () => {
 										if (engine) {
 											setModelId(engine.app_id);
 											setModelName(
-												engine.engine_display_name || engine.app_name || "",
+												engine.engine_display_name ||
+													engine.app_name ||
+													"",
 											);
 										}
 									}}
@@ -123,13 +126,19 @@ export const SettingsPage = () => {
 
 							<Field>
 								<FieldLabel>Agent Harness</FieldLabel>
-								<Select value={harnessType} onValueChange={setHarnessType}>
+								<Select
+									value={harnessType}
+									onValueChange={setHarnessType}
+								>
 									<SelectTrigger className="w-full">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
 										{harnesses.map((harness) => (
-											<SelectItem key={harness.name} value={harness.name}>
+											<SelectItem
+												key={harness.name}
+												value={harness.name}
+											>
 												{harness.label || harness.name}
 											</SelectItem>
 										))}
@@ -146,15 +155,18 @@ export const SettingsPage = () => {
 								</FieldLabel>
 								<Slider
 									value={[temperature]}
-									onValueChange={([value]) => setTemperature(value)}
+									onValueChange={([value]) =>
+										setTemperature(value)
+									}
 									min={0}
 									max={2}
 									step={0.1}
 									className="w-full"
 								/>
 								<FieldDescription>
-									Controls randomness. Lower values are more focused and
-									deterministic, higher values are more creative
+									Controls randomness. Lower values are more
+									focused and deterministic, higher values are
+									more creative
 								</FieldDescription>
 							</Field>
 						</FieldGroup>
@@ -163,8 +175,8 @@ export const SettingsPage = () => {
 					<FieldSet>
 						<FieldLegend>Workspace Integration</FieldLegend>
 						<FieldDescription>
-							Connect this console to a workspace to inherit MCP tools, prompts,
-							and settings
+							Connect this console to a workspace to inherit MCP
+							tools, prompts, and settings
 						</FieldDescription>
 
 						<FieldGroup>
@@ -175,7 +187,9 @@ export const SettingsPage = () => {
 										<SelectValue placeholder="No workspace" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="none">No workspace</SelectItem>
+										<SelectItem value="none">
+											No workspace
+										</SelectItem>
 									</SelectContent>
 								</Select>
 								<FieldDescription className="text-muted-foreground">
@@ -185,7 +199,7 @@ export const SettingsPage = () => {
 						</FieldGroup>
 					</FieldSet>
 
-					<div className="flex justify-end gap-3 border-t border-border pt-6">
+					<div className="flex justify-end gap-3 border-border border-t pt-6">
 						<Button variant="outline" onClick={() => navigate("/")}>
 							Cancel
 						</Button>

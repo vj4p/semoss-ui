@@ -1,3 +1,9 @@
+import {
+	ArrowLeftIcon,
+	HammerIcon,
+	PlusIcon,
+	Settings2Icon,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "@semoss/i18n";
@@ -10,12 +16,6 @@ import {
 	CardTitle,
 	ScrollArea,
 } from "@semoss/ui/next";
-import {
-	ArrowLeftIcon,
-	HammerIcon,
-	PlusIcon,
-	Settings2Icon,
-} from "lucide-react";
 
 /**
  * MCP (Model Context Protocol) tools management page
@@ -35,7 +35,7 @@ export const MCPPage = () => {
 	return (
 		<div className="flex h-full flex-col bg-background text-foreground">
 			{/* Header */}
-			<div className="border-b border-border bg-card">
+			<div className="border-border border-b bg-card">
 				<div className="flex items-center justify-between p-4">
 					<div className="flex items-center gap-4">
 						<Button
@@ -68,8 +68,9 @@ export const MCPPage = () => {
 							Model Context Protocol Tools
 						</h2>
 						<p className="text-muted-foreground text-sm">
-							Configure MCP tools that extend the agent's capabilities. These
-							tools can access external services, APIs, and data sources.
+							Configure MCP tools that extend the agent's
+							capabilities. These tools can access external
+							services, APIs, and data sources.
 						</p>
 					</div>
 
@@ -83,10 +84,13 @@ export const MCPPage = () => {
 										</div>
 									</div>
 									<div className="space-y-2">
-										<h3 className="font-semibold">No MCP Tools Configured</h3>
+										<h3 className="font-semibold">
+											No MCP Tools Configured
+										</h3>
 										<p className="text-muted-foreground text-sm">
-											MCP tools will appear here once configured. Add tools to
-											extend the agent's capabilities.
+											MCP tools will appear here once
+											configured. Add tools to extend the
+											agent's capabilities.
 										</p>
 									</div>
 									<Button disabled>
@@ -103,14 +107,20 @@ export const MCPPage = () => {
 									<CardHeader>
 										<div className="flex items-start justify-between">
 											<div className="space-y-1">
-												<CardTitle>{tool.name}</CardTitle>
+												<CardTitle>
+													{tool.name}
+												</CardTitle>
 												<CardDescription className="flex items-center gap-2">
 													<span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs">
 														{tool.type}
 													</span>
 												</CardDescription>
 											</div>
-											<Button variant="ghost" size="sm" disabled>
+											<Button
+												variant="ghost"
+												size="sm"
+												disabled
+											>
 												<Settings2Icon className="h-4 w-4" />
 											</Button>
 										</div>
@@ -133,31 +143,35 @@ export const MCPPage = () => {
 						</CardHeader>
 						<CardContent className="space-y-2 text-muted-foreground text-sm">
 							<p>
-								Model Context Protocol (MCP) allows the agent to interact with
-								external tools and services during execution.
+								Model Context Protocol (MCP) allows the agent to
+								interact with external tools and services during
+								execution.
 							</p>
 							<ul className="list-inside list-disc space-y-1">
 								<li>
-									<strong>Knowledge tools:</strong> Connect to vector databases,
-									document stores, and knowledge bases
+									<strong>Knowledge tools:</strong> Connect to
+									vector databases, document stores, and
+									knowledge bases
 								</li>
 								<li>
-									<strong>Toolbox tools:</strong> Enable actions like web
-									search, file operations, API calls
+									<strong>Toolbox tools:</strong> Enable
+									actions like web search, file operations,
+									API calls
 								</li>
 								<li>
-									<strong>Agent tools:</strong> Specialized capabilities for
-									specific workflows
+									<strong>Agent tools:</strong> Specialized
+									capabilities for specific workflows
 								</li>
 							</ul>
 							<p className="pt-2 text-xs">
-								MCP tool configuration coming soon. Tools will be configurable
-								per-room and workspace-inheritable.
+								MCP tool configuration coming soon. Tools will
+								be configurable per-room and
+								workspace-inheritable.
 							</p>
 						</CardContent>
 					</Card>
 
-					<div className="flex items-center justify-center border-t border-border pt-6">
+					<div className="flex items-center justify-center border-border border-t pt-6">
 						<p className="text-center text-muted-foreground text-sm">
 							MCP tool management interface under development
 						</p>

@@ -1,3 +1,4 @@
+import { ArrowLeftIcon, BotIcon, CheckCircle2Icon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { useAgentHarnesses } from "@semoss/shared";
@@ -10,7 +11,6 @@ import {
 	CardTitle,
 	ScrollArea,
 } from "@semoss/ui/next";
-import { ArrowLeftIcon, BotIcon, CheckCircle2Icon } from "lucide-react";
 
 /**
  * Agents management page for viewing and selecting agent harnesses
@@ -47,7 +47,7 @@ export const AgentsPage = () => {
 	return (
 		<div className="flex h-full flex-col bg-background text-foreground">
 			{/* Header */}
-			<div className="border-b border-border bg-card">
+			<div className="border-border border-b bg-card">
 				<div className="flex items-center gap-4 p-4">
 					<Button
 						variant="ghost"
@@ -60,7 +60,9 @@ export const AgentsPage = () => {
 					</Button>
 					<div className="flex items-center gap-2">
 						<BotIcon className="h-5 w-5" />
-						<h1 className="font-semibold text-xl">Agent Harnesses</h1>
+						<h1 className="font-semibold text-xl">
+							Agent Harnesses
+						</h1>
 					</div>
 				</div>
 			</div>
@@ -69,10 +71,12 @@ export const AgentsPage = () => {
 			<ScrollArea className="flex-1">
 				<div className="mx-auto max-w-4xl space-y-6 p-6">
 					<div className="space-y-2">
-						<h2 className="font-semibold text-lg">Available Harnesses</h2>
+						<h2 className="font-semibold text-lg">
+							Available Harnesses
+						</h2>
 						<p className="text-muted-foreground text-sm">
-							Choose an agent harness type. Each harness provides different
-							capabilities and tool access patterns.
+							Choose an agent harness type. Each harness provides
+							different capabilities and tool access patterns.
 						</p>
 					</div>
 
@@ -84,8 +88,8 @@ export const AgentsPage = () => {
 										No agent harnesses available
 									</p>
 									<p className="text-muted-foreground text-sm">
-										Configure harnesses via the backend GetAgentHarnesses
-										endpoint
+										Configure harnesses via the backend
+										GetAgentHarnesses endpoint
 									</p>
 								</div>
 							</CardContent>
@@ -93,7 +97,8 @@ export const AgentsPage = () => {
 					) : (
 						<div className="grid gap-4 md:grid-cols-2">
 							{harnesses.map((harness) => {
-								const isSelected = harness.name === currentHarness;
+								const isSelected =
+									harness.name === currentHarness;
 
 								return (
 									<Card
@@ -103,13 +108,16 @@ export const AgentsPage = () => {
 												? "border-primary bg-primary/5 dark:bg-primary/10"
 												: "cursor-pointer hover:border-primary/50"
 										}
-										onClick={() => handleSelectHarness(harness.name)}
+										onClick={() =>
+											handleSelectHarness(harness.name)
+										}
 									>
 										<CardHeader>
 											<div className="flex items-start justify-between">
 												<div className="space-y-1">
 													<CardTitle className="flex items-center gap-2">
-														{harness.label || harness.name}
+														{harness.label ||
+															harness.name}
 														{isSelected && (
 															<CheckCircle2Icon className="h-4 w-4 text-primary" />
 														)}
@@ -128,7 +136,11 @@ export const AgentsPage = () => {
 
 											{isSelected && (
 												<div className="mt-4">
-													<Button size="sm" variant="outline" className="w-full">
+													<Button
+														size="sm"
+														variant="outline"
+														className="w-full"
+													>
 														Currently Selected
 													</Button>
 												</div>
@@ -142,24 +154,28 @@ export const AgentsPage = () => {
 
 					<Card className="border-muted-foreground/20 bg-muted/50">
 						<CardHeader>
-							<CardTitle className="text-base">About Agent Harnesses</CardTitle>
+							<CardTitle className="text-base">
+								About Agent Harnesses
+							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-2 text-muted-foreground text-sm">
 							<p>
-								Agent harnesses determine how the terminal executes operations
-								and which tools are available.
+								Agent harnesses determine how the terminal
+								executes operations and which tools are
+								available.
 							</p>
 							<ul className="list-inside list-disc space-y-1">
 								<li>
-									<strong>claude_code:</strong> Standard Claude Code harness
-									with full tool access
+									<strong>claude_code:</strong> Standard
+									Claude Code harness with full tool access
 								</li>
 								<li>
-									<strong>flex:</strong> Flexible harness with customizable
-									behaviors
+									<strong>flex:</strong> Flexible harness with
+									customizable behaviors
 								</li>
 								<li>
-									Settings apply to new sessions and can be changed anytime
+									Settings apply to new sessions and can be
+									changed anytime
 								</li>
 							</ul>
 						</CardContent>
