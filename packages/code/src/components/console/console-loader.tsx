@@ -81,6 +81,7 @@ const RoomLoader = ({
 						session={room.session}
 						openedRoom={room.openedRoom}
 						translate={translate}
+						onShowFiles={() => setActiveOverlay("files")}
 					/>
 					<FilesOverlay
 						open={activeOverlay === "files"}

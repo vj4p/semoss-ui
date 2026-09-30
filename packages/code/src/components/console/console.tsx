@@ -32,15 +32,18 @@ import { Transcript } from "./transcript";
  * @param props.openedRoom - The room the session opened, for its name.
  * @param props.translate - Translate for agent-core's messages, in the
  * current language.
+ * @param props.onShowFiles - Called when file explorer button is clicked.
  */
 export const Console = ({
 	session,
 	openedRoom,
 	translate,
+	onShowFiles,
 }: {
 	session: Session;
 	openedRoom?: { roomId: string; name?: string };
 	translate: Translate;
+	onShowFiles?: () => void;
 }) => {
 	const state = useSessionState(session);
 	const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -81,6 +84,7 @@ export const Console = ({
 				state={state}
 				session={session}
 				openedRoom={openedRoom}
+				onShowFiles={onShowFiles}
 			/>
 			<Announcer session={session} translate={translate} />
 		</>

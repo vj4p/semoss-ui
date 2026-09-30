@@ -1,3 +1,4 @@
+import { FolderTreeIcon, MoonIcon, SunIcon } from "lucide-react";
 import { useId, useMemo } from "react";
 import {
 	activeRunEntry,
@@ -7,12 +8,14 @@ import {
 } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
 import {
+	Button,
 	Label,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	useTheme,
 } from "@semoss/ui/next";
 import { useElapsedSeconds } from "@/hooks";
 
@@ -53,17 +56,21 @@ const runState = (state: SessionState) => {
  * @param props.state - The session's state.
  * @param props.session - The session to switch.
  * @param props.openedRoom - The room the console opened, for its name.
+ * @param props.onShowFiles - Called when file explorer button is clicked.
  */
 export const StatusBar = ({
 	state,
 	session,
 	openedRoom,
+	onShowFiles,
 }: {
 	state: SessionState;
 	session: Session;
 	openedRoom?: { roomId: string; name?: string };
+	onShowFiles?: () => void;
 }) => {
 	const { t, i18n } = useTranslation("code");
+	const { theme, setTheme } = useTheme();
 	const harnessId = useId();
 	const modelId = useId();
 	const allowedId = useId();
@@ -190,7 +197,37 @@ export const StatusBar = ({
 				<span>⎇</span>
 				<span className="text-foreground">—</span>
 			</p>
-			<p className="ms-auto flex items-baseline gap-2">
+			<div className="ms-auto flex items-center gap-2">
+				{/* File Explorer Button */}
+				{onShowFiles && (
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						onClick={onShowFiles}
+						title="Open file explorer"
+						data-testid="statusBar-files-button"
+					>
+						<FolderTreeIcon className="h-4 w-4" />
+					</Button>
+				)}
+				{/* Theme Toggle Button */}
+				<Button
+					variant="ghost"
+					size="icon-sm"
+					onClick={() =>
+						setTheme(theme === "dark" ? "light" : "dark")
+					}
+					title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+					data-testid="statusBar-theme-button"
+				>
+					{theme === "dark" ? (
+						<SunIcon className="h-4 w-4" />
+					) : (
+						<MoonIcon className="h-4 w-4" />
+					)}
+				</Button>
+			</div>
+			<p className="flex items-baseline gap-2">
 				<span className="text-foreground">
 					{t(`status.${runState(state)}`)}
 				</span>
