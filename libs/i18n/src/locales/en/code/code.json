@@ -1,0 +1,54 @@
+{
+	"mcp": {
+		"title": "MCP Tools",
+		"description": "Manage Model Context Protocol tools and integrations",
+		"noTools": "No MCP Tools Configured",
+		"noToolsDescription": "Add MCP tools to extend the agent's capabilities with external integrations",
+		"addTool": "Add Tool",
+		"aboutTitle": "About MCP Tools",
+		"aboutDescription": "Model Context Protocol (MCP) tools enable agents to interact with external services and data sources:",
+		"knowledgeTools": "Knowledge Tools:",
+		"knowledgeDescription": "Access documentation, databases, and information repositories",
+		"toolboxTools": "Toolbox Tools:",
+		"toolboxDescription": "Integrate with external APIs, services, and automation systems",
+		"agentTools": "Agent Tools:",
+		"agentDescription": "Coordinate with specialized agents and sub-agents for complex tasks",
+		"comingSoon": "MCP tool configuration coming soon"
+	},
+	"agent": {
+		"title": "Agent Harness",
+		"description": "Select the agent harness to use for this session",
+		"noHarnesses": "No Harnesses Available",
+		"noHarnessesDescription": "No agent harnesses are configured. Contact your administrator.",
+		"aboutHarnesses": "About Agent Harnesses",
+		"aboutDescription": "Agent harnesses determine how the AI agent interacts with tools, manages context, and executes tasks. Different harnesses provide different capabilities and behaviors."
+	},
+	"settings": {
+		"title": "Settings",
+		"model": {
+			"title": "Model Configuration",
+			"description": "Configure the AI model and generation parameters",
+			"label": "Model"
+		},
+		"harness": {
+			"label": "Agent Harness",
+			"description": "The execution framework for agent operations"
+		},
+		"temperature": {
+			"label": "Temperature",
+			"description": "Controls randomness in responses (0 = focused, 2 = creative)"
+		},
+		"workspace": {
+			"title": "Workspace",
+			"description": "Project and file access configuration",
+			"label": "Workspace",
+			"none": "No workspace",
+			"comingSoon": "Workspace configuration coming soon"
+		},
+		"mcp": {
+			"title": "MCP Tools",
+			"description": "Model Context Protocol tool integrations",
+			"comingSoon": "MCP tool selection coming soon"
+		}
+	}
+}

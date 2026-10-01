@@ -33,13 +33,20 @@ export const OverlayContainer = ({
 			if (event.key === "q" && !event.metaKey && !event.ctrlKey) {
 				// Only dismiss on bare 'q', not Cmd+Q or Ctrl+Q
 				const target = event.target as HTMLElement;
-				// Allow 'q' in input/textarea elements
-				if (
-					target.tagName === "INPUT" ||
-					target.tagName === "TEXTAREA"
-				) {
+				// Allow 'q' in input/textarea elements INSIDE the overlay content
+				// (search boxes, etc.), but not in elements outside the overlay
+				const isInsideOverlay = target.closest(
+					'[data-slot="dialog-content"]',
+				);
+				const isInput =
+					target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+
+				if (isInput && isInsideOverlay) {
+					// Let the user type 'q' in overlay inputs (like search boxes)
 					return;
 				}
+
+				// Otherwise, close the overlay
 				event.preventDefault();
 				onDismiss();
 			}
@@ -53,6 +60,7 @@ export const OverlayContainer = ({
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onDismiss()}>
 			<DialogContent
 				className="flex h-[calc(100dvh-4rem)] max-h-[calc(100dvh-4rem)] w-[calc(100vw-4rem)] max-w-[calc(100vw-4rem)] flex-col gap-0 p-0"
+				showCloseButton={false}
 				// Prevent Dialog from auto-focusing the close button
 				onOpenAutoFocus={(e) => e.preventDefault()}
 			>
