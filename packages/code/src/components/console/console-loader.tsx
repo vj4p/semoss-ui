@@ -139,6 +139,8 @@ const RoomLoader = ({
 						open={activeOverlay === "mcp"}
 						onDismiss={() => setActiveOverlay(null)}
 						session={room.session}
+						insightId={room.openedRoom?.insightId}
+						roomId={room.openedRoom?.roomId}
 					/>
 				</>
 			);

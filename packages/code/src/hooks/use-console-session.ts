@@ -58,7 +58,7 @@ export const useConsoleSession = ({
 			status: "ready";
 			session: Session;
 			generation: number;
-			openedRoom?: { roomId: string; name?: string };
+			openedRoom?: { roomId: string; insightId: string; name?: string };
 	  } => {
 	const navigate = useNavigate();
 	const [state, setState] = useState<ReturnType<typeof useConsoleSession>>({
@@ -141,7 +141,11 @@ export const useConsoleSession = ({
 				status: "ready",
 				session,
 				generation: ++generationRef.current,
-				openedRoom: room && { roomId: room.roomId, name: room.name },
+				openedRoom: room && {
+					roomId: room.roomId,
+					insightId: room.insightId,
+					name: room.name,
+				},
 			});
 		};
 

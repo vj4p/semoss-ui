@@ -2,7 +2,6 @@ import { BookOpenIcon, HammerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Session } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
-import { runPixel } from "@semoss/sdk";
 import { type MCPConfig, MCPSelector } from "@semoss/shared";
 import {
 	Badge,
@@ -16,12 +15,15 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@semoss/ui/next";
+import { getRoomOptions, updateRoomOptions } from "@/api";
 import { OverlayContainer } from "./overlay-container";
 
 export interface MCPOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
 	session: Session;
+	insightId?: string;
+	roomId?: string;
 }
 
 type Tab = "TOOLBOX" | "KNOWLEDGE";
@@ -49,7 +51,13 @@ const splitMcpByType = (mcps: MCPConfig[]) => {
  * Uses the same MCPSelector component as Playground to query engines/projects
  * tagged with "MCP" via MyEngines and MyProjects.
  */
-export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
+export const MCPOverlay = ({
+	open,
+	onDismiss,
+	session,
+	insightId,
+	roomId: roomIdProp,
+}: MCPOverlayProps) => {
 	const { t } = useTranslation("code");
 
 	const [knowledge, setKnowledge] = useState<MCPConfig[]>([]);
@@ -63,8 +71,8 @@ export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
 	useEffect(() => {
 		if (open && !wasOpen.current) {
 			const loadRoomMCPs = async () => {
-				const roomId = session.getState().roomId;
-				if (!roomId) {
+				const roomId = roomIdProp ?? session.getState().roomId;
+				if (!roomId || !insightId) {
 					// New room, start empty
 					setKnowledge([]);
 					setToolbox([]);
@@ -74,15 +82,8 @@ export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
 
 				try {
 					setLoading(true);
-					// Get room options which contains MCP configuration
-					const pixelResult = await runPixel<[{ mcp?: MCPConfig[] }]>(
-						`GetRoomOptions(roomId=${JSON.stringify([roomId])});`,
-					);
-
-					// runPixel returns { pixelReturn: [...] }
-					// The actual room options are in pixelReturn[0].output
-					const roomOptions =
-						pixelResult.pixelReturn?.[0]?.output ?? {};
+					// Use proper API wrapper that handles response parsing
+					const roomOptions = await getRoomOptions(insightId, roomId);
 					const mcps = roomOptions.mcp ?? [];
 
 					const { knowledge: k, toolbox: t } = splitMcpByType(mcps);
@@ -103,27 +104,31 @@ export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
 			loadRoomMCPs();
 		}
 		wasOpen.current = open;
-	}, [open, session]);
+	}, [open, session, insightId, roomIdProp]);
 
 	const handleApply = async () => {
-		const roomId = session.getState().roomId;
-		if (!roomId) {
-			console.warn("No room ID - cannot save MCP selection");
+		const roomId = roomIdProp ?? session.getState().roomId;
+		if (!roomId || !insightId) {
+			console.warn(
+				"No room ID or insight ID - cannot save MCP selection",
+			);
 			onDismiss();
 			return;
 		}
 
 		setApplying(true);
 		try {
+			// Get current options first
+			const currentOptions = await getRoomOptions(insightId, roomId);
+
 			// Combine knowledge and toolbox selections
 			const allMcps = [...knowledge, ...toolbox];
 
-			// Save to room options via UpdateRoomOptions pixel
-			await runPixel(
-				`UpdateRoomOptions(roomId=${JSON.stringify(
-					roomId,
-				)}, roomOptions=[${JSON.stringify({ mcp: allMcps })}]);`,
-			);
+			// Update room options with new MCP selection
+			await updateRoomOptions(insightId, roomId, {
+				...currentOptions,
+				mcp: allMcps,
+			});
 
 			onDismiss();
 		} catch (err) {
