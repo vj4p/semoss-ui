@@ -8,6 +8,7 @@ export * from "./engine";
 export * from "./engine-subtype-icon";
 export * from "./entity-header";
 export * from "./file";
+export * from "./filters/filter-bar";
 export * from "./flex-layout";
 export * from "./form";
 export * from "./html";
