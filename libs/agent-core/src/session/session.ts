@@ -56,6 +56,7 @@ import {
 	type AgentRunSnapshot,
 	type AgentStore,
 	isRequestUserInputAction,
+	type MCPToolConfig,
 	type PendingAgentAction,
 } from "@semoss/sdk";
 import { dispatch } from "../commands/dispatch";
@@ -120,12 +121,14 @@ export interface ModelOption {
 export interface SessionCatalog {
 	harnesses: readonly HarnessOption[];
 	models: readonly ModelOption[];
+	mcpTools?: readonly MCPToolConfig[];
 }
 
 /** What a room is saved with, and a run started with. */
 export interface RoomSettings {
 	harness: string;
 	modelId: string;
+	enabledMCPTools?: readonly string[];
 }
 
 export interface RunRequest extends RoomSettings {
@@ -157,6 +160,18 @@ export interface SessionBackend {
 	 * its parent reports it. `roomId` is the subagent's own room.
 	 */
 	followRun?: (run: { runId: string; roomId: string }) => AgentStore;
+	/**
+	 * Fetch available MCP tools for the given engine/project.
+	 */
+	fetchMCPTools?: (engineId?: string) => Promise<MCPToolConfig[]>;
+	/**
+	 * Update room's enabled MCP tools.
+	 */
+	setRoomMCPTools?: (roomId: string, toolIds: string[]) => Promise<void>;
+	/**
+	 * Get room's currently enabled MCP tools.
+	 */
+	getRoomMCPTools?: (roomId: string) => Promise<string[]>;
 }
 
 /** A run's raw events, to check the transcript against what the backend really sent. */
@@ -297,6 +312,15 @@ export interface Session {
 	clear: () => void;
 	notice: (lines: readonly Line[]) => void;
 	exportLastRun: () => Promise<void>;
+	/**
+	 * Set enabled MCP tools for this room.
+	 * Updates both session state and backend room settings.
+	 */
+	setMCPTools: (toolIds: string[]) => Promise<void>;
+	/**
+	 * Get currently enabled MCP tools.
+	 */
+	getEnabledMCPTools: () => string[];
 	/** Stop polling. Leaves any run going on the server. */
 	dispose: () => void;
 }
@@ -1575,6 +1599,23 @@ export const createSession = (options: SessionOptions): Session => {
 				snapshot: control.snapshot,
 			});
 			say("session.exported", { runId: agent.runId }, "dim");
+		},
+
+		setMCPTools: async (toolIds: string[]) => {
+			if (!state.roomId) {
+				return;
+			}
+			try {
+				await backend.setRoomMCPTools?.(state.roomId, toolIds);
+				// TODO: implement MCP tools state tracking
+			} catch (_error) {
+				// TODO: implement error handling for MCP tools
+			}
+		},
+
+		getEnabledMCPTools: () => {
+			// TODO: implement MCP tools state tracking
+			return [];
 		},
 
 		dispose: () => {

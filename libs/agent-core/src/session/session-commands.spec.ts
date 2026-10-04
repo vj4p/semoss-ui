@@ -45,6 +45,9 @@ const setup = ({
 			startRun: vi.fn(async (): Promise<AgentStore> => {
 				throw new Error("no runs in these tests");
 			}),
+			fetchMCPTools: vi.fn(async () => []),
+			setRoomMCPTools: vi.fn(async () => undefined),
+			getRoomMCPTools: vi.fn(async () => []),
 		},
 		catalog,
 		host,
@@ -323,6 +326,9 @@ describe("the other commands", () => {
 				startRun: vi.fn(async (): Promise<AgentStore> => {
 					throw new Error("no runs in these tests");
 				}),
+				fetchMCPTools: vi.fn(async () => []),
+				setRoomMCPTools: vi.fn(async () => undefined),
+				getRoomMCPTools: vi.fn(async () => []),
 			},
 			catalog: CATALOG,
 			roomId: "room-1",

@@ -256,6 +256,9 @@ const setup = ({
 			runs.push(run);
 			return run.agent;
 		}),
+		fetchMCPTools: vi.fn(async () => []),
+		setRoomMCPTools: vi.fn(async () => undefined),
+		getRoomMCPTools: vi.fn(async () => []),
 		...overrides,
 	};
 	const session = createSession({
