@@ -85,7 +85,7 @@ export async function getMCPTools(
 ): Promise<MCPToolDescriptor[]> {
 	try {
 		const pixel = engineId
-			? `GetMCPTools(engine="${engineId}");`
+			? `GetMCPTools(engine=${JSON.stringify([engineId])});`
 			: "GetMCPTools();";
 
 		const result = await runPixel(pixel, { insightId });
@@ -122,7 +122,7 @@ export async function setRoomMCPTools(
 	insightId?: string,
 ): Promise<void> {
 	const toolsJson = JSON.stringify(toolIds);
-	const pixel = `SetRoomMCPTools(roomId="${roomId}", tools=${toolsJson});`;
+	const pixel = `SetRoomMCPTools(roomId=${JSON.stringify([roomId])}, tools=${toolsJson});`;
 
 	await runPixel(pixel, { insightId });
 }
@@ -140,7 +140,7 @@ export async function getRoomMCPTools(
 	insightId?: string,
 ): Promise<string[]> {
 	try {
-		const pixel = `GetRoomMCPTools(roomId="${roomId}");`;
+		const pixel = `GetRoomMCPTools(roomId=${JSON.stringify([roomId])});`;
 		const result = await runPixel(pixel, { insightId });
 
 		const tools = (result?.tools as string[]) || [];

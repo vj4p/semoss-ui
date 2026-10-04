@@ -46,7 +46,7 @@ describe("mcp API", () => {
 			await getMCPTools("ENGINE123", "INSIGHT456");
 
 			expect(runPixel).toHaveBeenCalledWith(
-				'GetMCPTools(engine="ENGINE123");',
+				'GetMCPTools(engine=["ENGINE123"]);',
 				{
 					insightId: "INSIGHT456",
 				},
@@ -77,7 +77,7 @@ describe("mcp API", () => {
 			await setRoomMCPTools("ROOM123", ["tool1", "tool2"]);
 
 			expect(runPixel).toHaveBeenCalledWith(
-				'SetRoomMCPTools(roomId="ROOM123", tools=["tool1","tool2"]);',
+				'SetRoomMCPTools(roomId=["ROOM123"], tools=["tool1","tool2"]);',
 				{ insightId: undefined },
 			);
 		});
@@ -88,7 +88,7 @@ describe("mcp API", () => {
 			await setRoomMCPTools("ROOM123", []);
 
 			expect(runPixel).toHaveBeenCalledWith(
-				'SetRoomMCPTools(roomId="ROOM123", tools=[]);',
+				'SetRoomMCPTools(roomId=["ROOM123"], tools=[]);',
 				{ insightId: undefined },
 			);
 		});
@@ -103,7 +103,7 @@ describe("mcp API", () => {
 			const result = await getRoomMCPTools("ROOM123");
 
 			expect(runPixel).toHaveBeenCalledWith(
-				'GetRoomMCPTools(roomId="ROOM123");',
+				'GetRoomMCPTools(roomId=["ROOM123"]);',
 				{ insightId: undefined },
 			);
 			expect(result).toEqual(["tool1", "tool2"]);
