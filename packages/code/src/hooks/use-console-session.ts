@@ -129,7 +129,8 @@ export const useConsoleSession = ({
 				},
 				catalog,
 				roomId: room?.roomId,
-				harness: room?.options.harnessType,
+				// Code terminal always defaults to claude_code harness for its streaming tool call UI
+				harness: room?.options.harnessType ?? "claude_code",
 				preferredModels: [room?.options.modelId, defaultModelId],
 				history: room
 					? roomHistoryLines(room.messages, translate)
