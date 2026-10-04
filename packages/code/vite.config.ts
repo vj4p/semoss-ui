@@ -33,5 +33,11 @@ export default createViteConfig({
 	// jest-dom's matchers and the ResizeObserver stub jsdom lacks.
 	test: {
 		setupFiles: "./vitest.setup.ts",
+		exclude: [
+			"**/node_modules/**",
+			"**/dist/**",
+			"**/.git/**",
+			"e2e/**", // E2E tests run separately with Playwright
+		],
 	},
 });
