@@ -1,3 +1,4 @@
+export { AgentOverlay } from "./agent-overlay";
 export { CostOverlay } from "./cost-overlay";
 export { DiffOverlay } from "./diff-overlay";
 export { FilesOverlay } from "./files-overlay";
