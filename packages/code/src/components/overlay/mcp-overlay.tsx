@@ -1,141 +1,221 @@
-import { HammerIcon, PlusIcon, Settings2Icon } from "lucide-react";
-import { useState } from "react";
+import { BookOpenIcon, HammerIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { Session } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
+import { runPixel } from "@semoss/sdk";
+import { type MCPConfig, MCPSelector } from "@semoss/shared";
 import {
+	Badge,
 	Button,
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-	ScrollArea,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
 } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
 
-interface MCPOverlayProps {
+export interface MCPOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
 	session: Session;
 }
 
+type Tab = "TOOLBOX" | "KNOWLEDGE";
+
 /**
- * MCP overlay for managing Model Context Protocol tools
- *
- * Displays available MCP tools and allows configuration,
- * similar to how Claude Code presents MCP tool management.
+ * Split MCP configs by type
+ */
+const splitMcpByType = (mcps: MCPConfig[]) => {
+	const knowledge: MCPConfig[] = [];
+	const toolbox: MCPConfig[] = [];
+
+	for (const mcp of mcps) {
+		if (mcp.type === "VECTOR") {
+			knowledge.push(mcp);
+		} else {
+			toolbox.push(mcp);
+		}
+	}
+
+	return { knowledge, toolbox };
+};
+
+/**
+ * The `:mcp` overlay — manages MCP selection for the Code terminal.
+ * Uses the same MCPSelector component as Playground to query engines/projects
+ * tagged with "MCP" via MyEngines and MyProjects.
  */
 export const MCPOverlay = ({ open, onDismiss, session }: MCPOverlayProps) => {
-	const { t } = useTranslation(["code", "common"]);
+	const { t } = useTranslation("code");
 
-	// Placeholder MCP tools data
-	// In the future, this will come from session state or backend
-	const [mcpTools] = useState<
-		Array<{ id: string; name: string; type: string; description: string }>
-	>([]);
+	const [knowledge, setKnowledge] = useState<MCPConfig[]>([]);
+	const [toolbox, setToolbox] = useState<MCPConfig[]>([]);
+	const [activeTab, setActiveTab] = useState<Tab>("TOOLBOX");
+	const [applying, setApplying] = useState(false);
+	const [loading, setLoading] = useState(false);
+
+	// Load current room's MCP selection on open
+	const wasOpen = useRef(open);
+	useEffect(() => {
+		if (open && !wasOpen.current) {
+			const loadRoomMCPs = async () => {
+				const roomId = session.getState().roomId;
+				if (!roomId) {
+					// New room, start empty
+					setKnowledge([]);
+					setToolbox([]);
+					setActiveTab("TOOLBOX");
+					return;
+				}
+
+				try {
+					setLoading(true);
+					// Get room options which contains MCP configuration
+					const pixelResult = await runPixel<[{ mcp?: MCPConfig[] }]>(
+						`GetRoomOptions(roomId=${JSON.stringify([roomId])});`,
+					);
+
+					// runPixel returns { pixelReturn: [...] }
+					// The actual room options are in pixelReturn[0].output
+					const roomOptions =
+						pixelResult.pixelReturn?.[0]?.output ?? {};
+					const mcps = roomOptions.mcp ?? [];
+
+					const { knowledge: k, toolbox: t } = splitMcpByType(mcps);
+
+					setKnowledge(k);
+					setToolbox(t);
+					setActiveTab("TOOLBOX");
+				} catch (err) {
+					console.error("Failed to load room MCPs:", err);
+					setKnowledge([]);
+					setToolbox([]);
+					setActiveTab("TOOLBOX");
+				} finally {
+					setLoading(false);
+				}
+			};
+
+			loadRoomMCPs();
+		}
+		wasOpen.current = open;
+	}, [open, session]);
+
+	const handleApply = async () => {
+		const roomId = session.getState().roomId;
+		if (!roomId) {
+			console.warn("No room ID - cannot save MCP selection");
+			onDismiss();
+			return;
+		}
+
+		setApplying(true);
+		try {
+			// Combine knowledge and toolbox selections
+			const allMcps = [...knowledge, ...toolbox];
+
+			// Save to room options via UpdateRoomOptions pixel
+			await runPixel(
+				`UpdateRoomOptions(roomId=${JSON.stringify(
+					roomId,
+				)}, roomOptions=[${JSON.stringify({ mcp: allMcps })}]);`,
+			);
+
+			onDismiss();
+		} catch (err) {
+			console.error("Failed to apply MCP selection:", err);
+		} finally {
+			setApplying(false);
+		}
+	};
 
 	return (
 		<OverlayContainer
 			open={open}
-			onDismiss={onDismiss}
-			title={t("mcp.title")}
+			onDismiss={() => !applying && !loading && onDismiss()}
+			title=""
 		>
-			<ScrollArea className="h-full">
-				<div className="space-y-6 p-6">
-					<div className="space-y-2">
-						<p className="text-muted-foreground text-sm">
-							{t("mcp.description")}
-						</p>
+			<DialogHeader>
+				<DialogTitle>{t("mcp.title")}</DialogTitle>
+				<DialogDescription>{t("mcp.description")}</DialogDescription>
+			</DialogHeader>
+
+			{loading ? (
+				<div className="flex flex-1 items-center justify-center">
+					<div className="text-muted-foreground text-sm">
+						Loading MCP configuration...
 					</div>
-
-					{mcpTools.length === 0 ? (
-						<Card>
-							<CardContent className="flex min-h-[300px] flex-col items-center justify-center text-center">
-								<div className="space-y-4">
-									<div className="flex justify-center">
-										<div className="rounded-full bg-muted p-4">
-											<HammerIcon className="h-8 w-8 text-muted-foreground" />
-										</div>
-									</div>
-									<div className="space-y-2">
-										<h3 className="font-semibold">
-											{t("mcp.noTools")}
-										</h3>
-										<p className="text-muted-foreground text-sm">
-											{t("mcp.noToolsDescription")}
-										</p>
-									</div>
-									<Button disabled>
-										<PlusIcon className="mr-2 h-4 w-4" />
-										{t("mcp.addTool")}
-									</Button>
-								</div>
-							</CardContent>
-						</Card>
-					) : (
-						<div className="space-y-4">
-							{mcpTools.map((tool) => (
-								<Card key={tool.id}>
-									<CardHeader>
-										<div className="flex items-start justify-between">
-											<div className="space-y-1">
-												<CardTitle className="text-base">
-													{tool.name}
-												</CardTitle>
-												<CardDescription className="flex items-center gap-2">
-													<span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs">
-														{tool.type}
-													</span>
-												</CardDescription>
-											</div>
-											<Button
-												variant="ghost"
-												size="sm"
-												disabled
-											>
-												<Settings2Icon className="h-4 w-4" />
-											</Button>
-										</div>
-									</CardHeader>
-									<CardContent>
-										<p className="text-muted-foreground text-sm">
-											{tool.description}
-										</p>
-									</CardContent>
-								</Card>
-							))}
-						</div>
-					)}
-
-					<Card className="border-muted-foreground/20 bg-muted/50">
-						<CardHeader>
-							<CardTitle className="text-base">
-								{t("mcp.aboutTitle")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-2 text-muted-foreground text-sm">
-							<p>{t("mcp.aboutDescription")}</p>
-							<ul className="list-inside list-disc space-y-1">
-								<li>
-									<strong>{t("mcp.knowledgeTools")}</strong>{" "}
-									{t("mcp.knowledgeDescription")}
-								</li>
-								<li>
-									<strong>{t("mcp.toolboxTools")}</strong>{" "}
-									{t("mcp.toolboxDescription")}
-								</li>
-								<li>
-									<strong>{t("mcp.agentTools")}</strong>{" "}
-									{t("mcp.agentDescription")}
-								</li>
-							</ul>
-							<p className="pt-2 text-xs">
-								{t("mcp.comingSoon")}
-							</p>
-						</CardContent>
-					</Card>
 				</div>
-			</ScrollArea>
+			) : (
+				<Tabs
+					value={activeTab}
+					onValueChange={(v) => setActiveTab(v as Tab)}
+					className="flex min-h-0 flex-1 flex-col gap-3"
+				>
+					<TabsList className="grid h-10 w-full grid-cols-2 p-1">
+						<TabsTrigger value="TOOLBOX" className="h-full gap-2">
+							<HammerIcon className="size-4" />
+							Toolbox
+							<Badge variant="outline" className="ms-1">
+								{toolbox.length}
+							</Badge>
+						</TabsTrigger>
+						<TabsTrigger value="KNOWLEDGE" className="h-full gap-2">
+							<BookOpenIcon className="size-4" />
+							Knowledge
+							<Badge variant="outline" className="ms-1">
+								{knowledge.length}
+							</Badge>
+						</TabsTrigger>
+					</TabsList>
+
+					<TabsContent
+						value="TOOLBOX"
+						className="flex min-h-0 flex-1 flex-col"
+					>
+						{activeTab === "TOOLBOX" && (
+							<MCPSelector
+								type="TOOLBOX"
+								values={toolbox}
+								onChange={setToolbox}
+								autoFocus
+								className="flex-1"
+							/>
+						)}
+					</TabsContent>
+					<TabsContent
+						value="KNOWLEDGE"
+						className="flex min-h-0 flex-1 flex-col"
+					>
+						{activeTab === "KNOWLEDGE" && (
+							<MCPSelector
+								type="KNOWLEDGE"
+								values={knowledge}
+								onChange={setKnowledge}
+								autoFocus
+								className="flex-1"
+							/>
+						)}
+					</TabsContent>
+				</Tabs>
+			)}
+
+			<DialogFooter>
+				<Button
+					variant="ghost"
+					onClick={() => onDismiss()}
+					disabled={applying || loading}
+				>
+					Cancel
+				</Button>
+				<Button onClick={handleApply} disabled={applying || loading}>
+					{applying ? "Applying..." : "Apply"}
+				</Button>
+			</DialogFooter>
 		</OverlayContainer>
 	);
 };
