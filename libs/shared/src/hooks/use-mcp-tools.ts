@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getMCPTools, type MCPToolDescriptor } from "@semoss/sdk";
 
 /** MCP tool option for picker UI */
@@ -60,8 +60,16 @@ export function useMCPTools({
 	const [loading, setLoading] = useState(autoFetch);
 	const [error, setError] = useState<Error | null>(null);
 
+	const cancelledRef = useRef(false);
+	const fallbackRef = useRef(fallback);
+
+	// Keep fallback ref in sync with prop
+	useEffect(() => {
+		fallbackRef.current = fallback;
+	}, [fallback]);
+
 	const fetchTools = useCallback(async () => {
-		let cancelled = false;
+		cancelledRef.current = false;
 
 		try {
 			setLoading(true);
@@ -69,34 +77,27 @@ export function useMCPTools({
 
 			const result = await getMCPTools(engineId, insightId);
 
-			if (!cancelled) {
+			if (!cancelledRef.current) {
 				setTools(result.map(parseToolOption));
 			}
 		} catch (e) {
 			console.error("Failed to fetch MCP tools:", e);
-			if (!cancelled) {
+			if (!cancelledRef.current) {
 				setError(e as Error);
-				setTools(fallback);
+				setTools(fallbackRef.current);
 			}
 		} finally {
-			if (!cancelled) {
+			if (!cancelledRef.current) {
 				setLoading(false);
 			}
 		}
-
-		return () => {
-			cancelled = true;
-		};
-	}, [engineId, insightId, fallback]);
+	}, [engineId, insightId]);
 
 	useEffect(() => {
 		if (autoFetch) {
-			let cleanup: (() => void) | undefined;
-			fetchTools().then((fn) => {
-				cleanup = fn;
-			});
+			fetchTools();
 			return () => {
-				if (cleanup) cleanup();
+				cancelledRef.current = true;
 			};
 		}
 	}, [autoFetch, fetchTools]);
