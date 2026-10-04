@@ -4,6 +4,7 @@ export { FilesOverlay } from "./files-overlay";
 export { HelpOverlay } from "./help-overlay";
 export { HistorySearchOverlay } from "./history-search-overlay";
 export { InboxOverlay } from "./inbox-overlay";
+export { MCPOverlay } from "./mcp-overlay";
 export { OverlayContainer } from "./overlay-container";
 export { PacksOverlay } from "./packs-overlay";
 export { RunsOverlay } from "./runs-overlay";
