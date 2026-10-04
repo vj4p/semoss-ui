@@ -547,6 +547,8 @@ export const createSession = (options: SessionOptions): Session => {
 	/** The last run the backend accepted, for `:export`. */
 	let exportable: RunControl | undefined;
 	let saving: Promise<void> = Promise.resolve();
+	/** Currently enabled MCP tools for this session. */
+	let enabledMCPTools: string[] = [];
 	/** The actionId `startEdit` last filled the prompt for. */
 	let editTarget: string | undefined;
 
@@ -1607,15 +1609,14 @@ export const createSession = (options: SessionOptions): Session => {
 			}
 			try {
 				await backend.setRoomMCPTools?.(state.roomId, toolIds);
-				// TODO: implement MCP tools state tracking
-			} catch (_error) {
-				// TODO: implement error handling for MCP tools
+				enabledMCPTools = toolIds;
+			} catch (error) {
+				console.error("Failed to set MCP tools:", error);
 			}
 		},
 
 		getEnabledMCPTools: () => {
-			// TODO: implement MCP tools state tracking
-			return [];
+			return enabledMCPTools;
 		},
 
 		dispose: () => {

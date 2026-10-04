@@ -1,6 +1,6 @@
 import { SearchIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
 	Button,
 	Checkbox,
@@ -91,9 +91,11 @@ export function FilterBar({
 	const enabledCheckboxId = useId();
 
 	// Sync debounced value to parent
-	if (debouncedSearch !== searchQuery) {
-		onSearchChange(debouncedSearch);
-	}
+	useEffect(() => {
+		if (debouncedSearch !== searchQuery) {
+			onSearchChange(debouncedSearch);
+		}
+	}, [debouncedSearch, searchQuery, onSearchChange]);
 
 	const handleCategoryToggle = (categoryId: string) => {
 		if (selectedCategories.includes(categoryId)) {
