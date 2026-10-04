@@ -1,4 +1,11 @@
 import { getOrCreateAgent, type SessionBackend } from "@semoss/agent-core";
+import {
+	getMCPTools,
+	getRoomMCPTools as getRoomMCPToolsAPI,
+	type MCPToolConfig,
+	type MCPToolDescriptor,
+	setRoomMCPTools as setRoomMCPToolsAPI,
+} from "@semoss/sdk";
 import { AgentStore } from "@semoss/sdk/react";
 import {
 	createRoom,
@@ -6,6 +13,19 @@ import {
 	updateRoomOptions,
 	withRoomSettings,
 } from "@/api";
+
+/**
+ * Convert MCPToolDescriptor from the API to MCPToolConfig for the session.
+ */
+function descriptorToConfig(descriptor: MCPToolDescriptor): MCPToolConfig {
+	return {
+		id: descriptor.id,
+		type: descriptor.category || "other",
+		name: descriptor.name,
+		fromWorkspace: false,
+		fromRoom: false,
+	};
+}
 
 /**
  * The session's port to the server.
@@ -57,5 +77,33 @@ export const createSessionBackend = (insightId?: string): SessionBackend => {
 		// that, as it does its own runs.
 		followRun: ({ runId, roomId }) =>
 			getOrCreateAgent(roomId, requireInsight(), runId),
+		fetchMCPTools: async (engineId?: string): Promise<MCPToolConfig[]> => {
+			try {
+				const descriptors = await getMCPTools(engineId, boundInsightId);
+				return descriptors.map(descriptorToConfig);
+			} catch (error) {
+				console.error("Failed to fetch MCP tools:", error);
+				return [];
+			}
+		},
+		setRoomMCPTools: async (
+			roomId: string,
+			toolIds: string[],
+		): Promise<void> => {
+			try {
+				await setRoomMCPToolsAPI(roomId, toolIds, requireInsight());
+			} catch (error) {
+				console.error("Failed to set room MCP tools:", error);
+				throw error;
+			}
+		},
+		getRoomMCPTools: async (roomId: string): Promise<string[]> => {
+			try {
+				return await getRoomMCPToolsAPI(roomId, requireInsight());
+			} catch (error) {
+				console.error("Failed to get room MCP tools:", error);
+				return [];
+			}
+		},
 	};
 };
