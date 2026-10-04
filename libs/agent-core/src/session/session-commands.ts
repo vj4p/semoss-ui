@@ -309,6 +309,13 @@ export const createSessionCommands = ({
 			onShowOverlay?.("inbox");
 		},
 	},
+	{
+		name: "mcp",
+		describe: "command.mcp",
+		run: () => {
+			onShowOverlay?.("mcp");
+		},
+	},
 	...(canExport
 		? [
 				{

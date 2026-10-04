@@ -164,6 +164,7 @@
 			"packs": "List capability packs",
 			"cost": "Show cost and usage breakdown",
 			"inbox": "View notifications and messages",
+			"mcp": "Manage MCP tools",
 			"export": "Save the last run's raw events as JSON"
 		},
 		"help": {
@@ -184,6 +185,22 @@
 			"deny": "Deny the waiting tool call (prompt empty)",
 			"edit": "Edit the waiting call's arguments (prompt empty)",
 			"alwaysAllow": "Approve it, and stop asking about its tool (prompt empty)"
+		},
+		"mcp": {
+			"title": "MCP Tools",
+			"description": "Select which MCP tools the agent can use in this conversation.",
+			"noTools": "No MCP tools available",
+			"noToolsDescription": "Connect an MCP server to add tools.",
+			"addTool": "Add MCP Tool",
+			"aboutTitle": "About MCP Tools",
+			"aboutDescription": "MCP (Model Context Protocol) tools extend the agent's capabilities with specialized functions:",
+			"knowledgeTools": "Knowledge tools:",
+			"knowledgeDescription": " access documentation, code, and databases",
+			"toolboxTools": "Toolbox tools:",
+			"toolboxDescription": " perform actions like file operations and API calls",
+			"agentTools": "Agent tools:",
+			"agentDescription": " coordinate with other agents and services",
+			"comingSoon": "Tool management features coming soon."
 		}
 	}
 }

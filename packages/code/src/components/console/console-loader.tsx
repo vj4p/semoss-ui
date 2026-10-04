@@ -13,6 +13,7 @@ import {
 	HelpOverlay,
 	HistorySearchOverlay,
 	InboxOverlay,
+	MCPOverlay,
 	PacksOverlay,
 	RunsOverlay,
 } from "../overlay";
@@ -110,6 +111,11 @@ const RoomLoader = ({
 					<InboxOverlay
 						open={activeOverlay === "inbox"}
 						onDismiss={() => setActiveOverlay(null)}
+					/>
+					<MCPOverlay
+						open={activeOverlay === "mcp"}
+						onDismiss={() => setActiveOverlay(null)}
+						session={room.session}
 					/>
 					<HistorySearchOverlay
 						open={activeOverlay === "history"}
