@@ -7,6 +7,7 @@ export default createViteConfig({
 	test: {
 		environment: "jsdom",
 		globals: true,
+		setupFiles: ["./vitest.setup.ts"],
 		coverage: {
 			reportsDirectory: "./coverage",
 			include: ["src/**"],
