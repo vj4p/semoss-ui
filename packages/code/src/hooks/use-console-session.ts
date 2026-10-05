@@ -136,6 +136,11 @@ export const useConsoleSession = ({
 					? roomHistoryLines(room.messages, translate)
 					: undefined,
 				translate,
+				// Push-based item events over SSE instead of 500ms polling. Falls
+				// back to polling automatically on any transport error (see
+				// AgentStore.watch's "sse" transport) -- never thrashes between
+				// the two once it has fallen back, for the rest of the run.
+				watchOptions: { transport: "sse" },
 			});
 			sessionRef.current = session;
 			setState({
