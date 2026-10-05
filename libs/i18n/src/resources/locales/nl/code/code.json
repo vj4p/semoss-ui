@@ -76,6 +76,58 @@
 	"announce": {
 		"completed": "De uitvoering is voltooid."
 	},
+	"settings": {
+		"title": "Instellingen",
+		"model": {
+			"title": "Modelconfiguratie",
+			"label": "Model",
+			"description": "Kies welk model te gebruiken voor agentuitvoeringen"
+		},
+		"harness": {
+			"label": "Agent-harness",
+			"description": "Selecteer het type agent-harness voor deze ruimte"
+		},
+		"temperature": {
+			"label": "Temperatuur",
+			"description": "Bepaalt de willekeurigheid. Lagere waarden zijn gerichter en deterministischer, hogere waarden zijn creatiever"
+		},
+		"workspace": {
+			"title": "Werkruimte",
+			"label": "Werkruimte selecteren",
+			"description": "Verbind deze ruimte met een werkruimte om de MCP-tools, prompts en instellingen daarvan over te nemen",
+			"none": "Geen werkruimte",
+			"comingSoon": "Werkruimteselectie komt binnenkort"
+		},
+		"mcp": {
+			"title": "MCP-tools",
+			"description": "Model Context Protocol-tools voor deze ruimte configureren",
+			"comingSoon": "MCP-toolconfiguratie komt binnenkort"
+		}
+	},
+	"agent": {
+		"title": "Agent-harnesses",
+		"description": "Selecteer welke agent-harness voor deze ruimte wordt gebruikt. Elke harness biedt andere mogelijkheden en gedrag.",
+		"noHarnesses": "Geen agent-harnesses beschikbaar",
+		"noHarnessesDescription": "Agent-harnesses verschijnen hier zodra ze zijn geconfigureerd. Controleer uw systeemconfiguratie.",
+		"aboutHarnesses": "Over agent-harnesses",
+		"aboutDescription": "Agent-harnesses bepalen hoe de agent uw verzoeken verwerkt en met tools omgaat. Verschillende harnesses kunnen andere mogelijkheden, geheugenbeheer en uitvoeringsstrategieën hebben."
+	},
+	"mcp": {
+		"title": "MCP-tools",
+		"description": "Beheer Model Context Protocol (MCP)-tools die de mogelijkheden van de agent uitbreiden. MCP-tools kunnen externe services, API's en gegevensbronnen benaderen.",
+		"noTools": "Geen MCP-tools geconfigureerd",
+		"noToolsDescription": "MCP-tools verschijnen hier zodra ze zijn geconfigureerd. Voeg tools toe om de mogelijkheden van de agent uit te breiden.",
+		"addTool": "MCP-tool toevoegen",
+		"aboutTitle": "Over MCP-tools (binnenkort)",
+		"aboutDescription": "Met Model Context Protocol (MCP) kan de agent tijdens uitvoering met externe tools en services communiceren.",
+		"knowledgeTools": "Kennistools:",
+		"knowledgeDescription": "Verbind met vectordatabases, documentopslag en kennisbanken",
+		"toolboxTools": "Toolbox-tools:",
+		"toolboxDescription": "Schakel acties in zoals websearch, bestandsbewerkingen, API-aanroepen",
+		"agentTools": "Agenttools:",
+		"agentDescription": "Gespecialiseerde mogelijkheden voor specifieke workflows",
+		"comingSoon": "MCP-toolconfiguratie komt binnenkort. Tools worden per ruimte configureerbaar en overerfbaar per werkruimte."
+	},
 	"core": {
 		"transcript": {
 			"droppedEvents": "Eerdere gebeurtenissen zijn uit de live feed verwijderd ({{n}}).",
@@ -159,6 +211,9 @@
 			"allowed": "De tools weergeven die zonder te vragen worden uitgevoerd",
 			"revoke": "Weer om goedkeuring vragen voor een tool, of voor alle tools als er geen wordt genoemd",
 			"files": "Browse files",
+			"settings": "De instellingen en voorkeuren van de ruimte configureren",
+			"agent": "Het type agent-harness selecteren",
+			"mcp": "MCP-tools en integraties beheren",
 			"diff": "Show git diff for current changes",
 			"runs": "Browse run history",
 			"packs": "List capability packs",

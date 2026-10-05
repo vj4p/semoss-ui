@@ -75,6 +75,58 @@
 	"announce": {
 		"completed": "実行が完了しました。"
 	},
+	"settings": {
+		"title": "設定",
+		"model": {
+			"title": "モデル構成",
+			"label": "モデル",
+			"description": "エージェントの実行に使用するモデルを選択します"
+		},
+		"harness": {
+			"label": "エージェントハーネス",
+			"description": "このルームで使用するエージェントハーネスの種類を選択します"
+		},
+		"temperature": {
+			"label": "温度",
+			"description": "ランダム性を制御します。値が低いほど焦点が絞られ決定論的になり、値が高いほど創造的になります"
+		},
+		"workspace": {
+			"title": "ワークスペース",
+			"label": "ワークスペースを選択",
+			"description": "このルームをワークスペースに接続すると、その MCP ツール、プロンプト、設定を継承します",
+			"none": "ワークスペースなし",
+			"comingSoon": "ワークスペース選択は近日公開予定"
+		},
+		"mcp": {
+			"title": "MCP ツール",
+			"description": "このルームの Model Context Protocol ツールを構成します",
+			"comingSoon": "MCP ツールの構成は近日公開予定"
+		}
+	},
+	"agent": {
+		"title": "エージェントハーネス",
+		"description": "このルームで使用するエージェントハーネスを選択します。各ハーネスは異なる機能と動作を提供します。",
+		"noHarnesses": "利用可能なエージェントハーネスがありません",
+		"noHarnessesDescription": "構成されるとエージェントハーネスがここに表示されます。システム構成を確認してください。",
+		"aboutHarnesses": "エージェントハーネスについて",
+		"aboutDescription": "エージェントハーネスは、エージェントがリクエストを処理し、ツールと対話する方法を決定します。ハーネスによって機能、メモリ管理、実行戦略が異なる場合があります。"
+	},
+	"mcp": {
+		"title": "MCP ツール",
+		"description": "エージェントの機能を拡張する Model Context Protocol（MCP）ツールを管理します。MCP ツールは外部サービス、API、データソースにアクセスできます。",
+		"noTools": "MCP ツールが構成されていません",
+		"noToolsDescription": "構成されると MCP ツールがここに表示されます。エージェントの機能を拡張するツールを追加してください。",
+		"addTool": "MCP ツールを追加",
+		"aboutTitle": "MCP ツールについて（近日公開）",
+		"aboutDescription": "Model Context Protocol（MCP）により、エージェントは実行中に外部ツールやサービスと対話できます。",
+		"knowledgeTools": "ナレッジツール：",
+		"knowledgeDescription": "ベクターデータベース、ドキュメントストア、ナレッジベースに接続します",
+		"toolboxTools": "ツールボックスツール：",
+		"toolboxDescription": "ウェブ検索、ファイル操作、API 呼び出しなどのアクションを有効にします",
+		"agentTools": "エージェントツール：",
+		"agentDescription": "特定のワークフロー向けの専門機能",
+		"comingSoon": "MCP ツールの構成は近日公開予定です。ツールはルームごとに構成可能になり、ワークスペースから継承できるようになります。"
+	},
 	"core": {
 		"transcript": {
 			"droppedEvents": "以前のイベントがライブフィードから破棄されました ({{n}} 件)。",
@@ -158,6 +210,9 @@
 			"allowed": "確認なしで実行されるツールの一覧を表示",
 			"revoke": "ツールの確認を再開 (名前を省略するとすべてのツール)",
 			"files": "Browse files",
+			"settings": "ルームの設定と環境設定を構成",
+			"agent": "エージェントハーネスの種類を選択",
+			"mcp": "MCP ツールと連携を管理",
 			"diff": "Show git diff for current changes",
 			"runs": "Browse run history",
 			"packs": "List capability packs",

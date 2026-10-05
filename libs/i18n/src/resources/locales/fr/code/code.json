@@ -77,6 +77,58 @@
 	"announce": {
 		"completed": "L'exécution est terminée."
 	},
+	"settings": {
+		"title": "Paramètres",
+		"model": {
+			"title": "Configuration du modèle",
+			"label": "Modèle",
+			"description": "Choisissez le modèle à utiliser pour les exécutions de l'agent"
+		},
+		"harness": {
+			"label": "Harnais de l'agent",
+			"description": "Sélectionnez le type de harnais de l'agent pour cette salle"
+		},
+		"temperature": {
+			"label": "Température",
+			"description": "Contrôle l'aléatoire. Des valeurs plus basses sont plus ciblées et déterministes, des valeurs plus élevées sont plus créatives"
+		},
+		"workspace": {
+			"title": "Espace de travail",
+			"label": "Sélectionner un espace de travail",
+			"description": "Connectez cette salle à un espace de travail pour hériter de ses outils MCP, invites et paramètres",
+			"none": "Aucun espace de travail",
+			"comingSoon": "La sélection d'espace de travail arrive bientôt"
+		},
+		"mcp": {
+			"title": "Outils MCP",
+			"description": "Configurer les outils du protocole de contexte de modèle pour cette salle",
+			"comingSoon": "La configuration des outils MCP arrive bientôt"
+		}
+	},
+	"agent": {
+		"title": "Harnais d'agent",
+		"description": "Sélectionnez le harnais d'agent à utiliser pour cette salle. Chaque harnais offre des capacités et un comportement différents.",
+		"noHarnesses": "Aucun harnais d'agent disponible",
+		"noHarnessesDescription": "Les harnais d'agent apparaîtront ici une fois configurés. Vérifiez la configuration de votre système.",
+		"aboutHarnesses": "À propos des harnais d'agent",
+		"aboutDescription": "Les harnais d'agent déterminent comment l'agent traite vos demandes et interagit avec les outils. Différents harnais peuvent avoir des capacités, une gestion de la mémoire et des stratégies d'exécution différentes."
+	},
+	"mcp": {
+		"title": "Outils MCP",
+		"description": "Gérez les outils du protocole de contexte de modèle (MCP) qui étendent les capacités de l'agent. Les outils MCP peuvent accéder à des services externes, des API et des sources de données.",
+		"noTools": "Aucun outil MCP configuré",
+		"noToolsDescription": "Les outils MCP apparaîtront ici une fois configurés. Ajoutez des outils pour étendre les capacités de l'agent.",
+		"addTool": "Ajouter un outil MCP",
+		"aboutTitle": "À propos des outils MCP (à venir)",
+		"aboutDescription": "Le protocole de contexte de modèle (MCP) permet à l'agent d'interagir avec des outils et services externes pendant l'exécution.",
+		"knowledgeTools": "Outils de connaissance :",
+		"knowledgeDescription": "Connectez-vous à des bases de données vectorielles, des entrepôts de documents et des bases de connaissances",
+		"toolboxTools": "Outils de la boîte à outils :",
+		"toolboxDescription": "Activez des actions telles que la recherche web, les opérations sur fichiers, les appels API",
+		"agentTools": "Outils de l'agent :",
+		"agentDescription": "Capacités spécialisées pour des flux de travail spécifiques",
+		"comingSoon": "La configuration des outils MCP arrive bientôt. Les outils seront configurables par salle et héritables par espace de travail."
+	},
 	"core": {
 		"transcript": {
 			"droppedEvents": "Des événements antérieurs ont été retirés du flux en direct ({{n}}).",
@@ -160,6 +212,9 @@
 			"allowed": "Lister les outils qui s'exécutent sans approbation",
 			"revoke": "Redemander l'approbation pour un outil, ou pour tous si aucun n'est nommé",
 			"files": "Browse files",
+			"settings": "Configurer les paramètres et préférences de la salle",
+			"agent": "Sélectionner le type de harnais de l'agent",
+			"mcp": "Gérer les outils et intégrations MCP",
 			"diff": "Show git diff for current changes",
 			"runs": "Browse run history",
 			"packs": "List capability packs",

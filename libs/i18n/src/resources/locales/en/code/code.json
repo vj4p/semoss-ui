@@ -76,6 +76,58 @@
 	"announce": {
 		"completed": "The run finished."
 	},
+	"settings": {
+		"title": "Settings",
+		"model": {
+			"title": "Model Configuration",
+			"label": "Model",
+			"description": "Choose which model to use for agent runs"
+		},
+		"harness": {
+			"label": "Agent Harness",
+			"description": "Select the agent harness type for this room"
+		},
+		"temperature": {
+			"label": "Temperature",
+			"description": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative"
+		},
+		"workspace": {
+			"title": "Workspace",
+			"label": "Select Workspace",
+			"description": "Connect this room to a workspace to inherit its MCP tools, prompts, and settings",
+			"none": "No workspace",
+			"comingSoon": "Workspace selection coming soon"
+		},
+		"mcp": {
+			"title": "MCP Tools",
+			"description": "Configure Model Context Protocol tools for this room",
+			"comingSoon": "MCP tool configuration coming soon"
+		}
+	},
+	"agent": {
+		"title": "Agent Harnesses",
+		"description": "Select which agent harness to use for this room. Each harness provides different capabilities and behavior.",
+		"noHarnesses": "No Agent Harnesses Available",
+		"noHarnessesDescription": "Agent harnesses will appear here once configured. Check your system configuration.",
+		"aboutHarnesses": "About Agent Harnesses",
+		"aboutDescription": "Agent harnesses determine how the agent processes your requests and interacts with tools. Different harnesses may have different capabilities, memory management, and execution strategies."
+	},
+	"mcp": {
+		"title": "MCP Tools",
+		"description": "Manage Model Context Protocol (MCP) tools that extend the agent's capabilities. MCP tools can access external services, APIs, and data sources.",
+		"noTools": "No MCP Tools Configured",
+		"noToolsDescription": "MCP tools will appear here once configured. Add tools to extend the agent's capabilities.",
+		"addTool": "Add MCP Tool",
+		"aboutTitle": "About MCP Tools (Coming Soon)",
+		"aboutDescription": "Model Context Protocol (MCP) allows the agent to interact with external tools and services during execution.",
+		"knowledgeTools": "Knowledge tools:",
+		"knowledgeDescription": "Connect to vector databases, document stores, and knowledge bases",
+		"toolboxTools": "Toolbox tools:",
+		"toolboxDescription": "Enable actions like web search, file operations, API calls",
+		"agentTools": "Agent tools:",
+		"agentDescription": "Specialized capabilities for specific workflows",
+		"comingSoon": "MCP tool configuration coming soon. Tools will be configurable per-room and workspace-inheritable."
+	},
 	"core": {
 		"transcript": {
 			"droppedEvents": "Earlier events were dropped from the live feed ({{n}}).",
@@ -168,58 +220,6 @@
 			"agent": "Select agent harness type",
 			"mcp": "Manage MCP tools and integrations",
 			"export": "Save the last run's raw events as JSON"
-		},
-		"settings": {
-			"title": "Settings",
-			"model": {
-				"title": "Model Configuration",
-				"label": "Model",
-				"description": "Choose which model to use for agent runs"
-			},
-			"harness": {
-				"label": "Agent Harness",
-				"description": "Select the agent harness type for this room"
-			},
-			"temperature": {
-				"label": "Temperature",
-				"description": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative"
-			},
-			"workspace": {
-				"title": "Workspace",
-				"label": "Select Workspace",
-				"description": "Connect this room to a workspace to inherit its MCP tools, prompts, and settings",
-				"none": "No workspace",
-				"comingSoon": "Workspace selection coming soon"
-			},
-			"mcp": {
-				"title": "MCP Tools",
-				"description": "Configure Model Context Protocol tools for this room",
-				"comingSoon": "MCP tool configuration coming soon"
-			}
-		},
-		"agent": {
-			"title": "Agent Harnesses",
-			"description": "Select which agent harness to use for this room. Each harness provides different capabilities and behavior.",
-			"noHarnesses": "No Agent Harnesses Available",
-			"noHarnessesDescription": "Agent harnesses will appear here once configured. Check your system configuration.",
-			"aboutHarnesses": "About Agent Harnesses",
-			"aboutDescription": "Agent harnesses determine how the agent processes your requests and interacts with tools. Different harnesses may have different capabilities, memory management, and execution strategies."
-		},
-		"mcp": {
-			"title": "MCP Tools",
-			"description": "Manage Model Context Protocol (MCP) tools that extend the agent's capabilities. MCP tools can access external services, APIs, and data sources.",
-			"noTools": "No MCP Tools Configured",
-			"noToolsDescription": "MCP tools will appear here once configured. Add tools to extend the agent's capabilities.",
-			"addTool": "Add MCP Tool",
-			"aboutTitle": "About MCP Tools (Coming Soon)",
-			"aboutDescription": "Model Context Protocol (MCP) allows the agent to interact with external tools and services during execution.",
-			"knowledgeTools": "Knowledge tools:",
-			"knowledgeDescription": "Connect to vector databases, document stores, and knowledge bases",
-			"toolboxTools": "Toolbox tools:",
-			"toolboxDescription": "Enable actions like web search, file operations, API calls",
-			"agentTools": "Agent tools:",
-			"agentDescription": "Specialized capabilities for specific workflows",
-			"comingSoon": "MCP tool configuration coming soon. Tools will be configurable per-room and workspace-inheritable."
 		},
 		"help": {
 			"commands": "Commands",

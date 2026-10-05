@@ -77,6 +77,58 @@
 	"announce": {
 		"completed": "La ejecución terminó."
 	},
+	"settings": {
+		"title": "Configuración",
+		"model": {
+			"title": "Configuración del modelo",
+			"label": "Modelo",
+			"description": "Elige qué modelo usar para las ejecuciones del agente"
+		},
+		"harness": {
+			"label": "Arnés del agente",
+			"description": "Selecciona el tipo de arnés del agente para esta sala"
+		},
+		"temperature": {
+			"label": "Temperatura",
+			"description": "Controla la aleatoriedad. Los valores más bajos son más enfocados y deterministas; los más altos son más creativos"
+		},
+		"workspace": {
+			"title": "Espacio de trabajo",
+			"label": "Seleccionar espacio de trabajo",
+			"description": "Conecta esta sala a un espacio de trabajo para heredar sus herramientas MCP, prompts y configuración",
+			"none": "Sin espacio de trabajo",
+			"comingSoon": "La selección de espacio de trabajo llegará próximamente"
+		},
+		"mcp": {
+			"title": "Herramientas MCP",
+			"description": "Configura las herramientas del Protocolo de contexto de modelo para esta sala",
+			"comingSoon": "La configuración de herramientas MCP llegará próximamente"
+		}
+	},
+	"agent": {
+		"title": "Arneses de agente",
+		"description": "Selecciona qué arnés de agente usar para esta sala. Cada arnés ofrece capacidades y comportamientos distintos.",
+		"noHarnesses": "No hay arneses de agente disponibles",
+		"noHarnessesDescription": "Los arneses de agente aparecerán aquí una vez configurados. Verifica la configuración de tu sistema.",
+		"aboutHarnesses": "Acerca de los arneses de agente",
+		"aboutDescription": "Los arneses de agente determinan cómo el agente procesa tus solicitudes e interactúa con las herramientas. Diferentes arneses pueden tener distintas capacidades, gestión de memoria y estrategias de ejecución."
+	},
+	"mcp": {
+		"title": "Herramientas MCP",
+		"description": "Administra las herramientas del Protocolo de contexto de modelo (MCP) que amplían las capacidades del agente. Las herramientas MCP pueden acceder a servicios externos, API y fuentes de datos.",
+		"noTools": "No hay herramientas MCP configuradas",
+		"noToolsDescription": "Las herramientas MCP aparecerán aquí una vez configuradas. Añade herramientas para ampliar las capacidades del agente.",
+		"addTool": "Añadir herramienta MCP",
+		"aboutTitle": "Acerca de las herramientas MCP (próximamente)",
+		"aboutDescription": "El Protocolo de contexto de modelo (MCP) permite que el agente interactúe con herramientas y servicios externos durante la ejecución.",
+		"knowledgeTools": "Herramientas de conocimiento:",
+		"knowledgeDescription": "Conéctate a bases de datos vectoriales, almacenes de documentos y bases de conocimiento",
+		"toolboxTools": "Herramientas de la caja de herramientas:",
+		"toolboxDescription": "Habilita acciones como búsqueda web, operaciones de archivos, llamadas a API",
+		"agentTools": "Herramientas del agente:",
+		"agentDescription": "Capacidades especializadas para flujos de trabajo específicos",
+		"comingSoon": "La configuración de herramientas MCP llegará próximamente. Las herramientas serán configurables por sala y heredables por espacio de trabajo."
+	},
 	"core": {
 		"transcript": {
 			"droppedEvents": "Se descartaron eventos anteriores del flujo en directo ({{n}}).",
@@ -160,6 +212,9 @@
 			"allowed": "Mostrar las herramientas que se ejecutan sin preguntar",
 			"revoke": "Preguntar sobre una herramienta de nuevo, o sobre todas si no se nombra ninguna",
 			"files": "Browse files",
+			"settings": "Configurar los ajustes y preferencias de la sala",
+			"agent": "Seleccionar el tipo de arnés del agente",
+			"mcp": "Administrar las herramientas e integraciones MCP",
 			"diff": "Show git diff for current changes",
 			"runs": "Browse run history",
 			"packs": "List capability packs",
