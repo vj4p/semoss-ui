@@ -180,6 +180,87 @@ export const pollAgentRun = async (
 };
 
 /**
+ * Live counterpart to {@link pollAgentRun}: opens an SSE connection and
+ * invokes `onEvent`/`onSnapshot` as the backend's push stream delivers them,
+ * instead of a client-driven poll loop. Backed by `agentRunStreamingSse`.
+ *
+ * <p>Node affinity: the backend's event buffer is in-process, so this only
+ * receives events when the connection lands on the node actually running
+ * the run -- true today only when the deployment's load balancer honors
+ * sticky sessions (the existing requirement for `pollAgentRun` too, which
+ * reads the same in-process buffer). On a bare `fetch`-balanced deployment
+ * without sticky sessions, prefer {@link AgentStore.watch}'s poll loop,
+ * which this is not a replacement for — see its fallback behavior.
+ *
+ * @param runId - The run to stream.
+ * @param afterSequence - Replay only events with `sequence > afterSequence`;
+ * 0 replays everything the backend still has buffered for this run.
+ * @param handlers.onRun - Fires with the run's current durable snapshot:
+ * once immediately, and again whenever the run pauses for input or reaches
+ * a terminal status (the same boundary {@link pollAgentRun}'s INPUT_REQUIRED
+ * handling uses) — the connection closes right after that second call.
+ * @param handlers.onEvent - Fires once per item event, already deduped and
+ * ordered relative to events this same connection delivered — a caller that
+ * reconnects with a new `afterSequence` is responsible for not double
+ * applying events already applied from an earlier connection.
+ * @param handlers.onError - Fires on a transport-level EventSource error
+ * (not a `stream-error` payload, which is a request-validation failure the
+ * backend reports deliberately — those are IllegalArgumentException-shaped
+ * and non-retryable). The caller decides whether to reconnect or fall back
+ * to polling.
+ * @returns A `close()` to end the subscription. Does not cancel the run.
+ */
+export const streamAgentRun = (
+	runId: string,
+	afterSequence: number,
+	handlers: {
+		onRun: (run: AgentRunSnapshot) => void;
+		onEvent: (event: AgentRunItemEvent) => void;
+		onError?: (error: Event) => void;
+	},
+): { close: () => void } => {
+	if (typeof EventSource === "undefined") {
+		throw new Error("streamAgentRun requires a browser EventSource");
+	}
+
+	const url = new URL(
+		`${Env.MODULE}/api/engine/agentRunStreamingSse`,
+		typeof window !== "undefined" ? window.location.origin : undefined,
+	);
+	url.searchParams.set("runId", runId);
+	url.searchParams.set("lastEventSequence", String(afterSequence));
+
+	// Session-cookie auth, not a bearer token — EventSource can't carry a
+	// custom Authorization header, so this only works for cookie-based
+	// sessions (the same auth the poll endpoint's HttpSession check expects).
+	const source = new EventSource(url.toString(), { withCredentials: true });
+
+	source.addEventListener("run", (message) => {
+		handlers.onRun(JSON.parse((message as MessageEvent).data));
+	});
+	source.addEventListener("event", (message) => {
+		handlers.onEvent(JSON.parse((message as MessageEvent).data));
+	});
+	source.addEventListener("stream-error", (message) => {
+		const payload = JSON.parse((message as MessageEvent).data) as {
+			errorMessage?: string;
+		};
+		handlers.onError?.(
+			new ErrorEvent("error", {
+				error: new Error(
+					payload.errorMessage || "Agent run stream error",
+				),
+			}),
+		);
+	});
+	if (handlers.onError) {
+		source.onerror = handlers.onError;
+	}
+
+	return { close: () => source.close() };
+};
+
+/**
  * Get the durable AgentRun snapshot directly (GetAgentRun), optionally with
  * this run's persisted room messages. For reconciliation, not live progress.
  *

@@ -4,6 +4,7 @@ import {
 	pollAgentRun,
 	runAgent,
 	stopAgentRun,
+	streamAgentRun,
 } from "../../api/agent";
 import type {
 	AgentRunItem,
@@ -35,14 +36,25 @@ export interface AgentWatchHandlers {
 
 /** Options passed to {@link AgentStore.watch}. */
 export interface AgentWatchOptions {
-	/** Base delay between polls in ms. Defaults to 500. */
+	/** Base delay between polls in ms. Defaults to 500. Ignored when `transport` is "sse". */
 	pollIntervalMs?: number;
-	/** Multiplier on pollIntervalMs while INPUT_REQUIRED. Defaults to 3. */
+	/** Multiplier on pollIntervalMs while INPUT_REQUIRED. Defaults to 3. Ignored when `transport` is "sse". */
 	inputRequiredIntervalMultiplier?: number;
 	/** Stops polling without affecting the run itself. */
 	signal?: AbortSignal;
-	/** Consecutive poll failures tolerated before the subscription attempts one durable reconcile and stops. Defaults to 8. */
+	/** Consecutive poll failures tolerated before the subscription attempts one durable reconcile and stops. Defaults to 8. Ignored when `transport` is "sse" (an SSE transport failure falls back to polling instead; see `transport`). */
 	maxConsecutiveFailures?: number;
+	/**
+	 * "poll" (default) drives a client-side poll loop against `pollAgentRun`,
+	 * same as always. "sse" instead opens one push connection
+	 * (`streamAgentRun`) and reconciles the exact same way on completion or
+	 * pause; a transport-level SSE error (not a run error) closes the
+	 * connection and falls back to the "poll" loop for the rest of this
+	 * subscription's life, picking up from wherever the backend's drain
+	 * buffer currently is -- no event is replayed twice, because the fallback
+	 * only starts draining after the SSE connection has already closed.
+	 */
+	transport?: "poll" | "sse";
 }
 
 const TERMINAL_RUN_STATUSES: ReadonlySet<AgentRunStatusValue> = new Set([
@@ -192,6 +204,7 @@ export class AgentStore {
 			inputRequiredIntervalMultiplier = 3,
 			signal,
 			maxConsecutiveFailures = 8,
+			transport = "poll",
 		} = options;
 		const { onEvent, onSnapshot, onReconcile, onError } = handlers;
 
@@ -206,6 +219,12 @@ export class AgentStore {
 		// INPUT_REQUIRED's slower interval for a change it already knows just
 		// happened.
 		let wake: (() => void) | null = null;
+		// Lets stop() force-settle whichever SSE connection is currently open,
+		// the same way wake lets it cut a poll-loop sleep short. Without this,
+		// calling stop() while sseThenPollLoop is blocked on an open
+		// connection (not sleeping between connections) would never resolve
+		// `done` -- the EventSource stays open until the run itself finishes.
+		let abortActiveConnection: (() => void) | null = null;
 
 		const stop = () => {
 			if (stopped) {
@@ -214,6 +233,7 @@ export class AgentStore {
 			stopped = true;
 			signal?.removeEventListener("abort", stop);
 			wake?.();
+			abortActiveConnection?.();
 		};
 
 		const pokeNow = () => wake?.();
@@ -326,7 +346,140 @@ export class AgentStore {
 			}
 		};
 
-		const done = loop().then(
+		/**
+		 * One SSE connection's whole life: replays from `afterSequence`,
+		 * applies live events the same way `loop()` applies polled ones (same
+		 * `seenEventIds`/`itemsState`, so switching transports mid-run never
+		 * double-applies anything), and settles once the backend closes the
+		 * stream (paused or terminal) or the transport itself errors.
+		 *
+		 * @returns "input_required" / "terminal" (the run told us, with
+		 * `onReconcile` already fired for the final build before returning
+		 * terminal), or "error" (the connection dropped unexpectedly — the
+		 * caller falls back to `loop()`).
+		 */
+		const openSseConnection = (
+			afterSequence: number,
+		): Promise<{
+			outcome: "input_required" | "terminal" | "error";
+			lastEventSequence: number;
+		}> =>
+			new Promise((resolve) => {
+				let settled = false;
+				let lastEventSequence = afterSequence;
+				const settle = (result: {
+					outcome: "input_required" | "terminal" | "error";
+					lastEventSequence: number;
+				}) => {
+					if (settled) {
+						return;
+					}
+					settled = true;
+					abortActiveConnection = null;
+					resolve(result);
+				};
+				const connection = streamAgentRun(runId, afterSequence, {
+					onRun: (run) => {
+						lastSnapshot = run;
+						onSnapshot(run, { droppedEvents: 0 });
+						if (settled) {
+							return;
+						}
+						if (run.status === "INPUT_REQUIRED") {
+							connection.close();
+							void reconcile(run.status).then(() =>
+								settle({
+									outcome: "input_required",
+									lastEventSequence,
+								}),
+							);
+						} else if (TERMINAL_RUN_STATUSES.has(run.status)) {
+							connection.close();
+							void reconcile(run.status).then(() =>
+								settle({
+									outcome: "terminal",
+									lastEventSequence,
+								}),
+							);
+						}
+					},
+					onEvent: (event) => {
+						lastEventSequence = Math.max(
+							lastEventSequence,
+							event.sequence,
+						);
+						if (seenEventIds.has(event.eventId)) {
+							return;
+						}
+						seenEventIds.add(event.eventId);
+						itemsState = applyAgentRunItemEvent(itemsState, event);
+						onEvent(event, itemsState);
+					},
+					onError: (error) => {
+						if (settled) {
+							return;
+						}
+						connection.close();
+						onError?.(
+							error instanceof ErrorEvent && error.error
+								? (error.error as Error)
+								: new Error("Agent run SSE transport error"),
+						);
+						settle({ outcome: "error", lastEventSequence });
+					},
+				});
+				if (stopped) {
+					connection.close();
+					settle({ outcome: "terminal", lastEventSequence });
+					return;
+				}
+				abortActiveConnection = () => {
+					connection.close();
+					settle({ outcome: "terminal", lastEventSequence });
+				};
+			});
+
+		/**
+		 * Drives SSE connections end to end: reopens on every INPUT_REQUIRED
+		 * pause (the backend closes the stream rather than hold a connection
+		 * open across a synchronous wait with nothing to push), stops on a
+		 * true terminal status, and falls through to `loop()` — the ordinary
+		 * poll loop, continuing from the same `lastEventSequence` the drain
+		 * endpoint would otherwise have raced with — on the first transport
+		 * error, for the rest of this subscription's life. SSE is never
+		 * retried once it has errored once: a flaky connection that keeps
+		 * reopening would thrash between push and poll instead of settling.
+		 */
+		const sseThenPollLoop = async () => {
+			let afterSequence = 0;
+			while (!stopped) {
+				const { outcome, lastEventSequence } =
+					await openSseConnection(afterSequence);
+				afterSequence = lastEventSequence;
+				if (stopped) {
+					break;
+				}
+				if (outcome === "terminal") {
+					stop();
+					break;
+				}
+				if (outcome === "error") {
+					break;
+				}
+				// input_required: allow a later pause to reconcile again once
+				// the run resumes, then wait for pokeNow() (decide() calls it)
+				// or the same slower retry interval the poll loop uses, and
+				// reopen — the reopened connection's first "run" frame reports
+				// whatever the current status actually is.
+				reconciledStatus = null;
+				await sleep(pollIntervalMs * inputRequiredIntervalMultiplier);
+			}
+			if (!stopped) {
+				await loop();
+			}
+		};
+
+		const done = (transport === "sse" ? sseThenPollLoop() : loop()).then(
 			() => lastSnapshot,
 			() => lastSnapshot,
 		);

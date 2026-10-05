@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAgentRun, pollAgentRun } from "../../api/agent";
+import { getAgentRun, pollAgentRun, streamAgentRun } from "../../api/agent";
 import type {
 	AgentRunItem,
 	AgentRunItemEvent,
@@ -17,10 +17,12 @@ vi.mock("../../api/agent", () => ({
 	decideAgentRunAction: vi.fn(),
 	runAgent: vi.fn(),
 	stopAgentRun: vi.fn(),
+	streamAgentRun: vi.fn(),
 }));
 
 const mockPollAgentRun = vi.mocked(pollAgentRun);
 const mockGetAgentRun = vi.mocked(getAgentRun);
+const mockStreamAgentRun = vi.mocked(streamAgentRun);
 
 const snapshot = (
 	status: AgentRunSnapshot["status"],
@@ -90,6 +92,7 @@ const newAgent = (runId = "run-1") =>
 beforeEach(() => {
 	mockPollAgentRun.mockReset();
 	mockGetAgentRun.mockReset();
+	mockStreamAgentRun.mockReset();
 });
 
 describe("applyAgentRunItemEvent", () => {
@@ -407,5 +410,146 @@ describe("AgentStore.watch", () => {
 
 		expect(last === null || last.status === "RUNNING").toBe(true);
 		expect(mockGetAgentRun).not.toHaveBeenCalled();
+	});
+});
+
+describe("AgentStore.watch with transport: 'sse'", () => {
+	/** Minimal fake EventSource-connection controller for streamAgentRun's mock. */
+	type FakeConnection = {
+		handlers: {
+			onRun: (run: AgentRunSnapshot) => void;
+			onEvent: (event: AgentRunItemEvent) => void;
+			onError?: (error: Event) => void;
+		};
+		close: ReturnType<typeof vi.fn>;
+	};
+
+	const mockStream = (): FakeConnection[] => {
+		const connections: FakeConnection[] = [];
+		mockStreamAgentRun.mockImplementation((_runId, _after, handlers) => {
+			const close = vi.fn();
+			connections.push({ handlers, close });
+			return { close };
+		});
+		return connections;
+	};
+
+	it("applies live events and resolves done on a terminal run frame", async () => {
+		const runId = "sse-terminal";
+		const connections = mockStream();
+		mockGetAgentRun.mockResolvedValue({
+			...snapshot("COMPLETED", runId),
+			messages: [],
+		});
+
+		const events: AgentRunItemEvent[] = [];
+		const reconciles: AgentRunSnapshot[] = [];
+		const subscription = newAgent(runId).watch(
+			{
+				onEvent: (event) => events.push(event),
+				onSnapshot: () => undefined,
+				onReconcile: (full) => reconciles.push(full),
+			},
+			{ transport: "sse" },
+		);
+
+		expect(mockStreamAgentRun).toHaveBeenCalledWith(
+			runId,
+			0,
+			expect.anything(),
+		);
+		const connection = connections[0];
+		connection.handlers.onEvent(startedEvent(1, messageItem("m1", "hi")));
+		connection.handlers.onRun(snapshot("COMPLETED", runId));
+
+		const last = await subscription.done;
+
+		expect(events).toHaveLength(1);
+		expect(connection.close).toHaveBeenCalled();
+		expect(reconciles).toHaveLength(1);
+		expect(reconciles[0].status).toBe("COMPLETED");
+		expect(last?.status).toBe("COMPLETED");
+		// A terminal run frame must not fall through to the poll loop.
+		expect(mockPollAgentRun).not.toHaveBeenCalled();
+	});
+
+	it("reopens the connection, carrying the last sequence forward, on an INPUT_REQUIRED pause", async () => {
+		const runId = "sse-paused";
+		const connections = mockStream();
+		mockGetAgentRun.mockResolvedValue({
+			...snapshot("INPUT_REQUIRED", runId),
+			messages: [],
+		});
+
+		const agent = newAgent(runId);
+		agent.watch(
+			{
+				onEvent: () => undefined,
+				onSnapshot: () => undefined,
+				onReconcile: () => undefined,
+			},
+			{
+				transport: "sse",
+				pollIntervalMs: 1,
+				inputRequiredIntervalMultiplier: 1,
+			},
+		);
+
+		await vi.waitFor(() => expect(connections).toHaveLength(1));
+		connections[0].handlers.onEvent(
+			startedEvent(5, messageItem("m1", "hi")),
+		);
+		connections[0].handlers.onRun(snapshot("INPUT_REQUIRED", runId));
+
+		// The pause closes connection #1 and, after the retry wait, opens a
+		// second one carrying forward the last sequence seen (5) so nothing
+		// buffered on the backend between pause and resume is replayed twice
+		// or skipped.
+		await vi.waitFor(() => expect(connections).toHaveLength(2));
+		expect(connections[0].close).toHaveBeenCalled();
+		expect(mockStreamAgentRun).toHaveBeenNthCalledWith(
+			2,
+			runId,
+			5,
+			expect.anything(),
+		);
+
+		agent.stop();
+		await agent.done;
+	});
+
+	it("falls back to polling after one SSE transport error and never reopens SSE", async () => {
+		const runId = "sse-falls-back";
+		const connections = mockStream();
+		mockPollAgentRun.mockResolvedValue({
+			run: snapshot("RUNNING", runId),
+			events: [],
+			droppedEvents: 0,
+		});
+
+		const errors: Error[] = [];
+		const agent = newAgent(runId);
+		agent.watch(
+			{
+				onEvent: () => undefined,
+				onSnapshot: () => undefined,
+				onReconcile: () => undefined,
+				onError: (error) => errors.push(error),
+			},
+			{ transport: "sse", pollIntervalMs: 1 },
+		);
+
+		await vi.waitFor(() => expect(connections).toHaveLength(1));
+		connections[0].handlers.onError?.(new ErrorEvent("error"));
+
+		// The poll loop should now be driving this subscription — give it a
+		// moment to make at least one call.
+		await vi.waitFor(() => expect(mockPollAgentRun).toHaveBeenCalled());
+
+		expect(errors).toHaveLength(1);
+		expect(connections).toHaveLength(1); // never reopened SSE
+
+		agent.stop();
+		await agent.done;
 	});
 });
