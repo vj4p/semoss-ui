@@ -68,6 +68,14 @@ export const useConsoleSession = ({
 	const generationRef = useRef(0);
 	/** Where the session is, which is where the URL should be. */
 	const sessionRoomRef = useRef<string | undefined>(undefined);
+	/**
+	 * The insight the session's room is bound to. Needed because `onRoomChange`
+	 * only carries a room id, but the :mcp overlay (the only consumer of
+	 * `openedRoom`) needs the insight too, and a session that started with no
+	 * room learns its insight asynchronously, inside the backend's own
+	 * `createRoom` -- there is nowhere else to read it from afterward.
+	 */
+	const insightIdRef = useRef<string | undefined>(undefined);
 	const latest = useRef({
 		catalog,
 		defaultModelId,
@@ -102,8 +110,11 @@ export const useConsoleSession = ({
 		const start = (room?: OpenedRoom) => {
 			const { catalog, defaultModelId, translate, onShowOverlay } =
 				latest.current;
+			insightIdRef.current = room?.insightId;
 			const session = createSession({
-				backend: createSessionBackend(room?.insightId),
+				backend: createSessionBackend(room?.insightId, (insightId) => {
+					insightIdRef.current = insightId;
+				}),
 				host: {
 					onRoomChange: (next) => {
 						const previous = sessionRoomRef.current;
@@ -121,6 +132,28 @@ export const useConsoleSession = ({
 								? "/"
 								: `/room/${encodeURIComponent(next)}`,
 							{ replace: next !== undefined },
+						);
+						// The session just created its first room (or left
+						// one with :new): tell the :mcp overlay. insightIdRef
+						// is already set by this point -- createRoom's
+						// onInsightBound callback runs synchronously before
+						// its promise resolves, and this handler only runs
+						// after that resolution (see launch() in session.ts).
+						setState((state) =>
+							state.status === "ready"
+								? {
+										...state,
+										openedRoom:
+											next !== undefined &&
+											insightIdRef.current
+												? {
+														roomId: next,
+														insightId:
+															insightIdRef.current,
+													}
+												: undefined,
+									}
+								: state,
 						);
 					},
 					saveExport: downloadRunExport,

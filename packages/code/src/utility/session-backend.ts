@@ -19,9 +19,19 @@ import {
  * @name createSessionBackend
  * @param insightId - Insight the opened room is bound to, when the session
  * starts in one.
+ * @param onInsightBound - Called once, synchronously before `createRoom`
+ * resolves, when a session with no room creates one and so first learns its
+ * insight. The host state (`useConsoleSession`) has no other way to find out:
+ * this insight lives only in this closure's `boundInsightId`, and the state
+ * it hands the `:mcp` overlay is otherwise never updated after the session is
+ * created, leaving `insightId` stuck `undefined` and MCPOverlay unable to
+ * tell `:mcp` apart from "no room yet" for the rest of that session.
  * @return The backend to create the session with.
  */
-export const createSessionBackend = (insightId?: string): SessionBackend => {
+export const createSessionBackend = (
+	insightId?: string,
+	onInsightBound?: (insightId: string) => void,
+): SessionBackend => {
 	let boundInsightId = insightId;
 
 	const requireInsight = (): string => {
@@ -35,6 +45,7 @@ export const createSessionBackend = (insightId?: string): SessionBackend => {
 		createRoom: async (settings) => {
 			const room = await createRoom(settings);
 			boundInsightId = room.insightId;
+			onInsightBound?.(room.insightId);
 			return room.roomId;
 		},
 		updateRoom: async (roomId, settings) => {
