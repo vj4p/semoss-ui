@@ -15,7 +15,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@semoss/ui/next";
-import { getRoomOptions, updateRoomOptions } from "@/api";
+import { getRoomOptions, type RoomMcpEntry, updateRoomOptions } from "@/api";
 import { OverlayContainer } from "./overlay-container";
 
 export interface MCPOverlayProps {
@@ -28,18 +28,62 @@ export interface MCPOverlayProps {
 
 type Tab = "TOOLBOX" | "KNOWLEDGE";
 
+/** The catalog types `MCPConfig` accepts. Mirrors `MCP["type"]` in `@semoss/shared`. */
+const MCP_TYPES = new Set<MCPConfig["type"]>([
+	"PROJECT",
+	"STORAGE",
+	"DATABASE",
+	"FUNCTION",
+	"MODEL",
+	"VECTOR",
+	"GUARDRAIL",
+	"ROOM",
+]);
+
+/**
+ * Narrow a room-persisted MCP entry (whose `type` is a loose string, since it
+ * round-trips through JSON) into the strict `MCPConfig` the selector expects.
+ * An entry with an unrecognized type cannot be rendered by icon, so it is
+ * dropped rather than mis-typed.
+ */
+const toMCPConfig = (entry: RoomMcpEntry): MCPConfig | undefined => {
+	if (!MCP_TYPES.has(entry.type as MCPConfig["type"])) {
+		return undefined;
+	}
+	return {
+		type: entry.type as MCPConfig["type"],
+		id: entry.id,
+		name: entry.name,
+		fromRoom: entry.fromRoom,
+		fromWorkspace: entry.fromWorkspace,
+	};
+};
+
+/** The reverse of {@link toMCPConfig}, for writing the selection back. */
+const toRoomMcpEntry = (config: MCPConfig): RoomMcpEntry => ({
+	id: config.id,
+	name: config.name,
+	type: config.type,
+	fromRoom: config.fromRoom,
+	fromWorkspace: config.fromWorkspace,
+});
+
 /**
  * Split MCP configs by type
  */
-const splitMcpByType = (mcps: MCPConfig[]) => {
+const splitMcpByType = (mcps: RoomMcpEntry[]) => {
 	const knowledge: MCPConfig[] = [];
 	const toolbox: MCPConfig[] = [];
 
 	for (const mcp of mcps) {
-		if (mcp.type === "VECTOR") {
-			knowledge.push(mcp);
+		const config = toMCPConfig(mcp);
+		if (config === undefined) {
+			continue;
+		}
+		if (config.type === "VECTOR") {
+			knowledge.push(config);
 		} else {
-			toolbox.push(mcp);
+			toolbox.push(config);
 		}
 	}
 
@@ -122,7 +166,7 @@ export const MCPOverlay = ({
 			const currentOptions = await getRoomOptions(insightId, roomId);
 
 			// Combine knowledge and toolbox selections
-			const allMcps = [...knowledge, ...toolbox];
+			const allMcps = [...knowledge, ...toolbox].map(toRoomMcpEntry);
 
 			// Update room options with new MCP selection
 			await updateRoomOptions(insightId, roomId, {

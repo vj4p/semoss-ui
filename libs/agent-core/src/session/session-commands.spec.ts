@@ -118,6 +118,9 @@ describe(":help", () => {
 			[":packs", "List capability packs"],
 			[":cost", "Show cost and usage breakdown"],
 			[":inbox", "View notifications and messages"],
+			[":settings, :config", "Configure room settings and preferences"],
+			[":agent, :agents", "Select agent harness type"],
+			[":mcp, :tools", "Manage MCP tools and integrations"],
 		]);
 	});
 
@@ -212,7 +215,7 @@ describe(":help", () => {
 			segments: [
 				{ text: "  " },
 				{ text: ":help", emphasis: "code" },
-				{ text: " ".repeat(13) },
+				{ text: " ".repeat(15) },
 				{ text: "List commands and keys" },
 			],
 		});

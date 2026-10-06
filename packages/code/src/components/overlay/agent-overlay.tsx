@@ -33,10 +33,9 @@ export const AgentOverlay = ({
 }: AgentOverlayProps) => {
 	const { t } = useTranslation(["code", "common"]);
 	const { harnesses } = useAgentHarnesses({ fallback: [] });
-	const [selectedHarness, setSelectedHarness] = useState<string>(() => {
-		const state = session.getState();
-		return state.harnessType || "claude_code";
-	});
+	const [selectedHarness, setSelectedHarness] = useState<string>(
+		() => session.getState().harness ?? "",
+	);
 
 	const handleSelect = async (harnessName: string) => {
 		setSelectedHarness(harnessName);

@@ -16,7 +16,6 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	Slider,
 } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
 
@@ -27,14 +26,13 @@ interface SettingsOverlayProps {
 }
 
 /**
- * Settings overlay for configuring room options
+ * Settings overlay for configuring room options.
  *
- * Allows selection of:
- * - Model
- * - Agent harness type
- * - Workspace
- * - MCP tools (future)
- * - Temperature and other parameters
+ * Allows selection of the model and the agent harness, through the same
+ * `setModel`/`setHarness` the `:model` and `:harness` commands call, so a
+ * change made here can never drift from what the prompt can do. Workspace
+ * and MCP tool management are not session concerns (`:mcp` owns tools) and
+ * are shown here only as a coming-soon notice.
  */
 export const SettingsOverlay = ({
 	open,
@@ -46,45 +44,28 @@ export const SettingsOverlay = ({
 
 	const [modelId, setModelId] = useState<string>("");
 	const [modelName, setModelName] = useState<string>("");
-	const [harnessType, setHarnessType] = useState<string>("claude_code");
-	const [temperature, setTemperature] = useState<number>(1.0);
-	const [workspaceId, setWorkspaceId] = useState<string>("");
+	const [harness, setHarness] = useState<string>("");
 
 	// Load current settings from session state
 	useEffect(() => {
 		if (!open) return;
 
 		const state = session.getState();
-		if (state.model?.app_id) {
-			setModelId(state.model.app_id);
-			setModelName(
-				state.model.engine_display_name || state.model.app_name || "",
-			);
-		}
-		if (state.harnessType) {
-			setHarnessType(state.harnessType);
-		}
-		if (typeof state.temperature === "number") {
-			setTemperature(state.temperature);
-		}
+		setModelId(state.modelId ?? "");
+		setModelName(
+			state.catalog.models.find((model) => model.id === state.modelId)
+				?.name ?? "",
+		);
+		setHarness(state.harness ?? "");
 	}, [open, session]);
 
-	const handleApply = () => {
-		// Apply settings to session
-		const updates: Record<string, unknown> = {};
-
-		if (modelId) {
-			updates.model = { app_id: modelId, app_name: modelName };
+	const handleApply = async () => {
+		if (modelId && modelId !== session.getState().modelId) {
+			await session.setModel(modelId);
 		}
-		if (harnessType) {
-			updates.harnessType = harnessType;
+		if (harness && harness !== session.getState().harness) {
+			await session.setHarness(harness);
 		}
-		if (typeof temperature === "number") {
-			updates.temperature = temperature;
-		}
-
-		// Update session state
-		session.setState(updates);
 		onDismiss();
 	};
 
@@ -113,14 +94,11 @@ export const SettingsOverlay = ({
 									engineTypes={["MODEL"]}
 									metaFilters={[{ tag: "text-generation" }]}
 									onChange={(engine) => {
-										if (engine) {
-											setModelId(engine.app_id);
-											setModelName(
-												engine.engine_display_name ||
-													engine.app_name ||
-													"",
-											);
-										}
+										setModelId(engine.engine_id);
+										setModelName(
+											engine.engine_display_name ||
+												engine.engine_name,
+										);
 									}}
 									popoverContentProps={{
 										align: "start",
@@ -133,45 +111,25 @@ export const SettingsOverlay = ({
 									{t("settings.harness.label")}
 								</FieldLabel>
 								<Select
-									value={harnessType}
-									onValueChange={setHarnessType}
+									value={harness}
+									onValueChange={setHarness}
 								>
 									<SelectTrigger className="w-full">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{harnesses.map((harness) => (
+										{harnesses.map((option) => (
 											<SelectItem
-												key={harness.name}
-												value={harness.name}
+												key={option.name}
+												value={option.name}
 											>
-												{harness.label || harness.name}
+												{option.label || option.name}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
 								<FieldDescription>
 									{t("settings.harness.description")}
-								</FieldDescription>
-							</Field>
-
-							<Field>
-								<FieldLabel>
-									{t("settings.temperature.label")}:{" "}
-									{temperature.toFixed(1)}
-								</FieldLabel>
-								<Slider
-									value={[temperature]}
-									onValueChange={([value]) =>
-										setTemperature(value)
-									}
-									min={0}
-									max={2}
-									step={0.1}
-									className="w-full"
-								/>
-								<FieldDescription>
-									{t("settings.temperature.description")}
 								</FieldDescription>
 							</Field>
 						</FieldGroup>
@@ -184,33 +142,9 @@ export const SettingsOverlay = ({
 						<FieldDescription>
 							{t("settings.workspace.description")}
 						</FieldDescription>
-
-						<Field>
-							<FieldLabel>
-								{t("settings.workspace.label")}
-							</FieldLabel>
-							<Select
-								value={workspaceId}
-								onValueChange={setWorkspaceId}
-							>
-								<SelectTrigger className="w-full">
-									<SelectValue
-										placeholder={t(
-											"settings.workspace.none",
-										)}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="">
-										{t("settings.workspace.none")}
-									</SelectItem>
-									{/* Workspace list would be populated from API */}
-								</SelectContent>
-							</Select>
-							<FieldDescription>
-								{t("settings.workspace.comingSoon")}
-							</FieldDescription>
-						</Field>
+						<FieldDescription>
+							{t("settings.workspace.comingSoon")}
+						</FieldDescription>
 					</FieldSet>
 
 					<FieldSet>
