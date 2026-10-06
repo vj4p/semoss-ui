@@ -110,6 +110,15 @@ export const MCPOverlay = ({
 	const [applying, setApplying] = useState(false);
 	const [loading, setLoading] = useState(false);
 
+	// The first prompt is what creates a room (see Session.sendMessage), so
+	// opening :mcp before sending anything leaves both of these undefined.
+	// Apply used to no-op silently in that case -- console.warn and dismiss,
+	// as if the selection had been saved -- which left the user believing
+	// their tools were attached when nothing happened at all. Surface it
+	// instead: disable Apply and explain why, rather than lying about success.
+	const roomId = roomIdProp ?? session.getState().roomId;
+	const hasRoom = Boolean(roomId && insightId);
+
 	// Load current room's MCP selection on open
 	const wasOpen = useRef(open);
 	useEffect(() => {
@@ -151,12 +160,9 @@ export const MCPOverlay = ({
 	}, [open, session, insightId, roomIdProp]);
 
 	const handleApply = async () => {
-		const roomId = roomIdProp ?? session.getState().roomId;
 		if (!roomId || !insightId) {
-			console.warn(
-				"No room ID or insight ID - cannot save MCP selection",
-			);
-			onDismiss();
+			// Guarded by the disabled Apply button below; this stays only as
+			// a backstop so a stale click can't silently appear to succeed.
 			return;
 		}
 
@@ -254,6 +260,11 @@ export const MCPOverlay = ({
 			)}
 
 			<DialogFooter>
+				{!hasRoom && (
+					<p className="mr-auto text-muted-foreground text-sm">
+						{t("mcp.noRoom")}
+					</p>
+				)}
 				<Button
 					variant="ghost"
 					onClick={() => onDismiss()}
@@ -261,7 +272,10 @@ export const MCPOverlay = ({
 				>
 					Cancel
 				</Button>
-				<Button onClick={handleApply} disabled={applying || loading}>
+				<Button
+					onClick={handleApply}
+					disabled={applying || loading || !hasRoom}
+				>
 					{applying ? "Applying..." : "Apply"}
 				</Button>
 			</DialogFooter>

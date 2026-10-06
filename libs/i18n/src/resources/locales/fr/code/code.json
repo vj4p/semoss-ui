@@ -127,7 +127,8 @@
 		"toolboxDescription": "Activez des actions telles que la recherche web, les opérations sur fichiers, les appels API",
 		"agentTools": "Outils de l'agent :",
 		"agentDescription": "Capacités spécialisées pour des flux de travail spécifiques",
-		"comingSoon": "La configuration des outils MCP arrive bientôt. Les outils seront configurables par salle et héritables par espace de travail."
+		"comingSoon": "La configuration des outils MCP arrive bientôt. Les outils seront configurables par salle et héritables par espace de travail.",
+		"noRoom": "Envoyez d'abord un message pour créer cette salle, puis rouvrez :mcp pour y attacher des outils."
 	},
 	"core": {
 		"transcript": {

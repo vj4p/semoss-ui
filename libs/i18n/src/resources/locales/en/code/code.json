@@ -126,7 +126,8 @@
 		"toolboxDescription": "Enable actions like web search, file operations, API calls",
 		"agentTools": "Agent tools:",
 		"agentDescription": "Specialized capabilities for specific workflows",
-		"comingSoon": "MCP tool configuration coming soon. Tools will be configurable per-room and workspace-inheritable."
+		"comingSoon": "MCP tool configuration coming soon. Tools will be configurable per-room and workspace-inheritable.",
+		"noRoom": "Send a message first to create this room, then reopen :mcp to attach tools to it."
 	},
 	"core": {
 		"transcript": {

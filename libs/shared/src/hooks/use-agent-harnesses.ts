@@ -98,15 +98,23 @@ export const useAgentHarnesses = ({
 	}, [insightId]);
 
 	const harnesses = useMemo<AgentHarnessOption[]>(() => {
-		// Compare against the key rather than asking the i18n instance: i18next
-		// returns the key itself when there is no translation, and that holds
-		// whether the namespace is loaded, missing, or the whole thing is a test
-		// double. Calling i18n.exists() assumed a shape that a mocked
-		// useTranslation does not have, which broke the client's tests.
+		// i18next's "no translation" return value depends on WHY it's missing,
+		// which the original single comparison didn't account for:
+		//   - namespace loaded, key missing  -> returns the full prefixed key
+		//     ("room:harness.types.x.label")
+		//   - namespace never loaded/declared at all (this app's situation
+		//     whenever a host's resource config omits "room", e.g. SEMOSS
+		//     Code's codeResources) -> i18next still parses off the namespace
+		//     and returns just the unprefixed key ("harness.types.x.label")
+		// Comparing only against the full key left that second, unprefixed
+		// form through as if it were a real translation -- which is exactly
+		// the literal "harness.types.semoss.label" text a user would see.
+		// Compare against both forms.
 		const translated = (name: string, field: "label" | "description") => {
 			const key = `room:harness.types.${name}.${field}`;
+			const unprefixed = key.slice(key.indexOf(":") + 1);
 			const value = t(key);
-			return value === key ? "" : value;
+			return value === key || value === unprefixed ? "" : value;
 		};
 
 		const labelled = (name: string) =>

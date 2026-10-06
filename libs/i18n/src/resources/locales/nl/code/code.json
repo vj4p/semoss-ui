@@ -126,7 +126,8 @@
 		"toolboxDescription": "Schakel acties in zoals websearch, bestandsbewerkingen, API-aanroepen",
 		"agentTools": "Agenttools:",
 		"agentDescription": "Gespecialiseerde mogelijkheden voor specifieke workflows",
-		"comingSoon": "MCP-toolconfiguratie komt binnenkort. Tools worden per ruimte configureerbaar en overerfbaar per werkruimte."
+		"comingSoon": "MCP-toolconfiguratie komt binnenkort. Tools worden per ruimte configureerbaar en overerfbaar per werkruimte.",
+		"noRoom": "Stuur eerst een bericht om deze ruimte aan te maken en open :mcp daarna opnieuw om er tools aan te koppelen."
 	},
 	"core": {
 		"transcript": {
