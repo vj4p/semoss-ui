@@ -1,6 +1,7 @@
 // Removed unused import (was: import { link } from "fs");
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: TODO
 
+import mlxLogo from "@/assets/img/MLX.svg";
 import ollamaLogo from "@/assets/img/OLLAMA.svg";
 import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
 
@@ -233,6 +234,18 @@ const OTHER_MODEL_FORM_CONFIG_BY_PROVIDER: Record<string, ModelFormConfig> = {
 			},
 		],
 	},
+	MLX: {
+		fieldOverrides: [
+			{
+				key: "MODEL",
+				patch: { default: "", value: "", disabled: false },
+			},
+			{
+				key: "INIT_MODEL_ENGINE",
+				patch: { disabled: false },
+			},
+		],
+	},
 	Perplexity: {
 		fieldOverrides: [
 			{
@@ -385,6 +398,14 @@ export const IMPORTABLE_MODELS = {
 				"Set the endpoint, model tag, and token limits to match the model running on your Ollama server.",
 			Credentials:
 				"Ollama does not require a real API key - enter any non-empty value to satisfy the OpenAI client.",
+		},
+		MLX: {
+			General:
+				"Connect to a local mlx_lm.server (or compatible MLX runtime) running Apple Silicon-optimized models, via its OpenAI-compatible API.",
+			Settings:
+				"Set the endpoint, model name, and token limits to match the model loaded by your MLX server.",
+			Credentials:
+				"MLX servers do not require a real API key - enter any non-empty value to satisfy the OpenAI client.",
 		},
 		Perplexity: {
 			General:
@@ -2462,6 +2483,273 @@ export const IMPORTABLE_MODELS = {
 			],
 		},
 		{
+			name: "MLX",
+			types: [
+				{
+					model_types: ["llm"],
+					fields: [
+						{
+							key: "NAME",
+							label: "Catalog Name",
+							type: "text",
+							required: true,
+							category: "General",
+							rules: {
+								pattern: {
+									value: /^[\w\-\s]+$/,
+									message:
+										"Catalog names can only contain alphanumeric characters and dashes.",
+								},
+								custom_rules: {
+									value: 'CheckEngineName ( "[VALUE]") ;',
+									message:
+										"This Catalog name has already been used, please try another.",
+								},
+							},
+						},
+						{
+							key: "MODEL_TYPE",
+							label: "Model Type",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "TEXT_GENERATION",
+							category: "General",
+						},
+						{
+							key: "MODEL_BRAND",
+							label: "Model Brand",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "MLX",
+							category: "General",
+						},
+						{
+							key: "MODEL",
+							label: "Model Name",
+							type: "text",
+							disabled: false,
+							required: true,
+							category: "General",
+							helperText:
+								"The exact model id loaded by your mlx_lm.server (or compatible MLX runtime) instance, e.g. mlx-community/Llama-3.2-3B-Instruct-4bit - must match the --model value the server was started with.",
+						},
+						{
+							key: "VAR_NAME",
+							label: "Variable Name",
+							type: "hidden",
+							required: true,
+							disabled: true,
+							value: "myModel",
+							category: "General",
+						},
+						{
+							key: "ENDPOINT",
+							label: "Endpoint",
+							type: "url",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"The MLX server's OpenAI-compatible endpoint, e.g. http://<host>:8080/v1 - must include the /v1 suffix.",
+						},
+						{
+							key: "OPEN_AI_KEY",
+							label: "API Key",
+							type: "password",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"MLX servers do not validate this - any non-empty value works, e.g. 'mlx'.",
+						},
+						{
+							key: "MAX_TOKENS",
+							label: "Max Completion Tokens",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Max Token must be a positive integer",
+								},
+							},
+							category: "Settings",
+						},
+						{
+							key: "CONTEXT_WINDOW",
+							label: "Context Window",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Context Window must be a positive integer",
+								},
+							},
+							category: "Settings",
+						},
+						{
+							key: "KEEP_INPUT_OUTPUT",
+							label: "Record Questions and Responses",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "KEEP_CONVERSATION_HISTORY",
+							label: "Keep Conversation History",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "INIT_MODEL_ENGINE",
+							label: "Init Script",
+							type: "text",
+							required: true,
+							disabled: false,
+							helperText:
+								"Note: MLX is connected using the OpenAI-compatible API.",
+							default:
+								"import genai_client;${VAR_NAME} = genai_client.OpenAiClient(endpoint = '${ENDPOINT}', model_name = '${MODEL}', api_key = '${OPEN_AI_KEY}', context_window = ${CONTEXT_WINDOW}, max_tokens = ${MAX_TOKENS})",
+							category: "Settings",
+						},
+					],
+				},
+				{
+					model_types: ["embedding"],
+					fields: [
+						{
+							key: "NAME",
+							label: "Catalog Name",
+							type: "text",
+							required: true,
+							category: "General",
+							rules: {
+								pattern: {
+									value: /^[\w\-\s]+$/,
+									message:
+										"Catalog names can only contain alphanumeric characters and dashes.",
+								},
+								custom_rules: {
+									value: 'CheckEngineName ( "[VALUE]") ;',
+									message:
+										"This Catalog name has already been used, please try another.",
+								},
+							},
+						},
+						{
+							key: "TAG",
+							label: "Tag",
+							type: "text",
+							disabled: true,
+							required: true,
+							value: "embeddings",
+							category: "General",
+						},
+						{
+							key: "MODEL_TYPE",
+							label: "Model Type",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "TEXT_GENERATION",
+							category: "General",
+						},
+						{
+							key: "MODEL_BRAND",
+							label: "Model Brand",
+							type: "hidden",
+							disabled: true,
+							required: true,
+							default: "MLX",
+							category: "General",
+						},
+						{
+							key: "MODEL",
+							label: "Model Name",
+							type: "text",
+							disabled: false,
+							required: true,
+							category: "General",
+							helperText:
+								"The exact embedding model id loaded by your mlx_lm.server (or a compatible MLX embeddings runtime, e.g. mlx-embeddings) instance.",
+						},
+						{
+							key: "VAR_NAME",
+							label: "Variable Name",
+							type: "hidden",
+							required: true,
+							disabled: true,
+							value: "myModel",
+							category: "General",
+						},
+						{
+							key: "ENDPOINT",
+							label: "Endpoint",
+							type: "url",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"The MLX server's OpenAI-compatible endpoint, e.g. http://<host>:8080/v1 - must include the /v1 suffix.",
+						},
+						{
+							key: "OPEN_AI_KEY",
+							label: "API Key",
+							type: "password",
+							required: true,
+							category: "Credentials",
+							helperText:
+								"MLX servers do not validate this - any non-empty value works, e.g. 'mlx'.",
+						},
+						{
+							key: "MAX_TOKENS",
+							label: "Max Tokens Per Batch",
+							type: "number",
+							required: true,
+							rules: {
+								pattern: {
+									value: /^[1-9]\d*$/,
+									message:
+										"Max Tokens must be a positive integer",
+								},
+							},
+							category: "Settings",
+							helperText:
+								"Token budget the embedder batches against - a longer list of inputs is split into batches of at most this many tokens.",
+						},
+						{
+							key: "KEEP_INPUT_OUTPUT",
+							label: "Record Questions and Responses",
+							type: "select",
+							options: ["true", "false"],
+							required: true,
+							default: "true",
+							category: "Settings",
+						},
+						{
+							key: "INIT_MODEL_ENGINE",
+							label: "Init Script",
+							type: "text",
+							required: true,
+							disabled: false,
+							helperText:
+								'Embedding models need OpenAiEmbedder. The chat client has no embeddings support, so using it fails at call time with "This model does not support embeddings."',
+							default:
+								"from genai_client import OpenAiEmbedder;${VAR_NAME} = OpenAiEmbedder(model_name = '${MODEL}', api_key = '${OPEN_AI_KEY}', base_url = '${ENDPOINT}')",
+							category: "Settings",
+						},
+					],
+				},
+			],
+		},
+		{
 			name: "Perplexity",
 			types: [
 				{
@@ -3752,6 +4040,29 @@ export const MODEL_VERSIONS: ModelVersionsByProvider = {
 			link: "https://github.com/ollama/ollama/blob/main/docs/api.md#generate-embeddings",
 			description:
 				"Connect an embedding model served by a reachable Ollama instance, for vector databases and semantic search.",
+		},
+	],
+	MLX: [
+		{
+			name: "mlx-model",
+			display: "MLX Model",
+			icon: mlxLogo,
+			modelBrand: "MLX",
+			embedding: false,
+			link: "https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/SERVER.md",
+			description:
+				"Connect to a local mlx_lm.server (or compatible MLX runtime) running Apple Silicon-optimized models, using its OpenAI-compatible API.",
+			formConfig: OTHER_MODEL_FORM_CONFIG_BY_PROVIDER.MLX,
+		},
+		{
+			name: "mlx-embedding-model",
+			display: "MLX Embedding Model",
+			icon: mlxLogo,
+			modelBrand: "MLX",
+			embedding: true,
+			link: "https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/SERVER.md",
+			description:
+				"Connect an embedding model served by a reachable MLX embeddings runtime (e.g. mlx-embeddings), for vector databases and semantic search.",
 		},
 	],
 	Perplexity: [

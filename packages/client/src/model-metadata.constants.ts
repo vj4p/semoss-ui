@@ -34,6 +34,7 @@ export const SERVING_PROVIDER_OPTIONS: ModelMetadataOption[] = [
 	{ label: "Perplexity", value: "PERPLEXITY" },
 	{ label: "Self-hosted / Custom Endpoint", value: "SELF_HOSTED" },
 	{ label: "Ollama", value: "OLLAMA" },
+	{ label: "MLX", value: "MLX" },
 	{ label: "Local / Embedded", value: "LOCAL" },
 ];
 

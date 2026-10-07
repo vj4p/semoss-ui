@@ -26,6 +26,7 @@ const MODEL_PROVIDER_SUBTYPE_BY_NAME: Record<string, string> = {
 	Perplexity: "PERPLEXITY",
 	Embedded: "BRAIN",
 	"Model Router": "MODEL_ROUTER",
+	MLX: "MLX",
 };
 
 const MODEL_SUBTYPE_BY_ICON_FILE_NAME: Record<string, string> = {
@@ -39,6 +40,7 @@ const MODEL_SUBTYPE_BY_ICON_FILE_NAME: Record<string, string> = {
 	"HUGGINGFACE_COLOR.svg": "HUGGINGFACE",
 	"META_COLOR.svg": "META",
 	"model_routing.svg": "MODEL_ROUTER",
+	"MLX.svg": "MLX",
 	"MOSAIC.png": "MOSAIC_ML",
 	"NEMO.png": "NEMO",
 	"OPEN_AI.svg": "OPEN_AI",

@@ -32,8 +32,9 @@ export type CatalogModelsByHost = Record<string, CatalogModelEntry[]>;
 
 /**
  * Which catalog serving host feeds each Add-Model provider tab. Tabs not
- * listed here (Azure OpenAI, Self Hosted, Ollama, Embedded, Model Router)
- * stay fully hand-curated - the catalog cannot produce their model ids.
+ * listed here (Azure OpenAI, Self Hosted, Ollama, MLX, Embedded, Model
+ * Router) stay fully hand-curated - the catalog cannot produce their model
+ * ids.
  */
 const CATALOG_HOST_BY_PROVIDER: Record<string, string> = {
 	OpenAI: "openai",

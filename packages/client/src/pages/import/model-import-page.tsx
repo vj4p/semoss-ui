@@ -27,7 +27,7 @@ import {
 	TabsTrigger,
 	toast,
 } from "@semoss/ui/next";
-import { uploadFile } from "@/api";
+import mlxLogo from "@/assets/img/MLX.svg";
 import ollamaLogo from "@/assets/img/OLLAMA.svg";
 import {
 	CATALOG_MODALITIES,
@@ -85,12 +85,14 @@ const MODEL_PROVIDER_SUBTYPE_BY_NAME: Record<string, string> = {
 	Perplexity: "PERPLEXITY",
 	Embedded: "BRAIN",
 	"Model Router": "MODEL_ROUTER",
+	MLX: "MLX",
 };
 
 // Providers whose tab icon isn't in the shared EngineSubtypeIcon registry -
 // rendered directly from a bundled asset instead.
 const PROVIDER_ICON_URL_BY_NAME: Record<string, string> = {
 	Ollama: ollamaLogo,
+	MLX: mlxLogo,
 };
 
 /**
@@ -269,6 +271,7 @@ const SERVING_PROVIDER_BY_NAME: Record<string, string> = {
 	"Azure OpenAI": "AZURE_OPENAI",
 	Embedded: "LOCAL",
 	"Google Gemini": "GOOGLE_VERTEX",
+	MLX: "MLX",
 	"NVIDIA NIM": "NVIDIA_NIM",
 	Ollama: "OLLAMA",
 	OpenAI: "OPENAI",
