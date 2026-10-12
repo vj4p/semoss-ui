@@ -35,7 +35,7 @@ that a CLI host can drive the same session later.
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start the dev server on port 5180 (`DEV_SERVER_PORTS.code`) |
+| `pnpm dev` | Start the dev server on port 5182 (`DEV_SERVER_PORTS.code`) |
 | `pnpm build` | Production build |
 | `pnpm build:dev` | Development build |
 | `pnpm type-check` | `tsc --noEmit` type check |
