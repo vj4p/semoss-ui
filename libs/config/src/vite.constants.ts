@@ -6,8 +6,10 @@ export const DEV_SERVER_PORTS = {
 	browserAutomation: 5176,
 	auditlog: 5177,
 	chromeExtension: 5178,
-	harness: 5179,
-	code: 5180,
+	automationWorkspace: 5179,
+	collaboration: 5180,
+	harness: 5181,
+	code: 5182,
 } as const;
 
 /**

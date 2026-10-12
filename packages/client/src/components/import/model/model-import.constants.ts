@@ -4,6 +4,11 @@
 import mlxLogo from "@/assets/img/MLX.svg";
 import ollamaLogo from "@/assets/img/OLLAMA.svg";
 import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
+import {
+	JEV_CATEGORY_TEXT,
+	JEV_MODEL_VERSIONS,
+	JEV_PROVIDER,
+} from "./jev-model-import.constants";
 
 type FieldType =
 	| "text"
@@ -120,11 +125,11 @@ export interface ModelVersionDefinition {
 	disable?: boolean;
 	audio?: boolean;
 	image?: boolean;
+	/** Selects the provider's form schema; older cards infer it from embedding. */
+	modelType?: "llm" | "embedding" | "evaluation";
 	/**
-	 * Meta-engines (e.g. the Model Router) only point at engines that already
-	 * exist, so the catalog metadata questions (model/serving provider,
-	 * capability, modalities, built-in tools) do not apply and are not added
-	 * to the import form.
+	 * Skip generative-model metadata lookups and fields for engines such as
+	 * model routers and TypeSafe evaluations, where they do not apply.
 	 */
 	skipCatalogMetadata?: boolean;
 	formConfig?: ModelFormConfig;
@@ -335,6 +340,7 @@ export const createDefaultRouterConfigValue = (): RouterConfigFormValue => ({
 
 export const IMPORTABLE_MODELS = {
 	categoryTexts: {
+		Jev: JEV_CATEGORY_TEXT,
 		Anthropic: {
 			General:
 				"Connect directly to Anthropic-hosted Claude models for native provider configuration and branding.",
@@ -426,6 +432,7 @@ export const IMPORTABLE_MODELS = {
 	},
 
 	providers: [
+		JEV_PROVIDER,
 		{
 			name: "Anthropic",
 			types: [
@@ -3115,6 +3122,7 @@ export const withModelTokenLimits = (
 	};
 };
 export const MODEL_VERSIONS: ModelVersionsByProvider = {
+	Jev: JEV_MODEL_VERSIONS,
 	"Model Router": [
 		{
 			name: "model-router",

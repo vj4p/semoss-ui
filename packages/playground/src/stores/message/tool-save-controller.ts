@@ -346,7 +346,7 @@ export class ToolSaveController {
 				platform_generated: true,
 				modelId: room.model.engine_id,
 				dateCreated: new Date().toISOString(),
-				parts: [{ type: "THINKING", thinking: "" }],
+				parts: [],
 				tokens: 0,
 				ornaments: {
 					modelName:
@@ -562,6 +562,10 @@ export class ToolSaveController {
 	 *
 	 * Security: all string values are wrapped in <encode> tags to prevent pixel
 	 * injection via IDs or names containing pixel metacharacters.
+	 *
+	 * The work folder's tools go out again here: the model's follow up call
+	 * only adds the room's own tools, so without them the folder would vanish
+	 * from the model halfway through a task.
 	 */
 	private buildParams = (entry: ToolSaveEntry): string =>
 		`engine=["<encode>${this.message.room.model.engine_id}</encode>"],
@@ -570,7 +574,7 @@ ${this.message.id ? `parentMessageId=["<encode>${this.message.id}</encode>"],` :
 toolId=["<encode>${entry.tool.id}</encode>"],
 toolName=["<encode>${entry.tool.json.name}</encode>"],
 toolExecutionResponse=["<encode>${entry.toolResponse}</encode>"],
-paramValues=[${JSON.stringify({})}],
+paramValues=[${JSON.stringify(this.message.room.chatTools.chatParamValues)}],
 mcpToolStatus=${JSON.stringify(entry.toolStatus)},
 toolParameterValues=[${JSON.stringify(entry.executedParameters ?? {})}]`;
 }

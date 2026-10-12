@@ -47,7 +47,8 @@ Translations used across **all** packages:
 
 ### Tier 2: Package-Specific
 Translations specific to individual packages:
-- `playground/` - Playground app translations (chat, room, sidebar, knowledge, workspace, mcp)
+- `playground/` - Playground app translations (chat, room, sidebar, knowledge, workspace, mcp,
+  tool, tour, mobile, chatTools in `chat-tools.json`, chatConnectors in `chat-connectors.json`)
 - `client/` - Client app translations (for example `githubApp`)
 - `code/` - SEMOSS Code translations. `code.json` holds the console's own copy, with the `@semoss/agent-core` session's words under `core.*`
 
