@@ -62,4 +62,41 @@ describe("useAgentHarnesses, in a host that never loads the room namespace", () 
 			},
 		]);
 	});
+
+	it("shows the backend's displayName for a harness i18n has never heard of", async () => {
+		harnesses.mockResolvedValue([
+			{
+				name: "inbox_brief",
+				displayName: "Inbox brief",
+				description: "",
+				toolSource: "UNSPECIFIED",
+				supportsMediaInput: false,
+				isDefault: false,
+			},
+		]);
+
+		const { result } = mount();
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(result.current.harnesses[0].label).toBe("Inbox brief");
+	});
+
+	it("drops a harness the backend marks not selectable", async () => {
+		harnesses.mockResolvedValue([
+			{
+				name: "inbox_brief",
+				displayName: "inbox_brief",
+				description: "",
+				toolSource: "UNSPECIFIED",
+				supportsMediaInput: false,
+				isSelectable: false,
+				isDefault: false,
+			},
+		]);
+
+		const { result } = mount();
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(result.current.harnesses).toEqual([]);
+	});
 });
