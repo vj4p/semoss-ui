@@ -28,13 +28,13 @@ export const ThemePicker = observer(() => {
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={t("theme.title")}
+							aria-label={t("theme.accent")}
 						>
 							<PaletteIcon />
 						</Button>
 					</PopoverTrigger>
 				</TooltipTrigger>
-				<TooltipContent>{t("theme.title")}</TooltipContent>
+				<TooltipContent>{t("theme.accent")}</TooltipContent>
 			</Tooltip>
 
 			<PopoverContent align="end" className="w-60">

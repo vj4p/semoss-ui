@@ -25,6 +25,10 @@ const normalizeTagKey = (tag: string): string => {
 	return tag.trim().toLowerCase().replace(/\s+/g, " ");
 };
 
+/** One color for light and one for dark; the page's `color-scheme` picks. */
+const lightDark = (light: string, dark: string): string =>
+	`light-dark(${light}, ${dark})`;
+
 const createTagPalette = (tag: string): TagColorPalette => {
 	const hash = hashTag(tag);
 	const hue = hash % 360;
@@ -34,10 +38,21 @@ const createTagPalette = (tag: string): TagColorPalette => {
 	const borderLightness = 74 + ((hash >> 14) % 10);
 	const textLightness = 22 + ((hash >> 20) % 10);
 
+	// Dark mode keeps the tag's hue on a dark fill with light text, so the
+	// chip reads as a tinted label and not a pale patch on a dark page.
 	return {
-		backgroundColor: `hsl(${hue} ${saturation}% ${backgroundLightness}%)`,
-		color: `hsl(${hue} ${textSaturation}% ${textLightness}%)`,
-		borderColor: `hsl(${hue} ${textSaturation}% ${borderLightness}%)`,
+		backgroundColor: lightDark(
+			`hsl(${hue} ${saturation}% ${backgroundLightness}%)`,
+			`hsl(${hue} ${Math.round(saturation * 0.55)}% ${14 + ((hash >> 8) % 5)}%)`,
+		),
+		color: lightDark(
+			`hsl(${hue} ${textSaturation}% ${textLightness}%)`,
+			`hsl(${hue} ${Math.min(80, textSaturation + 20)}% ${78 + ((hash >> 20) % 8)}%)`,
+		),
+		borderColor: lightDark(
+			`hsl(${hue} ${textSaturation}% ${borderLightness}%)`,
+			`hsl(${hue} ${Math.round(textSaturation * 0.6)}% ${30 + ((hash >> 14) % 8)}%)`,
+		),
 	};
 };
 

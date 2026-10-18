@@ -15,11 +15,7 @@ import PlaywrightDark from "@/assets/img/Playwright-dark.svg";
 import Terminal from "@/assets/img/Terminal.png";
 import TerminalDark from "@/assets/img/Terminal-dark.png";
 import { NewAppModal } from "@/components/app";
-import {
-	BannerSection,
-	LandingHeader,
-	SystemAppCard,
-} from "@/components/landing";
+import { LandingHeader, SystemAppCard } from "@/components/landing";
 import { useAdminMode, usePage, useSession } from "@/hooks";
 import { useNavigate } from "@/hooks/useNavigate";
 import {
@@ -56,18 +52,6 @@ export const LandingPage: React.FC = () => {
 				<NavbarHeader />
 			</NavbarLeft>
 			<div className="flex w-full flex-col gap-6 pb-8">
-				<BannerSection
-					imageUrl={DevBanner}
-					darkImageUrl={DevBannerDark}
-					tagline={"Experiment with AI in the Playground"}
-					description={
-						"Experience AI that goes beyond chat. Deploy multiple LLMs with powerful tool-calling abilities through MCP integration. Watch AI agents manipulate files, call APIs, and execute real workflows while tackling complex tasks. Turn conversations into actions and ideas into results."
-					}
-					link={{
-						label: "Launch Playground",
-						to: "../../playground/dist/",
-					}}
-				/>
 				{!isRestricted && (
 					<div className="flex w-full flex-col gap-6">
 						<div className="flex grow flex-row gap-6">
