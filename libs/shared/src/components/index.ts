@@ -1,5 +1,6 @@
 export * from "./agent";
 export * from "./app-catalog-avatar";
+export * from "./app-switcher";
 export * from "./auditlog";
 export * from "./cell-output";
 export * from "./column-metadata-modal";
