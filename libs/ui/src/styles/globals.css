@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
 
 
 @import "tailwindcss";
@@ -32,8 +32,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   /* Ensure Tailwind typography tokens exist as real CSS variables at runtime. */
   --text-xs: 0.75rem;
   --text-xs--line-height: calc(1 / 0.75);
