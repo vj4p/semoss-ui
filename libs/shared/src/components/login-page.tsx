@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { useInsight } from "@semoss/sdk/react";
-import { Spinner, ThemeToggle, useTheme } from "@semoss/ui/next";
+import { Spinner, useTheme } from "@semoss/ui/next";
 import { LoginForm } from "./form/login-form";
+import { LoginShell } from "./login-shell";
 
 interface LoginPageProps {
 	/**
@@ -73,55 +74,10 @@ export const LoginPage = ({
 			typeof window !== "undefined" &&
 			window.matchMedia("(prefers-color-scheme: dark)").matches);
 	const resolvedImage = isDark ? imageSrcDark || imageSrc : imageSrc;
-	const hasImage = Boolean(resolvedImage);
 
 	return (
-		<div
-			className={
-				hasImage
-					? "relative grid min-h-svh lg:grid-cols-2"
-					: "relative flex min-h-svh items-center justify-center"
-			}
-		>
-			<div className="absolute end-4 top-4 z-10">
-				<ThemeToggle />
-			</div>
-			<div
-				className={
-					hasImage
-						? "flex flex-col gap-4 p-6 md:p-10"
-						: "flex w-full max-w-xs flex-col gap-4 p-6"
-				}
-			>
-				{branding && (
-					<div className="flex justify-center gap-2 md:justify-start">
-						<div className="flex items-center gap-2 font-medium">
-							{branding}
-						</div>
-					</div>
-				)}
-				<div
-					className={
-						hasImage
-							? "flex flex-1 items-center justify-center"
-							: "flex flex-1 items-center justify-center pt-4"
-					}
-				>
-					<div className="w-full max-w-xs">
-						<LoginForm />
-					</div>
-				</div>
-			</div>
-			{hasImage && (
-				<div className="relative hidden bg-muted lg:block">
-					<img
-						src={resolvedImage}
-						alt=""
-						aria-hidden="true"
-						className="absolute inset-0 h-full w-full select-none object-cover"
-					/>
-				</div>
-			)}
-		</div>
+		<LoginShell brand={branding} heroSrc={resolvedImage}>
+			<LoginForm />
+		</LoginShell>
 	);
 };

@@ -2,8 +2,8 @@ import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 import { Navigate, useLocation } from "react-router";
 import { useInsight } from "@semoss/sdk/react";
-import { LoginForm } from "@semoss/shared";
-import { ThemeToggle, useTheme } from "@semoss/ui/next";
+import { LoginForm, LoginShell } from "@semoss/shared";
+import { useTheme } from "@semoss/ui/next";
 import loginImage from "@/assets/img/login.svg";
 import loginImageDark from "@/assets/img/login-darkmode.png";
 import { AppLogo } from "@/components";
@@ -49,27 +49,10 @@ export const LoginPage = observer(() => {
 		: root.theme.images.login || loginImage;
 
 	return (
-		<div className="grid min-h-svh lg:grid-cols-2">
-			<div className="flex flex-col gap-4 p-6 md:p-10">
-				<div className="flex items-center justify-between gap-2">
-					<div className="flex items-center gap-2 font-medium">
-						<AppLogo full={true} />
-					</div>
-					<ThemeToggle />
-				</div>
-				<div className="flex flex-1 items-center justify-center">
-					<div className="w-full max-w-xs">
-						<LoginForm />
-					</div>
-				</div>
-			</div>
-			<div className="relative hidden bg-muted lg:block">
-				<img
-					src={src}
-					alt="Background"
-					className="absolute inset-0 h-full w-full select-none object-cover"
-				/>
-			</div>
-		</div>
+		<LoginShell brand={<AppLogo full={true} />} heroSrc={src}>
+			<LoginForm
+				resetSubject={`${theme.name?.trim() || "SEMOSS"} Reset Password Request`}
+			/>
+		</LoginShell>
 	);
 });

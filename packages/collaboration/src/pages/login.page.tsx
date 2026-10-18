@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { useInsight } from "@semoss/sdk/react";
-import { LoginForm } from "@semoss/shared";
-import { H1, Spinner } from "@semoss/ui/next";
+import { LoginForm, LoginShell } from "@semoss/shared";
+import { Spinner } from "@semoss/ui/next";
 import semossLogo from "@/assets/img/semoss-logo.svg";
 
 function getReturnTarget(state: unknown): string {
@@ -40,9 +40,9 @@ export const LoginPage = () => {
 	}
 
 	return (
-		<main className="flex min-h-svh items-center justify-center p-6">
-			<div className="w-full max-w-xs space-y-6">
-				<div className="flex items-center justify-center gap-3">
+		<LoginShell
+			brand={
+				<>
 					<img
 						src={semossLogo}
 						alt=""
@@ -50,10 +50,11 @@ export const LoginPage = () => {
 						height={28}
 						className="h-7 w-6 shrink-0 dark:invert"
 					/>
-					<H1 className="font-medium text-xl">Collaboration</H1>
-				</div>
-				<LoginForm />
-			</div>
-		</main>
+					<span className="font-medium text-xl">Collaboration</span>
+				</>
+			}
+		>
+			<LoginForm />
+		</LoginShell>
 	);
 };

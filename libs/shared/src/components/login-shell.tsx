@@ -66,7 +66,7 @@ export function LoginShell({
 	children,
 }: LoginShellProps) {
 	return (
-		<div className="grid min-h-svh bg-background text-foreground lg:grid-cols-2">
+		<main className="grid min-h-svh bg-background text-foreground lg:grid-cols-2">
 			<div className="relative flex flex-col gap-4 p-6 md:p-10">
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2 font-medium">
@@ -93,6 +93,6 @@ export function LoginShell({
 					<LoginArt />
 				)}
 			</div>
-		</div>
+		</main>
 	);
 }

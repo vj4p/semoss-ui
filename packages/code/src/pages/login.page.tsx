@@ -1,7 +1,6 @@
 import { Navigate, useLocation } from "react-router";
 import { useInsight } from "@semoss/sdk/react";
-import { LoginForm } from "@semoss/shared";
-import { ThemeToggle } from "@semoss/ui/next";
+import { LoginForm, LoginShell } from "@semoss/shared";
 
 /**
  * Where the login page was sent from, which is where to go once signed in.
@@ -28,9 +27,8 @@ const fromPath = (state: unknown): string => {
 /**
  * The platform's login form, and a way back to where the user was going.
  *
- * No heading of its own: the form has the page's. Centred while it fits,
- * and from the top once it does not, so that zoom cannot push the top of the
- * form out of reach.
+ * No heading of its own: the form has the page's. The shell grows with its
+ * content, so zoom scrolls the page instead of clipping the form.
  *
  * @name LoginPage
  */
@@ -42,13 +40,8 @@ export const LoginPage = () => {
 		return <Navigate to={fromPath(location.state)} replace />;
 	}
 	return (
-		<main className="items-center-safe justify-center-safe relative flex h-full overflow-y-auto bg-background p-6 text-foreground">
-			<div className="absolute end-4 top-4">
-				<ThemeToggle />
-			</div>
-			<div className="w-full max-w-xs">
-				<LoginForm />
-			</div>
-		</main>
+		<LoginShell brand={<span className="font-mono">SEMOSS Code</span>}>
+			<LoginForm />
+		</LoginShell>
 	);
 };
