@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { downloadBlob, safeHttpsUrl, setFavicon } from "./browser";
+import { downloadBlob, isEmbedded, safeHttpsUrl, setFavicon } from "./browser";
 
 afterEach(() => {
 	vi.restoreAllMocks();
@@ -75,5 +75,28 @@ describe("browser resources", () => {
 		const icon = document.querySelector('link[rel="icon"]');
 		expect(icon?.getAttribute("href")).toBe("data:image/svg+xml,<svg/>");
 		expect(icon?.getAttribute("type")).toBe("image/svg+xml");
+	});
+});
+
+describe("isEmbedded", () => {
+	it("is false in a top-level window", () => {
+		const win = {} as Window;
+		expect(
+			isEmbedded({ self: win, top: win } as Pick<Window, "self" | "top">),
+		).toBe(false);
+	});
+
+	it("is true inside a frame", () => {
+		expect(
+			isEmbedded({ self: {} as Window, top: {} as Window } as Pick<
+				Window,
+				"self" | "top"
+			>),
+		).toBe(true);
+	});
+
+	it("is false when there is no window", () => {
+		vi.stubGlobal("window", undefined);
+		expect(isEmbedded()).toBe(false);
 	});
 });

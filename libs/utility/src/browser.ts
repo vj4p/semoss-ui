@@ -51,3 +51,11 @@ export const downloadBlob = (blob: Blob, fileName: string): void => {
 		URL.revokeObjectURL(url);
 	}
 };
+
+/** True when the page runs inside another page's frame; false with no window (server render). */
+export const isEmbedded = (
+	win: Pick<Window, "self" | "top"> | undefined = typeof window ===
+	"undefined"
+		? undefined
+		: window,
+): boolean => (win ? win.self !== win.top : false);
