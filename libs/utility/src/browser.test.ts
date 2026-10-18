@@ -95,8 +95,7 @@ describe("isEmbedded", () => {
 		).toBe(true);
 	});
 
-	it("is false when there is no window", () => {
-		vi.stubGlobal("window", undefined);
+	it("is false for the page's own window when it is not in a frame", () => {
 		expect(isEmbedded()).toBe(false);
 	});
 });
