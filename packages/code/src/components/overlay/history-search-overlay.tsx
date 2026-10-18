@@ -141,7 +141,7 @@ export const HistorySearchOverlay = ({
 		return (
 			<>
 				{text.slice(0, index)}
-				<mark className="bg-yellow-200 text-foreground dark:bg-yellow-900">
+				<mark className="bg-warning text-foreground">
 					{text.slice(index, index + query.length)}
 				</mark>
 				{text.slice(index + query.length)}
@@ -209,8 +209,8 @@ export const HistorySearchOverlay = ({
 								<span
 									className={`mt-0.5 rounded px-1.5 py-0.5 font-mono text-xs ${
 										item.type === "command"
-											? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
-											: "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-100"
+											? "bg-info-tint text-info"
+											: "bg-success-tint text-success"
 									}`}
 								>
 									{item.type === "command" ? "cmd" : "prompt"}

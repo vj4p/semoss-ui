@@ -204,7 +204,7 @@ export const FilesOverlay = ({ open, onDismiss }: FilesOverlayProps) => {
 					</div>
 				) : error ? (
 					<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-						<p className="font-mono text-red-600 text-sm dark:text-red-400">
+						<p className="font-mono text-destructive text-sm">
 							{error}
 						</p>
 						<p className="text-muted-foreground text-xs">

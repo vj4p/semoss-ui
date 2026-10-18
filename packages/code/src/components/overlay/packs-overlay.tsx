@@ -85,7 +85,7 @@ export const PacksOverlay = ({ open, onDismiss }: PacksOverlayProps) => {
 				</div>
 			) : error ? (
 				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono text-red-600 text-sm dark:text-red-400">
+					<p className="font-mono text-destructive text-sm">
 						{error}
 					</p>
 					<p className="text-muted-foreground text-xs">
@@ -148,7 +148,7 @@ export const PacksOverlay = ({ open, onDismiss }: PacksOverlayProps) => {
 										{pack.toolCount !== 1 ? "s" : ""}
 									</span>
 									{pack.askCount > 0 && (
-										<span className="text-yellow-600 dark:text-yellow-400">
+										<span className="text-warning">
 											{pack.askCount} require
 											{pack.askCount !== 1 ? "" : "s"}{" "}
 											approval

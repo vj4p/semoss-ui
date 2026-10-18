@@ -286,8 +286,8 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 					)}
 
 					{/* Info note */}
-					<div className="rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30">
-						<p className="font-mono text-blue-900 text-xs dark:text-blue-100">
+					<div className="rounded border border-info bg-info-tint p-3">
+						<p className="font-mono text-info text-xs">
 							<strong>Note:</strong> Costs are estimates based on
 							published rates and may not reflect actual billing.
 						</p>

@@ -154,11 +154,11 @@ export const DiffOverlay = ({ open, onDismiss }: DiffOverlayProps) => {
 	const getLineColor = (type: DiffLine["type"]) => {
 		switch (type) {
 			case "addition":
-				return "bg-green-50 text-green-900 dark:bg-green-950/30 dark:text-green-100";
+				return "bg-success-tint text-success ";
 			case "deletion":
-				return "bg-red-50 text-red-900 dark:bg-red-950/30 dark:text-red-100";
+				return "bg-destructive-tint text-destructive ";
 			case "header":
-				return "bg-blue-50 text-blue-900 dark:bg-blue-950/30 dark:text-blue-100";
+				return "bg-info-tint text-info ";
 			case "context":
 				return "text-muted-foreground";
 		}
@@ -185,7 +185,7 @@ export const DiffOverlay = ({ open, onDismiss }: DiffOverlayProps) => {
 				</div>
 			) : error ? (
 				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono text-red-600 text-sm dark:text-red-400">
+					<p className="font-mono text-destructive text-sm">
 						{error}
 					</p>
 					<p className="text-muted-foreground text-xs">
@@ -217,11 +217,11 @@ export const DiffOverlay = ({ open, onDismiss }: DiffOverlayProps) => {
 									{section.file}
 								</span>
 								<span className="font-mono text-muted-foreground text-xs">
-									<span className="text-green-600 dark:text-green-400">
+									<span className="text-success">
 										+{section.additions}
 									</span>
 									{" / "}
-									<span className="text-red-600 dark:text-red-400">
+									<span className="text-destructive">
 										-{section.deletions}
 									</span>
 								</span>

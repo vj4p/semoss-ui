@@ -37,11 +37,11 @@ export const InboxOverlay = ({ open, onDismiss }: InboxOverlayProps) => {
 						No new notifications or messages
 					</p>
 				</div>
-				<div className="mt-4 max-w-md space-y-2 rounded border border-blue-200 bg-blue-50 p-3 text-left dark:border-blue-800 dark:bg-blue-950/30">
-					<p className="font-mono text-blue-900 text-xs dark:text-blue-100">
+				<div className="mt-4 max-w-md space-y-2 rounded border border-info bg-info-tint p-3 text-left">
+					<p className="font-mono text-info text-xs">
 						<strong>Coming soon:</strong>
 					</p>
-					<ul className="ml-4 list-disc space-y-1 text-blue-900 text-xs dark:text-blue-100">
+					<ul className="ml-4 list-disc space-y-1 text-info text-xs">
 						<li>Agent run notifications</li>
 						<li>Collaboration messages</li>
 						<li>System alerts</li>

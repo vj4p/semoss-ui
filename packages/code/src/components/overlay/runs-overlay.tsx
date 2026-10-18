@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@semoss/agent-core";
 import { Spinner } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
+import { describeRunStatus } from "./run-status";
 
 export interface RunsOverlayProps {
 	open: boolean;
@@ -13,7 +14,8 @@ interface RunEntry {
 	id: string;
 	timestamp: Date;
 	prompt: string;
-	status: "completed" | "failed" | "cancelled" | "running";
+	/** The backend status as reported, shown through `describeRunStatus`. */
+	status: string;
 	duration?: number;
 }
 
@@ -44,22 +46,10 @@ export const RunsOverlay = ({ open, onDismiss, session }: RunsOverlayProps) => {
 						? entry.prompt
 						: "(empty prompt)";
 
-				// Determine status from entry.status
-				let status: RunEntry["status"] = "completed";
-				if (typeof entry.status === "string") {
-					// Status might be a simple string like "COMPLETED", "FAILED", etc.
-					const statusStr = entry.status.toUpperCase();
-					if (statusStr.includes("FAIL")) {
-						status = "failed";
-					} else if (statusStr.includes("CANCEL")) {
-						status = "cancelled";
-					} else if (
-						statusStr.includes("RUNNING") ||
-						statusStr.includes("SUBMITTED")
-					) {
-						status = "running";
-					}
-				}
+				const status =
+					typeof entry.status === "string"
+						? entry.status
+						: "COMPLETED";
 
 				runEntries.push({
 					id: entry.runId || `run-${runEntries.length}`,
@@ -87,19 +77,6 @@ export const RunsOverlay = ({ open, onDismiss, session }: RunsOverlayProps) => {
 		if (hours > 0) return `${hours}h ago`;
 		if (minutes > 0) return `${minutes}m ago`;
 		return "just now";
-	};
-
-	const getStatusColor = (status: RunEntry["status"]) => {
-		switch (status) {
-			case "completed":
-				return "text-green-600 dark:text-green-400";
-			case "failed":
-				return "text-red-600 dark:text-red-400";
-			case "cancelled":
-				return "text-yellow-600 dark:text-yellow-400";
-			case "running":
-				return "text-blue-600 dark:text-blue-400";
-		}
 	};
 
 	return (
@@ -133,9 +110,9 @@ export const RunsOverlay = ({ open, onDismiss, session }: RunsOverlayProps) => {
 										{formatTimestamp(run.timestamp)}
 									</span>
 									<span
-										className={`font-medium font-mono text-xs ${getStatusColor(run.status)}`}
+										className={`font-medium font-mono text-xs ${describeRunStatus(run.status).className}`}
 									>
-										{run.status}
+										{describeRunStatus(run.status).label}
 									</span>
 								</div>
 								<p className="font-mono text-sm">

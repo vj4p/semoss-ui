@@ -114,7 +114,7 @@ export const AgentOverlay = ({
 													)}
 												</div>
 												{isSelected && (
-													<CheckIcon className="h-5 w-5 text-primary" />
+													<CheckIcon className="h-5 w-5 text-primary-text" />
 												)}
 											</div>
 										</CardHeader>
