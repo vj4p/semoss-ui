@@ -392,7 +392,8 @@ pnpm --filter @semoss/harness test
 ## Theme, sign-in and shell (UI refresh)
 
 - The console has no top bar: `AppSwitcher` is the first control in the status bar, and the status bar's
-  theme button switches light/dark. Both are keyboard reachable and named.
+  control is the shared `ThemeToggle` (Light, Dark, System; labels in `code.json` under `theme`), the
+  same as the other apps. Do not add a bespoke two-state button back. Both are keyboard reachable and named.
 - Item glyph colors and the `:runs` overlay use the shared status table (`STATUS_TEXT_CLASS`,
   `describeRunStatus`); an unknown run state is shown as itself in a neutral color, never as done.
 - Overlay colors are semantic tokens (diff, runs, help, cost, packs).
