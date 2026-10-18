@@ -5,7 +5,12 @@ import {
 } from "@semoss/i18n";
 import { AccessStoreProvider, createAccessStore } from "@semoss/panels";
 import { Env, InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { LandscapeRestriction } from "@/components/common/landscape-restriction";
 import { LanguageDirection } from "@/components/common/language-direction";
 import { Router } from "@/pages";
@@ -41,7 +46,8 @@ export const App = () => {
 						{/* TODO: read default theme from theme map somehow */}
 						<ThemeProvider
 							defaultTheme="system"
-							storageKey="smss-ui-theme-playground"
+							storageKey={PLATFORM_THEME_STORAGE_KEY}
+							legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 						>
 							<LandscapeRestriction />
 							<div className="absolute inset-0 h-screen w-screen overflow-hidden">

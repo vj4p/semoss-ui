@@ -1,6 +1,12 @@
 import { auditlogResources, I18nBuilder, I18nextProvider } from "@semoss/i18n";
 import { Env, InsightProvider } from "@semoss/sdk/react";
-import { LoadingScreen, ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	LoadingScreen,
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { Router } from "@/pages";
 
 // use the environment variable to set the module
@@ -19,7 +25,7 @@ export const i18nReady = i18nBuilder.ready;
 /**
  * The App component is the main entry point of the application.
  * It contains the Notification, LoadingScreen, ThemeProvider and Router components.
- * The ThemeProvider is used to set the default theme to "light".
+ * The ThemeProvider follows the platform-wide theme preference.
  * The Router is used to render the pages.
  * The LoadingScreen is used to display a loading indicator when the application is loading.
  * The Notification is used to display notifications to the user.
@@ -30,7 +36,11 @@ function App() {
 		<I18nextProvider i18n={i18n}>
 			<InsightProvider>
 				<LoadingScreen>
-					<ThemeProvider defaultTheme="system">
+					<ThemeProvider
+						defaultTheme="system"
+						storageKey={PLATFORM_THEME_STORAGE_KEY}
+						legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
+					>
 						<div className="absolute inset-0 h-screen w-screen overflow-auto">
 							<Router />
 						</div>

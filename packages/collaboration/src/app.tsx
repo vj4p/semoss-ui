@@ -5,7 +5,12 @@ import {
 } from "@semoss/i18n";
 import { AccessStoreProvider, createAccessStore } from "@semoss/panels";
 import { Env, InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { Router } from "./pages/router";
 
 // the server writes MODULE into index.html (semoss-env tag, read when the SDK loads); .env is for local dev
@@ -24,7 +29,8 @@ export const App = () => (
 			<InsightProvider>
 				<ThemeProvider
 					defaultTheme="system"
-					storageKey="smss-ui-theme-collaboration"
+					storageKey={PLATFORM_THEME_STORAGE_KEY}
+					legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 				>
 					<div className="min-h-screen">
 						<Router />

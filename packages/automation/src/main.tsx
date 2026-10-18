@@ -2,7 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { clientResources, I18nBuilder, I18nextProvider } from "@semoss/i18n";
 import { InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import App from "./App";
 import "./index.css";
 
@@ -18,7 +23,11 @@ const i18nBuilder = new I18nBuilder(clientResources);
 const app = (
 	<React.StrictMode>
 		<InsightProvider>
-			<ThemeProvider defaultTheme="system" storageKey="automation-theme">
+			<ThemeProvider
+				defaultTheme="system"
+				storageKey={PLATFORM_THEME_STORAGE_KEY}
+				legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
+			>
 				<I18nextProvider i18n={i18nBuilder.i18n}>
 					<App />
 				</I18nextProvider>

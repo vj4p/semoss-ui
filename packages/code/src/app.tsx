@@ -1,6 +1,11 @@
 import { codeResources, I18nBuilder, I18nextProvider } from "@semoss/i18n";
 import { Env, InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { Router } from "@/pages";
 
 // use the environment variable to set the module
@@ -18,7 +23,10 @@ export const i18nReady = i18nBuilder.ready;
 export const App = () => (
 	<I18nextProvider i18n={i18nBuilder.i18n}>
 		<InsightProvider>
-			<ThemeProvider storageKey="smss-ui-theme-code">
+			<ThemeProvider
+				storageKey={PLATFORM_THEME_STORAGE_KEY}
+				legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
+			>
 				<div className="h-svh w-full overflow-hidden">
 					<Router />
 				</div>

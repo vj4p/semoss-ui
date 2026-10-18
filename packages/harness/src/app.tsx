@@ -5,7 +5,12 @@ import {
 	terminalResources,
 } from "@semoss/i18n";
 import { Env, InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { LandscapeRestriction } from "@/components/common/landscape-restriction";
 import { Router } from "@/pages";
 
@@ -40,7 +45,8 @@ export const App = () => {
 			<InsightProvider>
 				<ThemeProvider
 					defaultTheme="system"
-					storageKey="smss-ui-theme-harness"
+					storageKey={PLATFORM_THEME_STORAGE_KEY}
+					legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 				>
 					<LandscapeRestriction />
 					<div className="absolute inset-0 h-screen w-screen overflow-hidden">

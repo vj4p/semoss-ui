@@ -1,7 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { InsightProvider } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import App from "./App";
 import "./index.css";
 
@@ -17,7 +22,8 @@ ReactDOM.createRoot(root).render(
 		<InsightProvider>
 			<ThemeProvider
 				defaultTheme="dark"
-				storageKey="playwright-sockets-theme"
+				storageKey={PLATFORM_THEME_STORAGE_KEY}
+				legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 			>
 				<App />
 				<Toaster />

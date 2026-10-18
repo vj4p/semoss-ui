@@ -6,7 +6,12 @@ import {
 } from "@semoss/i18n";
 import { Env, InsightProvider } from "@semoss/sdk/react";
 import { LoginPage } from "@semoss/shared";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { EmbedTerminal } from "./components/embed-terminal/embed-terminal";
 
 Env.update({
@@ -34,7 +39,8 @@ export const App = () => {
 			<InsightProvider>
 				<ThemeProvider
 					defaultTheme="system"
-					storageKey="smss-ui-theme-terminal"
+					storageKey={PLATFORM_THEME_STORAGE_KEY}
+					legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 				>
 					<LoginPage branding={<Branding />}>
 						<EmbedTerminal />

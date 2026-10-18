@@ -2,7 +2,12 @@ import { useEffect } from "react";
 import { clientResources, I18nBuilder, I18nextProvider } from "@semoss/i18n";
 import { AccessStoreProvider } from "@semoss/panels";
 import { Env } from "@semoss/sdk/react";
-import { ThemeProvider, Toaster } from "@semoss/ui/next";
+import {
+	PLATFORM_LEGACY_THEME_KEYS,
+	PLATFORM_THEME_STORAGE_KEY,
+	ThemeProvider,
+	Toaster,
+} from "@semoss/ui/next";
 import { ConfigStoreProvider, SessionStoreProvider } from "@/contexts";
 import { createConfigStore, createSessionStore } from "@/stores";
 import { AppWrapper } from "./app-wrapper";
@@ -76,7 +81,8 @@ export const App = () => {
 					<I18nextProvider i18n={i18n}>
 						<ThemeProvider
 							defaultTheme="system"
-							storageKey="smss-ui-theme-client"
+							storageKey={PLATFORM_THEME_STORAGE_KEY}
+							legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
 						>
 							<AppWrapper />
 							<Toaster />
