@@ -38,6 +38,7 @@ import { EngineSelect } from "@semoss/shared";
 import {
 	Button,
 	cn,
+	composerSurfaceClass,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
@@ -643,7 +644,8 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 					>
 						<div
 							className={cn(
-								"flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20",
+								composerSurfaceClass,
+								"w-full",
 								className,
 							)}
 						>
@@ -867,7 +869,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 															type="button"
 															variant="ghost"
 															size="icon-sm"
-															className="shrink-0 rounded-full"
+															className="shrink-0"
 															aria-label={t(
 																"input.openSettings",
 															)}
@@ -993,7 +995,6 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 														type="button"
 														variant="ghost"
 														size="icon-sm"
-														className="rounded-full"
 														aria-label={t(
 															"studio.prompts",
 														)}
@@ -1023,7 +1024,6 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 														type="button"
 														variant="ghost"
 														size="icon-sm"
-														className="rounded-full"
 														disabled={!canListen}
 														aria-pressed={
 															isListening
@@ -1080,7 +1080,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 													</Label>
 													<EngineSelect
 														id={modelSelectId}
-														className="h-8 w-auto max-w-32 gap-1 rounded-full border-none bg-transparent px-2 text-xs shadow-none hover:bg-accent"
+														className="h-8 w-auto max-w-32 gap-1 border-none bg-transparent px-2 text-xs shadow-none hover:bg-accent"
 														name={modelName}
 														value={
 															model?.app_id || ""
@@ -1110,7 +1110,6 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 												<Button
 													variant="default"
 													size="icon"
-													className="rounded-full"
 													aria-label={t(
 														sendState === "stop"
 															? "input.stopLabel"

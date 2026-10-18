@@ -32,6 +32,7 @@ import { EngineSelect } from "@semoss/shared";
 import {
 	Button,
 	cn,
+	composerSurfaceClass,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
@@ -642,7 +643,8 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 					>
 						<div
 							className={cn(
-								"flex h-full w-full flex-col overflow-hidden rounded-md border border-input bg-card shadow-lg transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
+								composerSurfaceClass,
+								"h-full w-full",
 								className,
 							)}
 						>
@@ -888,7 +890,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 								    clip past the region's right edge. */}
 									<div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
 										{chipSections.length > 0 && (
-											<div className="inline-flex h-7 shrink-0 items-center overflow-hidden rounded-md border border-border bg-background text-xs">
+											<div className="inline-flex h-7 shrink-0 items-center overflow-hidden rounded-full border border-border bg-background text-xs">
 												{chipSections.map(
 													(section, idx) => {
 														const Icon =
