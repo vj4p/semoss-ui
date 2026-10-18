@@ -1,16 +1,14 @@
-import {
-	CheckIcon,
-	CircleAlertIcon,
-	FolderIcon,
-	HourglassIcon,
-	LoaderCircleIcon,
-	LogInIcon,
-	XIcon,
-} from "lucide-react";
+import { FolderIcon, LogInIcon } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
-import { Badge, Button, Small, toast } from "@semoss/ui/next";
+import {
+	Button,
+	Small,
+	StatusBadge,
+	type StatusKind,
+	toast,
+} from "@semoss/ui/next";
 import { getErrorMessage } from "@semoss/utility/error";
 import { formatJson } from "@semoss/utility/json";
 import { ConnectorServiceIcon } from "@/features/connectors/components/connector-service-icon";
@@ -143,40 +141,27 @@ export const ChatToolCard = observer(({ tool, variant }: ChatToolCardProps) => {
 				: room.chatTools.declineChatTool(tool),
 		);
 
-	const status = isWaiting
-		? {
-				label: t("card.status.waiting"),
-				icon: <HourglassIcon aria-hidden />,
-			}
+	const statusKind: StatusKind = isWaiting
+		? "waiting"
 		: tool.status === "LOADING"
-			? {
-					label: t("card.status.running"),
-					icon: (
-						<LoaderCircleIcon
-							aria-hidden
-							className="animate-spin"
-						/>
-					),
-				}
+			? "running"
 			: tool.status === "SUCCESS"
-				? {
-						label: t("card.status.done"),
-						icon: <CheckIcon aria-hidden />,
-					}
+				? "done"
 				: tool.status === "ERROR"
-					? {
-							label: t("card.status.failed"),
-							icon: <CircleAlertIcon aria-hidden />,
-						}
+					? "failed"
 					: tool.status === "CANCELLED"
-						? {
-								label: t("card.status.notRun"),
-								icon: <XIcon aria-hidden />,
-							}
-						: {
-								label: t("card.status.queued"),
-								icon: <HourglassIcon aria-hidden />,
-							};
+						? "denied"
+						: "queued";
+	const STATUS_KEY: Record<StatusKind, string> = {
+		waiting: "waiting",
+		running: "running",
+		done: "done",
+		failed: "failed",
+		denied: "notRun",
+		queued: "queued",
+		cancelled: "notRun",
+	};
+	const statusLabel = t(`card.status.${STATUS_KEY[statusKind]}`);
 
 	const renderFolderDetails = (): ReactNode => {
 		const name = json.name;
@@ -318,10 +303,11 @@ export const ChatToolCard = observer(({ tool, variant }: ChatToolCardProps) => {
 						: t("card.chatFiles")}
 				</Small>
 			</div>
-			<Badge variant="outline" className="shrink-0">
-				{status.icon}
-				{status.label}
-			</Badge>
+			<StatusBadge
+				status={statusKind}
+				label={statusLabel}
+				className="shrink-0"
+			/>
 		</div>
 	);
 
