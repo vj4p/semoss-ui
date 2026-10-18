@@ -9,6 +9,7 @@ import React, {
 import { Link, matchPath, Outlet, useLocation } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
+import { AppSwitcher } from "@semoss/shared";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -268,6 +269,7 @@ export const MainLayout = observer(() => {
 									<div className="flex-1" />
 									<div className="flex items-center gap-2">
 										{navbarActions ?? null}
+										<AppSwitcher current="harness" />
 										{root.theme.featureFlags
 											?.enableDarkMode !== false && (
 											<ThemeToggle

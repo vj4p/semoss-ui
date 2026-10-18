@@ -24,6 +24,7 @@ import {
 } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { runPixel, useIteratorPixel } from "@semoss/sdk/react";
+import { AppSwitcher } from "@semoss/shared";
 import {
 	Button,
 	cn,
@@ -967,9 +968,10 @@ export const GlobalNav = observer(() => {
 							<div className="min-w-0 flex-1">
 								<NavUser />
 							</div>
-							{root.theme.featureFlags?.enableDarkMode !==
-								false && (
-								<div className="group-data-[collapsible=icon]:hidden">
+							<div className="flex items-center group-data-[collapsible=icon]:hidden">
+								<AppSwitcher current="playground" />
+								{root.theme.featureFlags?.enableDarkMode !==
+									false && (
 									<ThemeToggle
 										labels={{
 											trigger: t(
@@ -986,8 +988,8 @@ export const GlobalNav = observer(() => {
 											),
 										}}
 									/>
-								</div>
-							)}
+								)}
+							</div>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarFooter>

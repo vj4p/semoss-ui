@@ -2,6 +2,7 @@
 import { Bell } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { runPixel } from "@semoss/sdk";
+import { AppSwitcher } from "@semoss/shared";
 import {
 	Badge,
 	Button,
@@ -96,6 +97,8 @@ export const Navbar: React.FC = () => {
 						<PlatformSearch />
 					</Suspense>
 				)}
+
+				<AppSwitcher current="client" />
 
 				{/* Theme: one click to light, dark or system */}
 				{darkModeEnabled && <ThemeToggle />}

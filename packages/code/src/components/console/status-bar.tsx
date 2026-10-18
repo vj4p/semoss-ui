@@ -7,6 +7,7 @@ import {
 	waitingActions,
 } from "@semoss/agent-core";
 import { useTranslation } from "@semoss/i18n";
+import { AppSwitcher } from "@semoss/shared";
 import {
 	Button,
 	Label,
@@ -100,6 +101,7 @@ export const StatusBar = ({
 			className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-4 py-2 text-muted-foreground text-xs md:px-6"
 			data-testid="statusBar-bar"
 		>
+			<AppSwitcher current="code" />
 			<p className="flex min-w-0 items-baseline gap-1.5">
 				<span>{t("status.room")}</span>
 				<bdi className="truncate text-foreground">{roomLabel}</bdi>
