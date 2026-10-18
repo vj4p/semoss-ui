@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import type {
 	AllowedTool,
@@ -83,6 +84,19 @@ describe("StatusBar", () => {
 			screen.queryByTestId("statusBar-alwaysAllowed-list"),
 		).not.toBeInTheDocument();
 		expect(screen.queryByText("Always allowed")).not.toBeInTheDocument();
+	});
+
+	it("offers the shared Light, Dark and System theme menu", async () => {
+		const user = userEvent.setup();
+		render(<StatusBar state={state([])} session={session} />);
+
+		await user.click(screen.getByRole("button", { name: "Appearance" }));
+
+		expect(
+			screen
+				.getAllByRole("menuitemradio")
+				.map((item) => item.textContent),
+		).toEqual(["Light", "Dark", "System"]);
 	});
 
 	describe("says what the console is doing:", () => {

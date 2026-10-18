@@ -53,6 +53,12 @@
 		"waiting": "waiting for you",
 		"stopping": "stopping"
 	},
+	"theme": {
+		"mode": "Appearance",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System"
+	},
 	"input": {
 		"label": "Prompt or command",
 		"placeholder": "Type a prompt, or :help",

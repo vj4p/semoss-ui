@@ -1,4 +1,4 @@
-import { FolderTreeIcon, MoonIcon, SunIcon } from "lucide-react";
+import { FolderTreeIcon } from "lucide-react";
 import { useId, useMemo } from "react";
 import {
 	activeRunEntry,
@@ -16,7 +16,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	useTheme,
+	ThemeToggle,
 } from "@semoss/ui/next";
 import { useElapsedSeconds } from "@/hooks";
 
@@ -71,7 +71,6 @@ export const StatusBar = ({
 	onShowFiles?: () => void;
 }) => {
 	const { t, i18n } = useTranslation("code");
-	const { theme, setTheme } = useTheme();
 	const harnessId = useId();
 	const modelId = useId();
 	const allowedId = useId();
@@ -212,22 +211,14 @@ export const StatusBar = ({
 						<FolderTreeIcon className="h-4 w-4" />
 					</Button>
 				)}
-				{/* Theme Toggle Button */}
-				<Button
-					variant="ghost"
-					size="icon-sm"
-					onClick={() =>
-						setTheme(theme === "dark" ? "light" : "dark")
-					}
-					title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-					data-testid="statusBar-theme-button"
-				>
-					{theme === "dark" ? (
-						<SunIcon className="h-4 w-4" />
-					) : (
-						<MoonIcon className="h-4 w-4" />
-					)}
-				</Button>
+				<ThemeToggle
+					labels={{
+						trigger: t("theme.mode"),
+						light: t("theme.light"),
+						dark: t("theme.dark"),
+						system: t("theme.system"),
+					}}
+				/>
 			</div>
 			<p className="flex items-baseline gap-2">
 				<span className="text-foreground">
