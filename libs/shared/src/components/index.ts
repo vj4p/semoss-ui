@@ -18,6 +18,7 @@ export * from "./icon-utils";
 export * from "./import-edit-metamodel";
 export * from "./login-page";
 export * from "./login-provider-icon";
+export * from "./login-shell";
 export * from "./login-type-icon";
 export * from "./login-type-label";
 export * from "./mcp";
