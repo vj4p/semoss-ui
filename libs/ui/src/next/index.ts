@@ -25,6 +25,7 @@ export * from "./code-diff-editor";
 export * from "./code-editor";
 export * from "./collapsible";
 export * from "./command";
+export * from "./composer-surface";
 export * from "./context-menu";
 export * from "./dialog";
 export * from "./diff-code-editor";
