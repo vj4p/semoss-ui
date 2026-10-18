@@ -56,3 +56,9 @@ The playground type check passes. Client type checking now reports 287 errors ac
 Authenticated browser verification remains outstanding because the local preview required sign-in. Real backend chat/approval/cancellation, room switching, uploads, sharing/permission writes, all authenticated empty/loading/error variants, and 200% browser zoom still need an authenticated review. Client and terminal were built with the shared tokens; their running buttons, menus, sidebars, and selections were not visually reviewed. Automated/component results above do not claim that coverage.
 
 During follow-up verification of the render fixes, the previous local preview server was no longer reachable. The render regressions were reproduced and verified in React DOM tests using the real MobX root store and shared UI primitives.
+
+## Superseded values (2026-10-17)
+
+Token values in this note were replaced by the UI refresh. See `DESIGN.md` and
+`docs/superpowers/specs/2026-10-17-ui-refresh-design.md`. Primary is now `#0560D8` (light),
+`--accent` is `#EDF3FF` / `#13233F`, and the radius scale is 6/8/12/16px.

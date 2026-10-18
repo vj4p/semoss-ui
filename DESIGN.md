@@ -13,6 +13,9 @@ trees, banned patterns, carve-outs, and rationale. The token/component catalog l
   colors, radius, Geist fonts, type scale, heading/section utilities. Light and dark theme.
 - **Components**: `libs/ui/src/next/`, imported **only** as `@semoss/ui/next` (including
   `cn()`).
+- **Fonts**: Geist and Geist Mono are self-hosted through `@fontsource-variable/*`, imported by
+  `globals.css`. Do not override `font-family` in an app's `index.css` and do not load fonts from
+  a CDN; air-gapped installs would silently fall back.
 - **Design reference**: the Figma kit *"shadcn ui kit for SEMOSS"* uses the same semantic
   token names, Geist, and the standard Tailwind type scale. When values differ between a
   mockup and code, `globals.css` wins for implementation.
@@ -105,8 +108,9 @@ settings page is not a dashboard and should not wrap every field group in a card
   subdued regions, and borders or `Separator` before introducing shadows.
 - Cards are for repeated entities, summaries, or tools that need a visual boundary. Page
   sections are normally unframed. Never nest cards merely to create spacing. Content cards
-  use `rounded-xl` and `p-6`; compact tool rows and composer toolbars use `rounded-md` or
-  `rounded-lg` with `p-2` or `p-3`. Reserve `shadow-sm` for surfaces needing slight elevation.
+  use `rounded-lg` (12px) and `p-6`; dialogs and sheets use `rounded-xl` (16px); controls,
+  compact tool rows and composer toolbars use `rounded-md` (8px) with `p-2` or `p-3`. Reserve
+  `shadow-sm` for surfaces needing slight elevation.
 - Keep control density consistent within a region. Use default component sizes for primary
   workflows, `sm` for dense toolbars and tables, and `lg` only for prominent standalone
   actions.
@@ -224,11 +228,18 @@ anything that could not be exercised manually.
 → Use a semantic token class: `bg-primary`, `text-muted-foreground`, `border-border`,
 `text-destructive`, `text-success`, `text-warning`, `bg-sidebar`, `bg-chart-1`…`chart-5`.
 → For text: Use `text-foreground` for header and subheaders, use`text-muted-foreground` for descriptions.
-→ Status/state colors are exactly three: `destructive` (errors/danger), `success`, `warning`.
+→ Status/state colors are `destructive` (errors/danger), `success`, `warning` and `info`. Each has a
+`-foreground` (text on a solid fill of that color) and a `-tint` (soft fill behind text of the same
+role, e.g. `bg-success-tint text-success`). Text in these roles is AA-safe on `background` and
+`card`; do not lighten or darken it.
 → No matching token → use the *closest* semantic token. Never invent a hex value or reach for
-a raw palette shade (`text-blue-600`). If a genuinely new semantic role is needed (e.g.
-`info`), propose adding a token to `globals.css` instead of styling ad hoc.
-→ Single primary accent color `base-primary` carries every primary interactive element and primary CTA. No second brand color exists. 
+a raw palette shade (`text-blue-600`). Use `info` for neutral informational callouts instead of
+`blue-*`. If a genuinely new semantic role is needed, propose adding a token to `globals.css`
+instead of styling ad hoc.
+→ Single primary accent color `base-primary` carries every primary interactive element and primary CTA. No second brand color exists.
+→ Use `text-primary-text` (not `text-primary`) for links and text-only primary accents. `primary` is
+for fills; in dark mode the two differ so that text stays at AA contrast. Use `bg-canvas` for the
+app background behind panels and `bg-card` for the panels themselves.
 
 **Need text styling?**
 → Use a Typography component from `@semoss/ui/next`: `H1`–`H4`, `Lead`, `P`, `Large`,
@@ -359,7 +370,6 @@ design rulebook; neither a successful lint check nor a build replaces manual des
 
 - Implement a scoped design checker and its command/hook integration; do not claim
   automated design enforcement or working suppression directives until verified.
-- `--info` token, if a real need appears (propose before styling).
 - A z-index scale token set; today, rely on lib overlay components.
 - Delete `libs/ui/src/next/theme.ts`.
 - Migrate `packages/browser-automation` off its local `@theme` block.
