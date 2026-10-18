@@ -56,6 +56,7 @@ export * from "./skeleton";
 export * from "./slider";
 export * from "./sonner";
 export * from "./spinner";
+export * from "./status-badge";
 export * from "./stepper";
 export * from "./switch";
 export * from "./table";
