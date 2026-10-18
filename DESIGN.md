@@ -135,6 +135,10 @@ settings page is not a dashboard and should not wrap every field group in a card
 - Use the blue `primary` token for actions; `accent` and `sidebar-accent` provide subtle
   blue hover/selection surfaces in both themes. A status still uses the appropriate
   `success`, `warning`, or `destructive` role with a textual label.
+- Use `composerSurfaceClass` from `@semoss/ui/next` for the composer's surface (12px panel
+  radius, flat, primary focus ring) and do not restyle it per app. Controls inside it keep the
+  8px control radius; only chips are fully round. A tool call waiting for approval offers a
+  button that opens its panel; the decision itself stays in that panel.
 - **Playground defaults:** an expanded 16rem navigation sidebar; a resizable 35/65
   conversation/Workspace split; Chat/Workspace tabs below 64rem of available content
   width. Opening the Workspace temporarily collapses navigation without changing its
