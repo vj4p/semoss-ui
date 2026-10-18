@@ -479,7 +479,7 @@ export const BrowserViewer: React.FC<BrowserViewerProps> = ({
 						aria-valuemax={remoteScrollableHeight}
 						aria-valuenow={Math.round(scrollMetrics.scrollTop)}
 						aria-label="Remote page scrollbar"
-						className="group absolute inset-y-0 right-0 z-20 h-full w-4 cursor-default touch-none select-none bg-slate-500/10 transition-colors hover:bg-slate-500/15 active:bg-slate-500/15"
+						className="group absolute inset-y-0 right-0 z-20 h-full w-4 cursor-default touch-none select-none bg-muted-foreground/10 transition-colors hover:bg-muted-foreground/15 active:bg-muted-foreground/15"
 						onPointerDown={(event) => {
 							event.preventDefault();
 							event.stopPropagation();
@@ -551,7 +551,7 @@ export const BrowserViewer: React.FC<BrowserViewerProps> = ({
 					>
 						<div
 							ref={scrollbarThumbRef}
-							className="absolute top-0 right-1 left-1 rounded-full bg-slate-400/55 shadow-sm transition-colors group-hover:bg-slate-500/80 group-active:bg-slate-500/80"
+							className="absolute top-0 right-1 left-1 rounded-full bg-muted-foreground/55 shadow-sm transition-colors group-hover:bg-muted-foreground/80 group-active:bg-muted-foreground/80"
 							style={{
 								height: scrollbarThumbHeight,
 								transform: `translateY(${scrollbarThumbTop}px)`,

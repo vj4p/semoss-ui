@@ -148,7 +148,7 @@ export const SelectedTextContextsPanel: React.FC<
 												/>
 											) : (
 												<div className="rounded-md border border-border bg-background shadow-black/10 shadow-inner">
-													<div className="border-border border-b px-2.5 py-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
+													<div className="border-border border-b px-2.5 py-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
 														Extracted website text
 													</div>
 													<pre className="max-h-[360px] overflow-auto whitespace-pre-wrap break-words p-3 font-sans text-sm leading-6">

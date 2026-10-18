@@ -53,8 +53,8 @@ export function BrowserTabStrip({
 										: "Disconnected",
 								dot:
 									connectionState === "connecting"
-										? "animate-pulse bg-slate-400"
-										: "bg-slate-500",
+										? "animate-pulse bg-muted-foreground"
+										: "bg-muted-foreground",
 							};
 				return (
 					<div

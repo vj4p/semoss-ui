@@ -10,7 +10,7 @@ const STATE_CONFIG: Record<
 > = {
 	idle: {
 		label: "Idle",
-		dot: "bg-slate-500",
+		dot: "bg-muted-foreground",
 		tone: "border-border text-muted-foreground",
 	},
 	connecting: {
@@ -30,7 +30,7 @@ const STATE_CONFIG: Record<
 	},
 	closed: {
 		label: "Disconnected",
-		dot: "bg-slate-500",
+		dot: "bg-muted-foreground",
 		tone: "border-border text-muted-foreground",
 	},
 };
