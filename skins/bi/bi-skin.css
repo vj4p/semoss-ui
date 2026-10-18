@@ -1,0 +1,167 @@
+/*
+ * BI skin: gives the prebuilt BI app (packages/legacy) the platform's colors,
+ * type and dark theme without touching its code.
+ *
+ * BI draws its own components from 27 CSS variables defined on :root, so
+ * redefining them re-themes everything that reads them. `html:root` is one
+ * step more specific than BI's own `:root`, so this file wins whatever the
+ * load order. Dashboards that set these variables on a widget keep their own
+ * colors, because a widget's inline value is closer than :root.
+ *
+ * Not covered: ag-grid tables and charts use fixed colors, so they stay light
+ * in the dark theme.
+ */
+
+@font-face {
+	font-family: "Geist Variable";
+	font-style: normal;
+	font-display: swap;
+	font-weight: 100 900;
+	src: url("fonts/geist-latin-ext-wght-normal.woff2") format("woff2-variations");
+	unicode-range:
+		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+		U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+		U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+	font-family: "Geist Variable";
+	font-style: normal;
+	font-display: swap;
+	font-weight: 100 900;
+	src: url("fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+		U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+		U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Light. Same values as the platform's tokens in libs/ui globals.css. */
+html:root {
+	--color-primary-100: #0560d8;
+	--color-primary-70: #044bb0;
+	--color-primary-50: #8db6f2;
+	--color-primary-30: #bbd5f7;
+	--color-primary-10: #edf3ff;
+	--color-warn-100: #b45309;
+	--color-warn-70: #d97706;
+	--color-warn-30: #fcd9a8;
+	--color-warn-10: #fdf3e3;
+	--color-error-100: #c81e1e;
+	--color-error-70: #e05252;
+	--color-error-30: #f5b8b8;
+	--color-error-10: #fcecec;
+	--color-success-100: #15803d;
+	--color-success-70: #3fa56a;
+	--color-success-30: #b7dfc6;
+	--color-success-10: #eef7f1;
+	--color-grey-1: #0c111d;
+	--color-grey-2: #4a5365;
+	--color-grey-3: #5b6475;
+	--color-grey-4: #c9cfd9;
+	--color-grey-5: #e3e6ec;
+	--color-grey-6: #f5f6f8;
+	--color-white: #ffffff;
+	--color-shadow: rgba(12, 17, 29, 0.12);
+	--color-backdrop: rgba(12, 17, 29, 0.6);
+	--font-family: "Geist Variable", Inter, sans-serif;
+}
+
+/*
+ * Dark. BI draws surfaces in --color-white and text in --color-grey-1, so the
+ * dark theme swaps their roles: surfaces become dark, text becomes light.
+ */
+html[data-theme="dark"]:root {
+	--color-primary-100: #5ca0ff;
+	--color-primary-70: #8dbdff;
+	--color-primary-50: #2f5fa8;
+	--color-primary-30: #1f3f73;
+	--color-primary-10: #13233f;
+	--color-warn-100: #fbbf24;
+	--color-warn-70: #d9a21a;
+	--color-warn-30: #5c4512;
+	--color-warn-10: #2b2210;
+	--color-error-100: #ff7b7b;
+	--color-error-70: #e06666;
+	--color-error-30: #5e2a2e;
+	--color-error-10: #2e1417;
+	--color-success-100: #4ade80;
+	--color-success-70: #3bb868;
+	--color-success-30: #1f5a3a;
+	--color-success-10: #11271b;
+	--color-grey-1: #f3f5f8;
+	--color-grey-2: #c7ceda;
+	--color-grey-3: #9aa3b2;
+	--color-grey-4: #343b4a;
+	--color-grey-5: #232834;
+	--color-grey-6: #171b24;
+	--color-white: #10131a;
+	--color-shadow: rgba(0, 0, 0, 0.5);
+	--color-backdrop: rgba(0, 0, 0, 0.7);
+	color-scheme: dark;
+}
+
+html {
+	background: var(--color-white);
+}
+
+html body {
+	font-family: var(--font-family);
+	color: var(--color-grey-1);
+}
+
+/* BI sets Inter by hand in these places instead of reading --font-family. */
+html g,
+.ag-theme-balham,
+.ag-theme-balham .ag-header,
+.ag-theme-balham .ag-status-bar,
+.ag-theme-balham .ag-panel .ag-title-bar {
+	font-family: var(--font-family);
+}
+
+/* BI's own focus outline is the palest blue, which a keyboard user cannot see. */
+html :focus-visible {
+	outline: 2px solid var(--color-primary-100);
+	outline-offset: 2px;
+}
+
+html .smss-btn,
+html .smss-input,
+html .smss-textarea,
+html .smss-alert {
+	border-radius: 8px;
+}
+
+html .smss-card {
+	border-radius: 12px;
+}
+
+/* The sign-in headline is a heading, not an accent. */
+html .login__headline__text {
+	color: var(--color-grey-1);
+}
+
+/*
+ * The sign-in logo is one image with a dark wordmark. Inverting lightens the
+ * wordmark and the half-turn of hue puts the blue icon back.
+ */
+html[data-theme="dark"] .login__logo img {
+	filter: invert(1) hue-rotate(180deg);
+}
+
+/* Theme switch on the sign-in screen, added by bi-skin.js. */
+.bi-skin-theme {
+	position: fixed;
+	top: 12px;
+	inset-inline-end: 16px;
+	z-index: 10;
+	height: 2.2857142857em;
+	padding: 0 0.5714285714em;
+	font-family: var(--font-family);
+	font-size: 0.875rem;
+	color: var(--color-grey-1);
+	background: var(--color-white);
+	border: 1px solid var(--color-grey-4);
+	border-radius: 8px;
+	cursor: pointer;
+}
