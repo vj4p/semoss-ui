@@ -22,7 +22,6 @@ import {
 	SidebarTrigger,
 	ThemeToggle,
 	useCacheState,
-	useTheme,
 } from "@semoss/ui/next";
 import { GlobalFooter, GlobalNav, ThemePicker } from "@/components";
 import { GlobalDialog } from "@/components/common/global-dialog";
@@ -42,13 +41,6 @@ export const MainLayout = observer(() => {
 	const { pathname } = useLocation();
 	const [isTourOpen, setIsTourOpen] = useState(false);
 	const [pendingTour, setPendingTour] = useState(false);
-
-	const { theme: colorMode } = useTheme();
-
-	const isDark =
-		colorMode === "dark" ||
-		(colorMode === "system" &&
-			window.matchMedia("(prefers-color-scheme: dark)").matches);
 
 	const [isSidebarOpen, setIsSidebarOpen] = useCacheState(
 		theme.sidebar.expandedByDefault,
@@ -201,13 +193,7 @@ export const MainLayout = observer(() => {
 							<div
 								data-testid="main-layout"
 								className="flex h-dvh w-full flex-col overflow-hidden bg-background"
-								style={{
-									...(!isDark && {
-										background:
-											"linear-gradient(180deg, #FCFCFC 58.78%, #F6F7FF 81.97%, #F1F8FF 94.04%), var(--base-secondary-background, #FFF)",
-									}),
-									...root.theme.overrides["main-layout"],
-								}}
+								style={root.theme.overrides["main-layout"]}
 							>
 								<div className="flex h-12.5 w-full shrink-0 flex-row items-center px-4">
 									<div className="flex min-w-0 flex-row items-center justify-center gap-1.5">

@@ -48,7 +48,7 @@ const getToolState = (
 		case "SUCCESS":
 			return {
 				icon: <CheckIcon className="size-5" />,
-				iconClassName: "bg-primary/10 text-primary",
+				iconClassName: "bg-primary/10 text-primary-text",
 				subtext: tool.json.description,
 				badge: null,
 

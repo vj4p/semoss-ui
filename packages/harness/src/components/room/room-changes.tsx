@@ -342,7 +342,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 								{branch.current ? (
 									<Badge
 										variant="outline"
-										className="text-[10px]"
+										className="text-xs"
 									>
 										{t("changes.current")}
 									</Badge>
@@ -410,7 +410,7 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 										{commit.commitMessage ??
 											t("changes.noMessage")}
 									</span>
-									<span className="font-mono text-[10px] text-muted-foreground">
+									<span className="font-mono text-muted-foreground text-xs">
 										{commit.commitId?.slice(0, 8)}
 										{commit.author?.userId
 											? ` · ${commit.author.userId}`
@@ -438,28 +438,28 @@ export const RoomChanges: React.FC<RoomChangesProps> = observer(({ room }) => {
 																variant={changeTypeVariant(
 																	file.changeType,
 																)}
-																className="text-[10px]"
+																className="text-xs"
 															>
 																{file.changeType ??
 																	"?"}
 															</Badge>
-															<span className="truncate font-mono text-[11px]">
+															<span className="truncate font-mono text-xs">
 																{file.fileName}
 															</span>
 														</div>
 														{file.isBinary ? (
-															<p className="text-[11px] text-muted-foreground italic">
+															<p className="text-muted-foreground text-xs italic">
 																{t(
 																	"changes.binary",
 																)}
 															</p>
 														) : file.diff ? (
-															<pre className="max-h-64 overflow-auto rounded bg-muted p-2 text-[10px] leading-tight">
+															<pre className="max-h-64 overflow-auto rounded bg-muted p-2 text-xs leading-tight">
 																{file.diff}
 															</pre>
 														) : null}
 														{file.isTruncated ? (
-															<p className="text-[10px] text-muted-foreground italic">
+															<p className="text-muted-foreground text-xs italic">
 																{t(
 																	"changes.truncated",
 																)}

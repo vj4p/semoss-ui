@@ -548,7 +548,7 @@ export const ResponseMessage: React.FC<ResponseMessageProps> = observer(
 													className="size-8 shrink-0 text-muted-foreground"
 													strokeWidth={1.25}
 												/>
-												<span className="max-w-16 truncate font-medium text-[10px] text-muted-foreground uppercase">
+												<span className="max-w-16 truncate font-medium text-muted-foreground text-xs uppercase">
 													{ext}
 												</span>
 											</button>

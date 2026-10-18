@@ -88,12 +88,12 @@ type SearchUser = {
 const getFileIcon = (fileName: string) => {
 	const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
 	if (ext === "pdf")
-		return <FileTextIcon className="h-4 w-4 shrink-0 text-red-500" />;
+		return <FileTextIcon className="h-4 w-4 shrink-0 text-destructive" />;
 	if (ext === "doc" || ext === "docx")
-		return <FileTextIcon className="h-4 w-4 shrink-0 text-blue-500" />;
+		return <FileTextIcon className="h-4 w-4 shrink-0 text-info" />;
 	if (ext === "xls" || ext === "xlsx" || ext === "csv")
 		return (
-			<FileSpreadsheetIcon className="h-4 w-4 shrink-0 text-green-600" />
+			<FileSpreadsheetIcon className="h-4 w-4 shrink-0 text-success" />
 		);
 	if (
 		ext === "png" ||
@@ -103,7 +103,7 @@ const getFileIcon = (fileName: string) => {
 		ext === "webp" ||
 		ext === "svg"
 	)
-		return <FileImageIcon className="h-4 w-4 shrink-0 text-purple-500" />;
+		return <FileImageIcon className="h-4 w-4 shrink-0 text-chart-4" />;
 	return <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />;
 };
 

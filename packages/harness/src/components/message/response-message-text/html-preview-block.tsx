@@ -313,7 +313,7 @@ export const HtmlPreviewBlock = ({
 							/>
 							{isLoading && (
 								<div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-									<div className="flex items-center gap-2 rounded-md border border-border/70 bg-background/75 px-3 py-1 font-medium text-[11px] text-muted-foreground uppercase tracking-[0.08em] shadow-sm">
+									<div className="flex items-center gap-2 rounded-md border border-border/70 bg-background/75 px-3 py-1 font-medium text-muted-foreground text-xs uppercase tracking-[0.08em] shadow-sm">
 										<Spinner className="size-3" />
 										Loading Preview...
 									</div>
@@ -340,7 +340,7 @@ export const HtmlPreviewBlock = ({
 						/>
 						{isLoading && (
 							<div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-								<div className="flex items-center gap-2 rounded-md border border-border/70 bg-background/75 px-3 py-1 font-medium text-[11px] text-muted-foreground uppercase tracking-[0.08em] shadow-sm">
+								<div className="flex items-center gap-2 rounded-md border border-border/70 bg-background/75 px-3 py-1 font-medium text-muted-foreground text-xs uppercase tracking-[0.08em] shadow-sm">
 									<Spinner className="size-3" />
 									Loading Preview...
 								</div>

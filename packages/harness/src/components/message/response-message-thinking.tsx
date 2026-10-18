@@ -71,7 +71,7 @@ const THINKING_MARKDOWN_COMPONENTS: MarkdownComponents = {
 	a: ({ children, href, ...props }) => (
 		<a
 			href={href}
-			className="font-medium text-primary text-sm underline underline-offset-1"
+			className="font-medium text-primary-text text-sm underline underline-offset-1"
 			target="_blank"
 			rel="noopener noreferrer"
 			{...props}

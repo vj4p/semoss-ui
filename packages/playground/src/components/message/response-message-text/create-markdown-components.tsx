@@ -108,7 +108,7 @@ export const createMarkdownComponents = (
 				return (
 					<button
 						type="button"
-						className="cursor-pointer font-medium text-base text-primary underline underline-offset-1"
+						className="cursor-pointer font-medium text-base text-primary-text underline underline-offset-1"
 						onClick={() => {
 							room.openSidebarFileExplorer(path);
 						}}
@@ -123,7 +123,7 @@ export const createMarkdownComponents = (
 			return (
 				<button
 					type="button"
-					className="cursor-pointer font-medium text-base text-primary underline underline-offset-1"
+					className="cursor-pointer font-medium text-base text-primary-text underline underline-offset-1"
 					onClick={() => {
 						room.openSidebarFileExplorer();
 						room.openFileSidebarPanel(path, filename);
@@ -136,7 +136,7 @@ export const createMarkdownComponents = (
 		return (
 			<a
 				href={href}
-				className="font-medium text-base text-primary underline underline-offset-1"
+				className="font-medium text-base text-primary-text underline underline-offset-1"
 				target="_blank"
 				rel="noopener noreferrer"
 				{...props}

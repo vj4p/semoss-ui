@@ -779,7 +779,7 @@ export const GlobalNav = observer(() => {
 																					className={cn(
 																						"me-2 size-4",
 																						isFavorite &&
-																							"fill-yellow-500 text-yellow-500",
+																							"fill-warning text-warning",
 																					)}
 																				/>
 																				{isFavorite

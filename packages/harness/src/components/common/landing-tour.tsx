@@ -265,7 +265,7 @@ export const LandingTour: React.FC = observer(() => {
 					{/* Header */}
 					<div className="flex items-start justify-between gap-2">
 						<div className="flex items-center gap-2">
-							<MapIcon className="size-4 shrink-0 text-primary" />
+							<MapIcon className="size-4 shrink-0 text-primary-text" />
 							<span className="font-semibold text-foreground text-sm leading-tight">
 								{currentStep.title}
 							</span>

@@ -645,7 +645,7 @@ export const RoomEffectivenessReport = observer(
 															 * not in a side panel. */}
 															{(a.topIssues ?? [])
 																.length > 0 ? (
-																<ul className="list-inside list-disc text-amber-600 text-xs dark:text-amber-500">
+																<ul className="list-inside list-disc text-warning text-xs">
 																	{(
 																		a.topIssues ??
 																		[]

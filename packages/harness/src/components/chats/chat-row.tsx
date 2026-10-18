@@ -239,9 +239,9 @@ export const ChatRow = ({
 									: t("workspace:chat.pin")
 							}
 							className={cn(
-								"pointer-events-auto hover:text-yellow-500",
+								"pointer-events-auto hover:text-warning",
 								isPinned
-									? "text-yellow-500"
+									? "text-warning"
 									: "text-muted-foreground",
 							)}
 							onClick={(e) => {
@@ -254,7 +254,7 @@ export const ChatRow = ({
 							<StarIcon
 								className={cn(
 									"size-4",
-									isPinned && "fill-yellow-500",
+									isPinned && "fill-warning",
 								)}
 							/>
 						</Button>

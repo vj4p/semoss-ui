@@ -103,10 +103,10 @@ export const WorkspacePage = observer(() => {
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-12 @3xl:px-12 @md:px-6 px-4 pt-8 pb-4">
 				<div className="flex w-full rounded-lg bg-primary/10">
 					<div className="flex flex-1 flex-col gap-4 p-6 font-sans">
-						<div className="font-medium text-primary text-xl leading-normal dark:text-white">
+						<div className="font-medium text-primary-text text-xl leading-normal dark:text-white">
 							{t("workspace:welcomeTitle")}
 						</div>
-						<div className="font-normal text-base text-primary leading-normal dark:text-white">
+						<div className="font-normal text-base text-primary-text leading-normal dark:text-white">
 							{t("workspace:welcomeDescription")}
 						</div>
 						<Button

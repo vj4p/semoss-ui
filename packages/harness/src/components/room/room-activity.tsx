@@ -14,7 +14,9 @@ const STATUS_ICON: Record<ToolStore["status"], React.ReactNode> = {
 	SUCCESS: <CheckIcon className="size-3.5 text-success" />,
 	ERROR: <XCircleIcon className="size-3.5 text-destructive" />,
 	CANCELLED: <XCircleIcon className="size-3.5 text-muted-foreground" />,
-	LOADING: <Loader2Icon className="size-3.5 animate-spin text-primary" />,
+	LOADING: (
+		<Loader2Icon className="size-3.5 animate-spin text-primary-text" />
+	),
 	INITIAL: <HammerIcon className="size-3.5 text-muted-foreground" />,
 };
 

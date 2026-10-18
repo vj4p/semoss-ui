@@ -533,9 +533,9 @@ function ChatRow({
 								isFavorite ? t("chat.unpin") : t("chat.pin")
 							}
 							className={cn(
-								"hover:text-yellow-500",
+								"hover:text-warning",
 								isFavorite
-									? "text-yellow-500"
+									? "text-warning"
 									: "text-muted-foreground",
 							)}
 							onClick={(e) => {
@@ -548,7 +548,7 @@ function ChatRow({
 							<StarIcon
 								className={cn(
 									"size-4",
-									isFavorite && "fill-yellow-500",
+									isFavorite && "fill-warning",
 								)}
 							/>
 						</Button>

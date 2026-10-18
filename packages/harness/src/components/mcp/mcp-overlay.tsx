@@ -269,7 +269,7 @@ export const MCPOverlay: React.FC<MCPOverlayProps> = ({
 										{/* Absolutely positioned so the centered label
 										    doesn't shift when the indicator appears. */}
 										{workspaceDraft ? (
-											<CheckIcon className="absolute end-2.5 size-3.5 text-primary" />
+											<CheckIcon className="absolute end-2.5 size-3.5 text-primary-text" />
 										) : null}
 									</TabsTrigger>
 								)}

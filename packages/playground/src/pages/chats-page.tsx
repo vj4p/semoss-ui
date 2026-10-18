@@ -488,7 +488,7 @@ export const ChatsPage = observer(() => {
 							{pinnedRooms.length > 0 && (
 								<div className="flex flex-col gap-2">
 									<div className="flex items-center gap-1.5 px-1 font-medium text-muted-foreground text-xs">
-										<StarIcon className="size-3.5 fill-primary text-primary" />
+										<StarIcon className="size-3.5 fill-primary text-primary-text" />
 										{t("workspace:chats.favorites")}
 									</div>
 									<div className="flex flex-col gap-2">

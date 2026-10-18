@@ -49,7 +49,7 @@ const statusClass = (status?: string) => {
 	switch (status) {
 		case "RUNNING":
 		case "SUBMITTED":
-			return "border-primary/40 text-primary";
+			return "border-primary/40 text-primary-text";
 		case "FAILED":
 			return "border-destructive/40 text-destructive";
 		case "INPUT_REQUIRED":
@@ -234,7 +234,7 @@ export const InboxPage = observer(() => {
 						</Badge>
 					) : null}
 					{runningCount > 0 ? (
-						<Badge variant="outline" className="text-primary">
+						<Badge variant="outline" className="text-primary-text">
 							{runningCount} running
 						</Badge>
 					) : null}

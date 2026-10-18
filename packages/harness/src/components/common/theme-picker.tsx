@@ -57,7 +57,7 @@ export const ThemePicker = observer(() => {
 							/>
 							<span className="flex-1 text-start">{label}</span>
 							{colorTheme === id && (
-								<CheckIcon className="size-4 text-primary" />
+								<CheckIcon className="size-4 text-primary-text" />
 							)}
 						</button>
 					))}

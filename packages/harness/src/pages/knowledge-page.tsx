@@ -691,7 +691,7 @@ export const DocumentLibrary = () => {
 																		item.id
 																	] ??
 																	item.favorite)
-																		? "fill-current text-primary"
+																		? "fill-current text-primary-text"
 																		: "text-muted-foreground"
 																}`}
 															/>

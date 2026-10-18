@@ -685,7 +685,7 @@ export const DocumentLibrary = () => {
 												<div className="flex min-w-0 flex-wrap items-center gap-2">
 													<Link
 														to={`/knowledge/${item.id}`}
-														className="min-w-0 break-words font-medium text-foreground text-sm hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+														className="min-w-0 break-words font-medium text-foreground text-sm hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 													>
 														{item.name}
 													</Link>
@@ -743,7 +743,7 @@ export const DocumentLibrary = () => {
 																		item.id
 																	] ??
 																	item.favorite)
-																		? "fill-current text-primary"
+																		? "fill-current text-primary-text"
 																		: "text-muted-foreground"
 																}`}
 															/>

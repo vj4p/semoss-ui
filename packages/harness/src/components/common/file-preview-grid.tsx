@@ -71,7 +71,7 @@ const getFileIcon = (file: File) => {
 	return (
 		<div className="flex flex-col items-center gap-1">
 			<Icon className={ICON_CLASS} strokeWidth={1.25} />
-			<span className="max-w-16 truncate font-medium text-[10px] text-muted-foreground uppercase">
+			<span className="max-w-16 truncate font-medium text-muted-foreground text-xs uppercase">
 				{ext}
 			</span>
 		</div>

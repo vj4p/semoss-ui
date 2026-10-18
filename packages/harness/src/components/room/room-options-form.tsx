@@ -357,7 +357,7 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 														<Badge
 															key={mcp.id}
 															variant="outline"
-															className="disabled: me-2 border border-primary text-primary text-xs"
+															className="disabled: me-2 border border-primary text-primary-text text-xs"
 														>
 															{t(
 																"common:badges.fromAgent",
@@ -476,7 +476,7 @@ export const RoomOptionsForm: React.FC<RoomOptionsFormProps> = observer(
 														<Badge
 															key={mcp.id}
 															variant="outline"
-															className="disabled: me-2 border border-primary text-primary text-xs"
+															className="disabled: me-2 border border-primary text-primary-text text-xs"
 														>
 															{t(
 																"common:badges.fromAgent",

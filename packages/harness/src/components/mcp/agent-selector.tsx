@@ -211,7 +211,7 @@ export const AgentSelector = observer(
 															</TooltipContent>
 														</Tooltip>
 														{permissionLabel ? (
-															<span className="-translate-y-px text-[10px] text-muted-foreground capitalize">
+															<span className="-translate-y-px text-muted-foreground text-xs capitalize">
 																{
 																	permissionLabel
 																}

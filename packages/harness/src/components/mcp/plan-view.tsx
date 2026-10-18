@@ -33,7 +33,9 @@ const parseTodos = (raw: unknown): TodoItem[] => {
 
 const STATUS_ICON: Record<NonNullable<TodoItem["status"]>, React.ReactNode> = {
 	completed: <CheckCircle2Icon className="size-4 text-success" />,
-	in_progress: <Loader2Icon className="size-4 animate-spin text-primary" />,
+	in_progress: (
+		<Loader2Icon className="size-4 animate-spin text-primary-text" />
+	),
 	pending: <CircleIcon className="size-4 text-muted-foreground" />,
 };
 

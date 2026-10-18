@@ -366,7 +366,7 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 												</span>
 												<Badge
 													variant="outline"
-													className="text-[10px]"
+													className="text-xs"
 												>
 													{t(
 														"capabilities.toolCount",
@@ -378,7 +378,7 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 												{asks > 0 && (
 													<Badge
 														variant="outline"
-														className="text-[10px]"
+														className="text-xs"
 													>
 														{t(
 															"capabilities.askCount",
@@ -391,7 +391,7 @@ export const RoomCapabilities: React.FC<RoomCapabilitiesProps> = observer(
 												{pack.description}
 											</p>
 											{enabled && missing.length > 0 && (
-												<p className="flex items-center gap-1 text-amber-600 text-xs dark:text-amber-500">
+												<p className="flex items-center gap-1 text-warning text-xs">
 													<AlertTriangleIcon className="size-3 shrink-0" />
 													{t(
 														"capabilities.needsEngine",
