@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<string, string> = {
 export function StatusBadge({ status }: StatusBadgeProps) {
 	return (
 		<span
-			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium text-[11px] ${getStatusClasses(status)}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium text-xs ${getStatusClasses(status)}`}
 		>
 			<StatusIcon status={status} className="h-3 w-3" />
 			{STATUS_LABELS[status] ?? status}

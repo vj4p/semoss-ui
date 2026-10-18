@@ -22,7 +22,7 @@ export function AgentAvatar({
 		<span
 			aria-hidden="true"
 			className={cn(
-				"inline-flex shrink-0 items-center justify-center overflow-hidden border border-primary/20 bg-accent font-medium text-primary",
+				"inline-flex shrink-0 items-center justify-center overflow-hidden border border-primary/20 bg-accent font-medium text-primary-text",
 				shape === "circle" ? "rounded-full" : "rounded-xl",
 				{
 					"size-6": size === "xs",

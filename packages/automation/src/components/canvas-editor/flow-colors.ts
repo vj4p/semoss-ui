@@ -15,16 +15,16 @@ export const PATH_HIGHLIGHT_BORDER_CLASS = "border-primary/60";
 export const LOOP_PATH_HIGHLIGHT_BORDER_CLASS = "border-chart-2/70";
 
 const RUN_STATUS_COLOR: Partial<Record<StepRunStatus, string>> = {
-	running: "#3b82f6",
+	running: "var(--info)",
 	waiting: "var(--warning)",
-	success: "#10b981",
+	success: "var(--success)",
 	error: "var(--destructive)",
 };
 
 const RUN_STATUS_BORDER_CLASS: Partial<Record<StepRunStatus, string>> = {
-	running: "border-blue-500/70",
+	running: "border-info/70",
 	waiting: "border-warning/60",
-	success: "border-emerald-500/60",
+	success: "border-success/60",
 	error: "border-destructive/60",
 };
 

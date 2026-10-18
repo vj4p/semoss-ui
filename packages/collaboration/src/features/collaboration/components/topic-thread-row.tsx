@@ -78,7 +78,7 @@ export function TopicThreadRow({
 								{items.length > 0 && (
 									<Badge
 										variant="secondary"
-										className="border-0 bg-primary/10 text-primary dark:text-foreground"
+										className="border-0 bg-primary/10 text-primary-text dark:text-foreground"
 									>
 										{items.some(
 											(item) => item.status === "open",

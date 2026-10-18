@@ -31,7 +31,7 @@ export function SourceMessageBody({
 			{body.contentType === "html" ? (
 				channel === "teams" ? (
 					<div
-						className="min-w-0 overflow-x-auto break-words leading-relaxed [&_[data-mention]]:font-semibold [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_code]:font-mono [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-2 [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_td]:border [&_td]:p-2 [&_th]:border [&_th]:p-2 [&_ul]:list-disc"
+						className="min-w-0 overflow-x-auto break-words leading-relaxed [&_[data-mention]]:font-semibold [&_a]:text-primary-text [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_code]:font-mono [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-2 [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_td]:border [&_td]:p-2 [&_th]:border [&_th]:p-2 [&_ul]:list-disc"
 						// biome-ignore lint/security/noDangerouslySetInnerHtml: teamsHtml returns an allowlisted, sanitized fragment with no source CSS or media.
 						dangerouslySetInnerHTML={{
 							__html: teamsHtml(body.content),

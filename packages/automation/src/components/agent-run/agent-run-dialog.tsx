@@ -164,7 +164,7 @@ const ToolGroupDetail = ({ group }: { group: AutomationAgentRunToolGroup }) => (
 								Call {index + 1}
 							</span>
 							{isActive ? (
-								<span className="flex items-center gap-1 text-primary">
+								<span className="flex items-center gap-1 text-primary-text">
 									<Loader2
 										className="size-3.5 animate-spin"
 										aria-hidden
@@ -621,7 +621,7 @@ export function AgentRunDialog({
 																	.invocations
 																	.length >
 																	1 && (
-																	<span className="shrink-0 rounded-full bg-muted px-1.5 text-[10px]">
+																	<span className="shrink-0 rounded-full bg-muted px-1.5 text-xs">
 																		{
 																			item
 																				.group

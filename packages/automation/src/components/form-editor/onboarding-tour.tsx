@@ -175,7 +175,7 @@ export function OnboardingTour({ appId }: { appId: string }) {
 				<p className="mb-1.5 font-semibold text-sm leading-snug">
 					{current.title}
 				</p>
-				<p className="text-[12px] text-muted-foreground leading-relaxed">
+				<p className="text-muted-foreground text-xs leading-relaxed">
 					{current.body}
 				</p>
 
@@ -198,14 +198,14 @@ export function OnboardingTour({ appId }: { appId: string }) {
 						<button
 							type="button"
 							onClick={dismiss}
-							className="text-[11px] text-muted-foreground hover:text-foreground"
+							className="text-muted-foreground text-xs hover:text-foreground"
 						>
 							Skip
 						</button>
 						<button
 							type="button"
 							onClick={next}
-							className="rounded-md bg-primary px-3 py-1 font-medium text-[12px] text-primary-foreground transition-colors hover:bg-primary/90"
+							className="rounded-md bg-primary px-3 py-1 font-medium text-primary-foreground text-xs transition-colors hover:bg-primary/90"
 						>
 							{isLast ? "Done" : "Next →"}
 						</button>

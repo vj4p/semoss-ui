@@ -49,7 +49,7 @@ export function BrainOverview() {
 				variant="card"
 				action={
 					<Link
-						className="inline-flex min-h-6 items-center text-primary text-xs hover:underline"
+						className="inline-flex min-h-6 items-center text-primary-text text-xs hover:underline"
 						to="/brain/sources"
 					>
 						Manage
@@ -100,7 +100,7 @@ export function BrainOverview() {
 				variant="card"
 				action={
 					<Link
-						className="inline-flex min-h-6 items-center text-primary text-xs hover:underline"
+						className="inline-flex min-h-6 items-center text-primary-text text-xs hover:underline"
 						to="/brain/people"
 					>
 						All

@@ -66,7 +66,7 @@ export function DashboardNeeds({ widget }: { widget: DashboardWidget }) {
 				<div className="space-y-3 py-8 text-muted-foreground text-sm">
 					<CheckCheck
 						aria-hidden="true"
-						className="size-6 text-primary"
+						className="size-6 text-primary-text"
 					/>
 					<p>
 						{widget.filter === "urgent"

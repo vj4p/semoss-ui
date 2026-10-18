@@ -146,7 +146,7 @@ export function AddNodeMenu({
 											onClick={() => onSelect(node.type)}
 											className="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:border-primary hover:bg-muted/40"
 										>
-											<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
+											<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-primary-text">
 												<NodeIcon
 													className="size-4"
 													aria-hidden

@@ -82,7 +82,7 @@ export function DelegationResponsePanel({
 				aria-hidden="true"
 				className={cn(
 					"mt-0.5 size-4 shrink-0",
-					closed ? "text-muted-foreground" : "text-primary",
+					closed ? "text-muted-foreground" : "text-primary-text",
 				)}
 			/>
 			<div className="min-w-0">
@@ -93,7 +93,7 @@ export function DelegationResponsePanel({
 				) : (
 					<>
 						<p className="wrap-break-word text-sm">
-							<span className="font-medium text-primary">
+							<span className="font-medium text-primary-text">
 								Open request from{" "}
 								{delegation.requesterName ?? "a teammate"}
 								{delegation.dueAt &&

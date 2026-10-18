@@ -332,7 +332,7 @@ export function RunsTab({
 					<div className="flex items-center gap-2">
 						<p className="font-semibold text-sm">Run History</p>
 						{activeRuns.length > 0 && (
-							<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+							<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary-text text-xs">
 								{activeRuns.length} active
 							</span>
 						)}
@@ -404,7 +404,7 @@ export function RunsTab({
 							>
 								<StatusBadge status={run.STATUS} />
 								{run.RUN_ID === followedRunId && (
-									<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
+									<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary-text text-xs">
 										Following
 									</span>
 								)}
@@ -1080,7 +1080,7 @@ function ResultsPanel({
 					displayResult.STATUS === "RUNNING" &&
 					!displayResult.OUTPUT_PREVIEW?.trim() ? (
 						<div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground text-xs">
-							<Loader2 className="size-5 animate-spin text-primary" />
+							<Loader2 className="size-5 animate-spin text-primary-text" />
 							<span>
 								Executing step{" "}
 								{displayResult.NODE_LABEL || "..."}...

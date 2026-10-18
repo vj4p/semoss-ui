@@ -175,11 +175,11 @@ export function SchedulePanel({
 										<p className="truncate font-medium text-xs">
 											{schedule.jobName}
 										</p>
-										<p className="truncate text-[11px] text-muted-foreground">
+										<p className="truncate text-muted-foreground text-xs">
 											{schedule.cronExpression} (
 											{schedule.cronTz})
 										</p>
-										<p className="text-[11px] text-muted-foreground">
+										<p className="text-muted-foreground text-xs">
 											{schedule.isActive
 												? `Next: ${schedule.nextFireTime}`
 												: "Paused"}

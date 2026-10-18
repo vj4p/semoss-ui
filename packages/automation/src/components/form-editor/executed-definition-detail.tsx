@@ -13,7 +13,7 @@ export function ExecutedDefinitionDetail({
 	if (!definition.hash && !definition.snapshot) return null;
 
 	return (
-		<div className="rounded-md border bg-muted/30 px-3 py-2 text-[11px]">
+		<div className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
 			<div className="flex items-center justify-between gap-3">
 				<span className="text-muted-foreground">
 					Executed definition
@@ -25,7 +25,7 @@ export function ExecutedDefinitionDetail({
 					<Button
 						size="sm"
 						variant="ghost"
-						className="h-7 px-2 text-[11px]"
+						className="h-7 px-2 text-xs"
 						onClick={() => setShowDefinition((current) => !current)}
 					>
 						{showDefinition ? "Hide definition" : "View definition"}
@@ -38,7 +38,7 @@ export function ExecutedDefinitionDetail({
 				</p>
 			)}
 			{showDefinition && definition.snapshot && (
-				<pre className="mt-2 max-h-80 overflow-auto rounded-md bg-muted p-3 text-[10px] leading-relaxed">
+				<pre className="mt-2 max-h-80 overflow-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
 					{definition.snapshot}
 				</pre>
 			)}

@@ -160,7 +160,7 @@ export function BranchNode({ data }: NodeProps) {
 
 						<div className="cursor-pointer px-4 py-3">
 							<div className="flex items-center gap-3">
-								<span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+								<span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
 									<DecisionIcon className="size-4" />
 									<span className="-top-1.5 -left-1.5 absolute flex size-4 items-center justify-center rounded-full border border-border bg-muted font-medium text-muted-foreground text-xs">
 										{d.index + 1}
@@ -190,7 +190,7 @@ export function BranchNode({ data }: NodeProps) {
 								{runStatus && runStatus !== "idle" && (
 									<div className="ml-auto shrink-0">
 										{runStatus === "running" ? (
-											<Loader2 className="size-3.5 animate-spin text-primary" />
+											<Loader2 className="size-3.5 animate-spin text-primary-text" />
 										) : (
 											<StatusIcon
 												status={runStatus}

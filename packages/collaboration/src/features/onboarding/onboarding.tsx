@@ -65,7 +65,8 @@ export function Onboarding({
 			<div className="mx-auto flex max-w-5xl flex-col gap-4 p-4 md:p-6">
 				<header className="flex flex-col gap-2">
 					<P className="font-bold text-lg tracking-tight">
-						collaboration<span className="text-primary">.</span>
+						collaboration
+						<span className="text-primary-text">.</span>
 					</P>
 					<Progress
 						value={started ? ((step + 1) / STEPS.length) * 100 : 0}

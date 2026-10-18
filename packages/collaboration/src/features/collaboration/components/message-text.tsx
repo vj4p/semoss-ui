@@ -14,7 +14,7 @@ export function MessageText({ text }: { text: string }) {
 						target="_blank"
 						rel="noreferrer"
 						title={part.href}
-						className="break-all text-primary underline underline-offset-2"
+						className="break-all text-primary-text underline underline-offset-2"
 					>
 						{linkLabel(part.href)}
 					</a>

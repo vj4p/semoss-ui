@@ -242,7 +242,7 @@ export const TerminalFile = ({
 					// environment, so we fence it off until the user switches
 					// back.
 					<div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]">
-						<div className="max-w-sm rounded-md border border-amber-400/60 bg-amber-100/80 px-4 py-3 text-amber-900 text-sm shadow-sm dark:border-amber-500/40 dark:bg-amber-950/60 dark:text-amber-200">
+						<div className="max-w-sm rounded-md border border-warning/60 bg-warning/80 px-4 py-3 text-sm text-warning shadow-sm">
 							<div className="mb-1 font-semibold">
 								{t("scopeChanged.title")}
 							</div>
@@ -281,7 +281,7 @@ export const TerminalFile = ({
 								type="button"
 								className={`flex items-center justify-center border-border border-r px-2 py-1 last:border-r-0 disabled:opacity-40 ${
 									ext === extOpt
-										? "bg-primary/15 text-primary"
+										? "bg-primary/15 text-primary-text"
 										: "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 								}`}
 								onClick={() => setExt(extOpt)}

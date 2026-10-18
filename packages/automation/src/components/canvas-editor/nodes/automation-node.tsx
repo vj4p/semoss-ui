@@ -221,7 +221,7 @@ export function AutomationNode({ data }: NodeProps) {
 								{runStatus && runStatus !== "idle" && (
 									<div className="ml-auto shrink-0">
 										{runStatus === "running" ? (
-											<Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+											<Loader2 className="h-3.5 w-3.5 animate-spin text-primary-text" />
 										) : (
 											<StatusIcon
 												status={runStatus}
@@ -254,7 +254,7 @@ export function AutomationNode({ data }: NodeProps) {
 													type="button"
 													variant="ghost"
 													size="icon"
-													className={`nodrag nopan size-7 shrink-0 ${isWaitingForInput ? "text-warning" : "text-primary"}`}
+													className={`nodrag nopan size-7 shrink-0 ${isWaitingForInput ? "text-warning" : "text-primary-text"}`}
 													onClick={(event) => {
 														event.stopPropagation();
 														if (d.runTrace) {

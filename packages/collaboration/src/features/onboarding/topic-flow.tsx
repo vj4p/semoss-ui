@@ -473,7 +473,7 @@ export function TopicFlow({
 										item.key === stage
 											? "bg-primary text-primary-foreground"
 											: index < stageIndex
-												? "bg-primary/10 text-primary"
+												? "bg-primary/10 text-primary-text"
 												: "bg-muted text-muted-foreground",
 									)}
 								>

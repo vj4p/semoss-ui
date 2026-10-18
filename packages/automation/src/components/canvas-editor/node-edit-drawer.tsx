@@ -43,11 +43,9 @@ const RUN_STATUS_LABELS: Record<StepRunStatus, string> = {
 
 const RUN_STATUS_CLASSES: Record<StepRunStatus, string> = {
 	idle: "border-border text-muted-foreground",
-	running: "border-primary/30 bg-primary/5 text-primary",
-	waiting:
-		"border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
-	success:
-		"border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+	running: "border-primary/30 bg-primary/5 text-primary-text",
+	waiting: "border-warning/30 bg-warning/5 text-warning",
+	success: "border-success/40 bg-success/10 text-success",
 	error: "border-destructive/30 bg-destructive/5 text-destructive",
 };
 export interface NodeEditDrawerProps {
@@ -239,7 +237,7 @@ export function NodeEditDrawer({
 						{workflowDefinition?.label ?? meta.label}
 					</span>
 					{readOnly && (
-						<span className="flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">
+						<span className="flex items-center gap-1 rounded-md border bg-background px-1.5 py-0.5 text-muted-foreground text-xs">
 							<Lock className="size-3" />
 							View only
 						</span>
@@ -264,7 +262,7 @@ export function NodeEditDrawer({
 						<div
 							className={`flex items-start justify-between gap-2 rounded-lg border px-3 py-2 ${RUN_STATUS_CLASSES[runStatus]}`}
 						>
-							<div className="flex min-w-0 items-start gap-1.5 font-medium text-[11px]">
+							<div className="flex min-w-0 items-start gap-1.5 font-medium text-xs">
 								<StatusIcon
 									className="mt-0.5 size-3.5 shrink-0"
 									status={runStatus}
@@ -281,7 +279,7 @@ export function NodeEditDrawer({
 									type="button"
 									size="sm"
 									variant="ghost"
-									className="h-6 shrink-0 gap-1 px-2 text-[11px]"
+									className="h-6 shrink-0 gap-1 px-2 text-xs"
 									onClick={() => onViewRunDetails(step.id)}
 								>
 									View run details
@@ -344,7 +342,7 @@ export function NodeEditDrawer({
 										? "Python source"
 										: "Configuration"}
 								</p>
-								<p className="text-[11px] text-muted-foreground">
+								<p className="text-muted-foreground text-xs">
 									{pythonSourceUnavailable
 										? "Not available for historical runs."
 										: step.workflowType === "control.jev"
@@ -370,7 +368,7 @@ export function NodeEditDrawer({
 											onClick={() =>
 												setEditorMode("form")
 											}
-											className={`rounded px-2.5 py-1 font-medium text-[11px] transition-colors ${editorMode === "form" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+											className={`rounded px-2.5 py-1 font-medium text-xs transition-colors ${editorMode === "form" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
 										>
 											Form
 										</button>
@@ -382,7 +380,7 @@ export function NodeEditDrawer({
 											onClick={() =>
 												setEditorMode("python")
 											}
-											className={`rounded px-2.5 py-1 font-medium text-[11px] transition-colors ${editorMode === "python" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+											className={`rounded px-2.5 py-1 font-medium text-xs transition-colors ${editorMode === "python" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
 										>
 											Python
 										</button>
@@ -393,11 +391,11 @@ export function NodeEditDrawer({
 						{!isDeveloperPython &&
 							editorMode === "form" &&
 							(isCustomSource && !isJavaOwnedControl ? (
-								<div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+								<div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
 									<p className="font-medium text-xs">
 										Custom Python is active
 									</p>
-									<p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+									<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
 										The form is unavailable because this
 										node&apos;s custom source controls its
 										behavior.
@@ -408,7 +406,7 @@ export function NodeEditDrawer({
 										<Button
 											size="sm"
 											variant="outline"
-											className="mt-3 h-7 text-[11px]"
+											className="mt-3 h-7 text-xs"
 											onClick={() => {
 												const {
 													pythonSource: _pythonSource,
@@ -428,7 +426,7 @@ export function NodeEditDrawer({
 										<Button
 											size="sm"
 											variant="outline"
-											className="mt-3 h-7 text-[11px]"
+											className="mt-3 h-7 text-xs"
 											onClick={() =>
 												setEditorMode("python")
 											}
@@ -436,7 +434,7 @@ export function NodeEditDrawer({
 											View Python source
 										</Button>
 									) : (
-										<p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+										<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
 											Switch to Dev mode to view or edit
 											the custom Python source.
 										</p>
@@ -457,13 +455,13 @@ export function NodeEditDrawer({
 									readOnly={readOnly}
 								/>
 							) : (
-								<p className="rounded-lg border border-dashed px-3 py-2 text-[11px] text-muted-foreground">
+								<p className="rounded-lg border border-dashed px-3 py-2 text-muted-foreground text-xs">
 									This node is configured in Python.
 								</p>
 							))}
 
 						{showPythonEditor && pythonSourceUnavailable && (
-							<p className="rounded-lg border border-dashed px-3 py-2 text-[11px] text-muted-foreground">
+							<p className="rounded-lg border border-dashed px-3 py-2 text-muted-foreground text-xs">
 								Python source isn&apos;t available for this
 								historical run.
 							</p>
@@ -474,7 +472,7 @@ export function NodeEditDrawer({
 								<div>
 									<div className="flex items-center justify-between">
 										<FieldLabel className="flex items-center gap-1.5 text-xs">
-											<Code2 className="h-3.5 w-3.5 text-primary" />
+											<Code2 className="h-3.5 w-3.5 text-primary-text" />
 											Python source
 											<Tooltip>
 												<TooltipTrigger asChild>

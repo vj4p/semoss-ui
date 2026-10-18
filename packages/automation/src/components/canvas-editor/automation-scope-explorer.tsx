@@ -140,7 +140,7 @@ export function AutomationScopeExplorer({
 												className="items-start gap-2"
 											>
 												{onSelect ? (
-													<Check className="mt-0.5 size-3.5 text-primary" />
+													<Check className="mt-0.5 size-3.5 text-primary-text" />
 												) : (
 													<Braces className="mt-0.5 size-3.5 text-muted-foreground" />
 												)}

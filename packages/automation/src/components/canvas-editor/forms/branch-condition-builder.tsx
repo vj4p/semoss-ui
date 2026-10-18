@@ -167,7 +167,7 @@ function BranchClauseEditor({
 			<div className="flex items-start justify-between gap-2">
 				<div className="flex items-center gap-2">
 					<span
-						className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-xs"
+						className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary-text text-xs"
 						aria-hidden="true"
 					>
 						{index + 1}
@@ -291,7 +291,7 @@ function BranchClauseEditor({
 						readOnly={readOnly}
 					/>
 					<Small className="rounded-md bg-primary/5 px-2.5 py-2 text-xs">
-						<span className="font-medium text-primary">
+						<span className="font-medium text-primary-text">
 							When matched:
 						</span>{" "}
 						continue from <strong>{label}</strong> on the canvas.

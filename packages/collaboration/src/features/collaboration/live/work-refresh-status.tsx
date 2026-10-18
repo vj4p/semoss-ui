@@ -86,7 +86,10 @@ export function WorkRefreshStatus({ className }: { className?: string }) {
 			>
 				<RefreshCw
 					aria-hidden="true"
-					className={cn("text-primary", checking && "animate-spin")}
+					className={cn(
+						"text-primary-text",
+						checking && "animate-spin",
+					)}
 				/>
 				{updates.isSyncing
 					? "Checking..."

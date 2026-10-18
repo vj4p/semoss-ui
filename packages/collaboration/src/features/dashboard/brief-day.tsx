@@ -56,7 +56,7 @@ export function BriefDay({ compact = false }: { compact?: boolean }) {
 						return (
 							<li key={entry?.event.id ?? "end"}>
 								{index === markerIndex && (
-									<div className="flex items-center gap-4 py-4 text-primary">
+									<div className="flex items-center gap-4 py-4 text-primary-text">
 										<time
 											className="w-12 shrink-0 font-mono text-xs"
 											dateTime={now.toISOString()}

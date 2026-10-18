@@ -50,7 +50,7 @@ export function TraceDetail({
 	if (!roomId && !modelMessageId && !agentRunId) return null;
 
 	return (
-		<div className="rounded-md border bg-muted/30 px-3 py-2 text-[11px]">
+		<div className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
 			<div className="flex items-center gap-1.5 font-medium text-foreground">
 				<Waypoints className="h-3.5 w-3.5" aria-hidden />
 				Activity trace
@@ -86,7 +86,7 @@ export function TraceDetail({
 							href={modelRoomUrl}
 							target="_blank"
 							rel="noreferrer"
-							className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+							className="inline-flex items-center gap-1 font-medium text-primary-text hover:underline"
 						>
 							Open model room
 							<ExternalLink className="h-3 w-3" aria-hidden />
@@ -97,7 +97,7 @@ export function TraceDetail({
 							href={agentActivityUrl}
 							target="_blank"
 							rel="noreferrer"
-							className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+							className="inline-flex items-center gap-1 font-medium text-primary-text hover:underline"
 						>
 							Open Agent Activity
 							<ExternalLink className="h-3 w-3" aria-hidden />

@@ -28,43 +28,43 @@ export function getWorkflowNodeDisplay(
 ): AutomationWorkflowNodeDisplay {
 	const category = getAutomationNodeDefinition(type)?.category;
 	if (type === "trigger.start") {
-		return { icon: Braces, color: "text-emerald-600" };
+		return { icon: Braces, color: "text-success" };
 	}
 	if (category === "database") {
-		return { icon: Database, color: "text-blue-600" };
+		return { icon: Database, color: "text-info" };
 	}
 	if (category === "model") {
-		return { icon: Sparkles, color: "text-purple-600" };
+		return { icon: Sparkles, color: "text-chart-4" };
 	}
 	if (category === "agent") {
-		return { icon: Bot, color: "text-indigo-600" };
+		return { icon: Bot, color: "text-chart-4" };
 	}
 	if (category === "storage") {
-		return { icon: FolderOpen, color: "text-emerald-600" };
+		return { icon: FolderOpen, color: "text-success" };
 	}
 	if (category === "data") {
-		return { icon: ListTree, color: "text-teal-600" };
+		return { icon: ListTree, color: "text-chart-2" };
 	}
 	if (category === "vector") {
-		return { icon: Network, color: "text-amber-600" };
+		return { icon: Network, color: "text-warning" };
 	}
 	if (category === "function") {
-		return { icon: FunctionSquare, color: "text-cyan-600" };
+		return { icon: FunctionSquare, color: "text-info" };
 	}
 	if (category === "app") {
-		return { icon: Variable, color: "text-slate-600" };
+		return { icon: Variable, color: "text-muted-foreground" };
 	}
 	if (type === "control.wait") {
-		return { icon: SlidersHorizontal, color: "text-sky-600" };
+		return { icon: SlidersHorizontal, color: "text-info" };
 	}
 	if (type === "control.if") {
-		return { icon: GitBranch, color: "text-orange-600" };
+		return { icon: GitBranch, color: "text-warning" };
 	}
 	if (type === "control.jev") {
-		return { icon: BrainCircuit, color: "text-violet-600" };
+		return { icon: BrainCircuit, color: "text-chart-4" };
 	}
 	if (type === "control.loop") {
-		return { icon: Repeat2, color: "text-primary" };
+		return { icon: Repeat2, color: "text-primary-text" };
 	}
-	return { icon: Braces, color: "text-primary" };
+	return { icon: Braces, color: "text-primary-text" };
 }

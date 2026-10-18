@@ -133,7 +133,7 @@ export const ScopePicker = () => {
 					type="button"
 					className={`flex-1 border-border border-r px-2 py-1 text-xs ${
 						scope === "INSIGHT"
-							? "bg-primary/15 text-primary"
+							? "bg-primary/15 text-primary-text"
 							: "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 					}`}
 					onClick={() => setScope("INSIGHT")}
@@ -144,7 +144,7 @@ export const ScopePicker = () => {
 					type="button"
 					className={`flex-1 border-border border-r px-2 py-1 text-xs ${
 						scope === "APP"
-							? "bg-primary/15 text-primary"
+							? "bg-primary/15 text-primary-text"
 							: "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 					}`}
 					onClick={() => {
@@ -158,7 +158,7 @@ export const ScopePicker = () => {
 					type="button"
 					className={`flex-1 px-2 py-1 text-xs ${
 						scope === "USER"
-							? "bg-primary/15 text-primary"
+							? "bg-primary/15 text-primary-text"
 							: "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 					}`}
 					onClick={() => setScope("USER")}
@@ -189,13 +189,13 @@ export const ScopePicker = () => {
 								<AppCatalogAvatar
 									projectId={selectedApp.project_id}
 									name={selectedApp.project_name}
-									className="size-6 shrink-0 rounded text-[10px]"
+									className="size-6 shrink-0 rounded text-xs"
 								/>
 								<div className="flex min-w-0 flex-1 flex-col">
 									<span className="truncate font-medium text-foreground">
 										{selectedApp.project_name}
 									</span>
-									<span className="truncate text-[10px] text-muted-foreground">
+									<span className="truncate text-muted-foreground text-xs">
 										{selectedApp.project_id}
 									</span>
 								</div>
@@ -307,25 +307,25 @@ export const ScopePicker = () => {
 										<AppCatalogAvatar
 											projectId={app.project_id}
 											name={app.project_name}
-											className="size-6 shrink-0 rounded text-[10px]"
+											className="size-6 shrink-0 rounded text-xs"
 										/>
 										<div className="flex min-w-0 flex-1 flex-col">
 											<span className="truncate font-medium text-foreground">
 												{app.project_name}
 											</span>
-											<span className="truncate text-[10px] text-muted-foreground">
+											<span className="truncate text-muted-foreground text-xs">
 												{app.project_id}
 											</span>
 										</div>
 									</button>
 								))}
 								{loading && apps.length > 0 && (
-									<div className="px-2 py-2 text-center text-[11px] text-muted-foreground">
+									<div className="px-2 py-2 text-center text-muted-foreground text-xs">
 										{t("scope.loadingMore")}
 									</div>
 								)}
 								{!loading && !hasMore && apps.length > 0 && (
-									<div className="px-2 py-2 text-center text-[11px] text-muted-foreground">
+									<div className="px-2 py-2 text-center text-muted-foreground text-xs">
 										{t("scope.endOfList")}
 									</div>
 								)}

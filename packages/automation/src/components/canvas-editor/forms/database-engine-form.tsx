@@ -265,7 +265,7 @@ export function DatabaseEngineForm({
 													: table.table
 											}
 										>
-											<Database className="h-3 w-3 shrink-0 text-primary" />
+											<Database className="h-3 w-3 shrink-0 text-primary-text" />
 											<span className="font-medium">
 												{table.table}
 											</span>

@@ -25,36 +25,36 @@ interface ProjectRow {
 
 const AVATAR_PALETTES = [
 	{
-		bg: "bg-blue-100 dark:bg-blue-900/40",
-		text: "text-blue-700 dark:text-blue-300",
+		bg: "bg-info-tint",
+		text: "text-info",
 	},
 	{
-		bg: "bg-violet-100 dark:bg-violet-900/40",
-		text: "text-violet-700 dark:text-violet-300",
+		bg: "bg-chart-4",
+		text: "text-chart-4",
 	},
 	{
-		bg: "bg-emerald-100 dark:bg-emerald-900/40",
-		text: "text-emerald-700 dark:text-emerald-300",
+		bg: "bg-success-tint",
+		text: "text-success",
 	},
 	{
-		bg: "bg-amber-100 dark:bg-amber-900/40",
-		text: "text-amber-700 dark:text-amber-300",
+		bg: "bg-warning-tint",
+		text: "text-warning",
 	},
 	{
-		bg: "bg-rose-100 dark:bg-rose-900/40",
-		text: "text-rose-700 dark:text-rose-300",
+		bg: "bg-chart-5",
+		text: "text-chart-5",
 	},
 	{
-		bg: "bg-cyan-100 dark:bg-cyan-900/40",
-		text: "text-cyan-700 dark:text-cyan-300",
+		bg: "bg-info-tint",
+		text: "text-info",
 	},
 	{
 		bg: "bg-fuchsia-100 dark:bg-fuchsia-900/40",
 		text: "text-fuchsia-700 dark:text-fuchsia-300",
 	},
 	{
-		bg: "bg-orange-100 dark:bg-orange-900/40",
-		text: "text-orange-700 dark:text-orange-300",
+		bg: "bg-warning-tint",
+		text: "text-warning",
 	},
 ];
 
@@ -63,7 +63,7 @@ function ProjectInitials({ name }: { name: string }) {
 	const palette = AVATAR_PALETTES[hashName(name) % AVATAR_PALETTES.length];
 	return (
 		<div
-			className={`me-2 flex size-6 shrink-0 items-center justify-center rounded-sm font-semibold text-[10px] ${palette.bg} ${palette.text}`}
+			className={`me-2 flex size-6 shrink-0 items-center justify-center rounded-sm font-semibold text-xs ${palette.bg} ${palette.text}`}
 		>
 			{letters || "?"}
 		</div>
@@ -235,7 +235,7 @@ export function AutomationProjectSelect({
 										{value === project.project_id && (
 											<CheckIcon
 												strokeWidth={3}
-												className="ms-2 size-4 shrink-0 text-primary"
+												className="ms-2 size-4 shrink-0 text-primary-text"
 											/>
 										)}
 									</CommandItem>

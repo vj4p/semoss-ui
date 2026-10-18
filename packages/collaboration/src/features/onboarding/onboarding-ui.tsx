@@ -25,7 +25,7 @@ export function StepHeader({
 	return (
 		<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 			<div className="max-w-2xl space-y-1.5">
-				<p className="font-medium text-primary text-xs uppercase tracking-widest">
+				<p className="font-medium text-primary-text text-xs uppercase tracking-widest">
 					{eyebrow}
 				</p>
 				<h1 className="font-semibold text-xl tracking-tight md:text-2xl">
@@ -223,7 +223,7 @@ export function PhaseRow({
 				className={cn(
 					"flex size-6 shrink-0 items-center justify-center rounded-full",
 					state === "done" && "bg-primary text-primary-foreground",
-					state === "active" && "bg-primary/10 text-primary",
+					state === "active" && "bg-primary/10 text-primary-text",
 					state === "todo" && "bg-muted text-muted-foreground",
 				)}
 			>

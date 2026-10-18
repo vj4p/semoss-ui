@@ -277,7 +277,7 @@ export function TriggerEditPanel({
 							className="flex items-center gap-2 font-medium text-muted-foreground text-sm"
 						>
 							Event Based
-							<span className="rounded-md border bg-background px-1.5 py-0.5 font-normal text-[10px] text-muted-foreground">
+							<span className="rounded-md border bg-background px-1.5 py-0.5 font-normal text-muted-foreground text-xs">
 								In development
 							</span>
 						</h3>
@@ -392,7 +392,7 @@ export function TriggerEditPanel({
 							<div>
 								<p className="flex items-center gap-1.5 font-medium text-sm">
 									<Code2
-										className="size-3.5 text-primary"
+										className="size-3.5 text-primary-text"
 										aria-hidden
 									/>
 									Setup Python

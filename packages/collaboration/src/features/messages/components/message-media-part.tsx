@@ -20,7 +20,7 @@ export function MessageMediaPart({
 	const workbench = useContext(ToolWorkbenchContext);
 	const content = (
 		<>
-			<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-background text-primary">
+			<span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-background text-primary-text">
 				<FileText aria-hidden="true" className="size-4" />
 			</span>
 			<span className="min-w-0">

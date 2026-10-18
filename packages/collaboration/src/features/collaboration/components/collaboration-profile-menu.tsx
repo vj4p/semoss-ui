@@ -73,7 +73,7 @@ export function CollaborationProfileMenu({
 							<PersonAvatar
 								name={name}
 								className="size-8 shrink-0"
-								tone="bg-primary/10 text-primary"
+								tone="bg-primary/10 text-primary-text"
 							/>
 						</Button>
 					</DropdownMenuTrigger>

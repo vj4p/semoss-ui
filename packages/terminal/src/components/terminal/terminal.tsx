@@ -325,7 +325,7 @@ export const Terminal = ({
 										type="button"
 										className={`border-border border-e px-2 py-1 text-sm last:border-e-0 ${
 											terminal.view === v
-												? "bg-primary/15 text-primary"
+												? "bg-primary/15 text-primary-text"
 												: "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"
 										}`}
 										onClick={() => terminal.setView(v)}

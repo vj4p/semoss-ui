@@ -4351,7 +4351,7 @@ export const AutomationCanvasContent = forwardRef<
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
 				<span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-					<CheckCircle className="h-7 w-7 text-primary" />
+					<CheckCircle className="h-7 w-7 text-primary-text" />
 				</span>
 				<div>
 					<p className="font-semibold text-base">Automation saved</p>

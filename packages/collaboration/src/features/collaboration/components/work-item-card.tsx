@@ -71,7 +71,7 @@ export function WorkItemCard({ item }: { item: WorkItem }) {
 							{item.suggested ? (
 								<Badge
 									variant="outline"
-									className="border-primary/30 bg-primary/10 px-2 text-primary text-sm"
+									className="border-primary/30 bg-primary/10 px-2 text-primary-text text-sm"
 								>
 									<Sparkles aria-hidden="true" />
 									Suggestion
@@ -100,7 +100,7 @@ export function WorkItemCard({ item }: { item: WorkItem }) {
 										{dateLabel(item.due, undefined, "date")}
 									</Small>
 								)}
-								<Small className="font-normal text-muted-foreground group-focus-within/item:text-primary group-hover/item:text-primary">
+								<Small className="font-normal text-muted-foreground group-focus-within/item:text-primary-text group-hover/item:text-primary-text">
 									{dateLabel(item.received)}
 								</Small>
 								{menu}
@@ -109,7 +109,7 @@ export function WorkItemCard({ item }: { item: WorkItem }) {
 						<div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
 							<Link
 								to={path}
-								className="break-words font-medium text-base leading-snug hover:underline focus-visible:outline-2 focus-visible:outline-ring group-focus-within/item:text-primary group-hover/item:text-primary"
+								className="break-words font-medium text-base leading-snug hover:underline focus-visible:outline-2 focus-visible:outline-ring group-focus-within/item:text-primary-text group-hover/item:text-primary-text"
 							>
 								{item.title}
 							</Link>

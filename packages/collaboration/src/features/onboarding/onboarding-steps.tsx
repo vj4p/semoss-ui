@@ -267,7 +267,7 @@ export function MailboxStep({
 												className={cn(
 													"block text-xs",
 													w.days === 30
-														? "text-primary"
+														? "text-primary-text"
 														: "text-muted-foreground",
 												)}
 											>
@@ -459,7 +459,7 @@ export function KeepOutStep({
 								className={cn(
 									"flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors",
 									selected
-										? "bg-primary/10 text-primary"
+										? "bg-primary/10 text-primary-text"
 										: "bg-muted text-muted-foreground",
 								)}
 							>
@@ -496,7 +496,7 @@ export function KeepOutStep({
 						{added.map((a) => (
 							<span
 								key={`${a.kind}:${a.value}`}
-								className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 py-1 pr-1 pl-3 text-primary text-sm"
+								className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 py-1 pr-1 pl-3 text-primary-text text-sm"
 							>
 								{a.kind === "never_keyword" && (
 									<Hash
@@ -714,7 +714,7 @@ export function ImportStep({
 				</div>
 			) : (
 				<div className="flex flex-col items-center gap-4 rounded-2xl bg-muted/40 px-6 py-10 text-center">
-					<span className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+					<span className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary-text">
 						<Mail className="size-6" aria-hidden="true" />
 					</span>
 					<p className="max-w-sm text-muted-foreground text-sm">
@@ -746,7 +746,7 @@ export function ImportStep({
 								className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs ring-1 ring-border/70"
 							>
 								<Check
-									className="size-3 text-primary"
+									className="size-3 text-primary-text"
 									strokeWidth={3}
 									aria-hidden="true"
 								/>
@@ -1600,7 +1600,7 @@ const LANES = [
 		hint: "Asks waiting on your reply",
 		icon: Zap,
 		tone: "primary",
-		ink: "text-primary",
+		ink: "text-primary-text",
 	},
 	{
 		key: "waiting",
@@ -1683,7 +1683,7 @@ export function WorkStep({ actions, onNext, onBack, eyebrow }: StepProps) {
 					<span className="zoom-in-50 flex size-16 animate-in items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-chart-2 text-white shadow-lg shadow-primary/30 duration-500">
 						<Sparkles className="size-7" aria-hidden="true" />
 					</span>
-					<p className="font-medium text-primary text-xs uppercase tracking-widest">
+					<p className="font-medium text-primary-text text-xs uppercase tracking-widest">
 						Sorted
 					</p>
 					<h1 className="font-semibold text-2xl tracking-tight md:text-3xl">

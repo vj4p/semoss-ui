@@ -212,7 +212,7 @@ export function AppEngineForm({
 
 			{/* Reactor browser */}
 			{!loading && reactors.length === 0 && (
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					No custom functions found for this app. Enter a function
 					call manually below.
 				</p>
@@ -249,7 +249,7 @@ export function AppEngineForm({
 											disabled={
 												sigLoading !== null || readOnly
 											}
-											className={`flex w-full items-center justify-between px-3 py-1.5 text-left font-mono text-xs transition-colors disabled:opacity-50 ${reactorName === name ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
+											className={`flex w-full items-center justify-between px-3 py-1.5 text-left font-mono text-xs transition-colors disabled:opacity-50 ${reactorName === name ? "bg-primary/10 text-primary-text" : "hover:bg-muted"}`}
 											onClick={() =>
 												handleReactorClick(name)
 											}
@@ -262,7 +262,7 @@ export function AppEngineForm({
 									))
 								)}
 							</div>
-							<p className="mt-1 text-[11px] text-muted-foreground">
+							<p className="mt-1 text-muted-foreground text-xs">
 								Click a function to auto-fill its parameters.
 							</p>
 						</>
@@ -271,7 +271,7 @@ export function AppEngineForm({
 			)}
 
 			{reactorDescription && (
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					{reactorDescription}
 				</p>
 			)}
@@ -292,7 +292,7 @@ export function AppEngineForm({
 						/>
 					))}
 					{noParamInfo && (
-						<p className="text-[11px] text-muted-foreground">
+						<p className="text-muted-foreground text-xs">
 							No parameter info available. Edit the function call
 							in developer mode.
 						</p>
@@ -327,7 +327,7 @@ export function AppEngineForm({
 				noParamInfo &&
 				!reactorDescription &&
 				reactorParams.length === 0 && (
-					<p className="text-[11px] text-muted-foreground">
+					<p className="text-muted-foreground text-xs">
 						No parameter info available for this function. Edit the
 						call manually above.
 					</p>
@@ -336,14 +336,14 @@ export function AppEngineForm({
 			{/* Dev mode: show param reference panel */}
 			{devMode && reactorParams.length > 0 && (
 				<div className="rounded-lg border bg-muted/30 px-3 py-2">
-					<p className="mb-1.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
+					<p className="mb-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
 						Parameters
 					</p>
 					<div className="flex flex-col gap-1">
 						{reactorParams.map((p) => (
 							<div
 								key={p.name}
-								className="flex items-baseline gap-2 text-[11px]"
+								className="flex items-baseline gap-2 text-xs"
 							>
 								<code className="font-mono text-foreground">
 									{p.name}

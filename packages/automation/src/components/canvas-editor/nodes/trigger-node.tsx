@@ -24,7 +24,7 @@ export function TriggerNode({ data, id }: NodeProps) {
 	const statusBorderClass = getFlowBorderClass(
 		trigger.runStatus,
 		Boolean(trigger.pathHighlighted),
-		"border-emerald-500/40",
+		"border-success/40",
 	);
 	const runningClass =
 		trigger.runStatus === "running" ? "automation-trigger-running" : "";
@@ -66,12 +66,12 @@ export function TriggerNode({ data, id }: NodeProps) {
 						? "Trigger output connected"
 						: "Add node or drag to connect"
 				}
-				className={`${trigger.hasOutgoingControlEdge ? "h-2! w-2! bg-muted-foreground/50!" : "border! right-[calc(50%-58px)]! h-7! w-7! border-emerald-500/40! bg-background! shadow-sm transition-colors hover:border-emerald-500!"} border-2! border-background!`}
+				className={`${trigger.hasOutgoingControlEdge ? "h-2! w-2! bg-muted-foreground/50!" : "border! right-[calc(50%-58px)]! h-7! w-7! border-success/40! bg-background! shadow-sm transition-colors hover:border-success!"} border-2! border-background!`}
 			/>
 			{!trigger.hasOutgoingControlEdge && (
 				<span
 					data-tour="add-step"
-					className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-[calc(50%-58px)] z-10 flex h-7 w-7 translate-x-1/2 items-center justify-center text-emerald-600"
+					className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-[calc(50%-58px)] z-10 flex h-7 w-7 translate-x-1/2 items-center justify-center text-success"
 				>
 					<Plus className="h-4 w-4" />
 				</span>

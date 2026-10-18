@@ -60,7 +60,7 @@ export function ReviewCard({
 			)}
 		>
 			{!compact && (
-				<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+				<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
 					<Icon className="size-4" aria-hidden="true" />
 				</div>
 			)}

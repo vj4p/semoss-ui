@@ -27,7 +27,7 @@ export function DelegationReplyCard({ reply }: { reply: DelegationReply }) {
 			<header className="flex items-center gap-2.5 border-b bg-sidebar px-3 py-2">
 				<span
 					aria-hidden="true"
-					className="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-accent font-medium text-primary text-xs"
+					className="inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-accent font-medium text-primary-text text-xs"
 				>
 					{buildInitials(reply.assignee) || "?"}
 				</span>
@@ -41,7 +41,9 @@ export function DelegationReplyCard({ reply }: { reply: DelegationReply }) {
 					aria-hidden="true"
 					className={cn(
 						"size-4 shrink-0",
-						answered ? "text-primary" : "text-muted-foreground",
+						answered
+							? "text-primary-text"
+							: "text-muted-foreground",
 					)}
 				/>
 			</header>

@@ -91,7 +91,7 @@ export function DashboardDay() {
 					className="dashboard-row space-y-2 border-border border-l-2 py-3 pl-3"
 				>
 					{next === event.id && date === today && (
-						<p className="mb-3 flex items-center gap-2 font-medium text-primary text-xs">
+						<p className="mb-3 flex items-center gap-2 font-medium text-primary-text text-xs">
 							<span className="size-2 rounded-full bg-primary" />
 							Now {time.format(now)}
 							<span className="h-px flex-1 bg-primary/30" />
@@ -102,7 +102,7 @@ export function DashboardDay() {
 							{start ? time.format(start) : "Time unavailable"}
 						</time>
 						{next === event.id && (
-							<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+							<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary-text">
 								Up next
 							</span>
 						)}

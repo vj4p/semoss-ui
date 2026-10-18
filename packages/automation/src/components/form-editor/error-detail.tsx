@@ -7,7 +7,7 @@ export function ErrorDetail({ message }: { message: string }) {
 	const [expanded, setExpanded] = useState(false);
 	const displayMessage = normalizeAutomationErrorMessage(message);
 	return (
-		<div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[11px] text-destructive">
+		<div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive text-xs">
 			<div className="flex items-center justify-between gap-2">
 				<span className="font-medium">Step failed</span>
 				<button
@@ -24,7 +24,7 @@ export function ErrorDetail({ message }: { message: string }) {
 				</button>
 			</div>
 			{expanded && (
-				<pre className="mt-2 whitespace-pre-wrap break-all font-mono text-[10px] opacity-80">
+				<pre className="mt-2 whitespace-pre-wrap break-all font-mono text-xs opacity-80">
 					{displayMessage}
 				</pre>
 			)}

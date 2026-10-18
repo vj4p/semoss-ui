@@ -17,7 +17,7 @@ export function PersonAvatar({
 		"bg-chart-1/10 text-chart-1",
 		"bg-chart-2/10 text-chart-2",
 		"bg-chart-3/10 text-chart-3",
-		"bg-primary/10 text-primary",
+		"bg-primary/10 text-primary-text",
 	];
 	const nameTone =
 		tones[

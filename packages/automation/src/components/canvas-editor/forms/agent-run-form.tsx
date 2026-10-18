@@ -45,7 +45,7 @@ export function AgentRunForm({
 						})
 					}
 				/>
-				<p className="mt-1 text-[11px] text-muted-foreground">
+				<p className="mt-1 text-muted-foreground text-xs">
 					Only SEMOSS agents you can access are shown.
 				</p>
 			</Field>
@@ -68,7 +68,7 @@ export function AgentRunForm({
 						})
 					}
 				/>
-				<p className="mt-1 text-[11px] text-muted-foreground">
+				<p className="mt-1 text-muted-foreground text-xs">
 					The selected model runs this agent for every automation run.
 				</p>
 			</div>

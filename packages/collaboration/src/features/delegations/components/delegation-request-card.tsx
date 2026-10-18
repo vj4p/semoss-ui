@@ -14,7 +14,7 @@ export function DelegationRequestCard({
 			<header className="flex items-center gap-2.5 border-b bg-sidebar px-3 py-2">
 				<Inbox
 					aria-hidden="true"
-					className="size-4 shrink-0 text-primary"
+					className="size-4 shrink-0 text-primary-text"
 				/>
 				<p className="min-w-0 flex-1 truncate text-sm">
 					<span className="font-semibold">{request.requester}</span>{" "}
@@ -87,7 +87,7 @@ export function DelegationRequestCard({
 									target="_blank"
 									rel="noreferrer"
 									title={link.url}
-									className="inline-flex max-w-64 items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-primary text-xs hover:bg-accent"
+									className="inline-flex max-w-64 items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-primary-text text-xs hover:bg-accent"
 								>
 									<Link2
 										aria-hidden="true"

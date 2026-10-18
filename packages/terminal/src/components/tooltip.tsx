@@ -72,7 +72,7 @@ export const Tooltip = ({
 		<span className="group relative inline-flex">
 			{children}
 			<span
-				className={`pointer-events-none absolute z-50 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-white text-xs opacity-0 shadow-md transition-opacity delay-75 duration-100 group-focus-within:opacity-100 group-hover:opacity-100 ${positionClasses}`}
+				className={`pointer-events-none absolute z-50 whitespace-nowrap rounded bg-muted-foreground px-2 py-1 text-white text-xs opacity-0 shadow-md transition-opacity delay-75 duration-100 group-focus-within:opacity-100 group-hover:opacity-100 ${positionClasses}`}
 				role="tooltip"
 			>
 				{label}

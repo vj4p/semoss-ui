@@ -55,7 +55,7 @@ function AutomationOutputModalContent({
 			meta={`${formatted.split("\n").length} lines`}
 			actions={
 				<div className="inline-flex items-center gap-1">
-					<div className="inline-flex overflow-hidden rounded border border-current/30 font-medium text-[10px]">
+					<div className="inline-flex overflow-hidden rounded border border-current/30 font-medium text-xs">
 						<button
 							type="button"
 							className={`px-1.5 py-0 ${!raw ? "bg-current/15" : "hover:bg-current/10"}`}

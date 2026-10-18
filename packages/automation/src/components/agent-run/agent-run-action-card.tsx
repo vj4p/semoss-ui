@@ -116,7 +116,7 @@ export function AgentRunActionCard({
 					<p
 						className={
 							resolving
-								? "text-primary text-xs"
+								? "text-primary-text text-xs"
 								: "text-success text-xs"
 						}
 					>
@@ -153,7 +153,7 @@ export function AgentRunActionCard({
 					</p>
 				</div>
 				{resolving ? (
-					<span className="rounded-md border border-primary/50 bg-primary/10 px-2 py-0.5 text-primary text-xs">
+					<span className="rounded-md border border-primary/50 bg-primary/10 px-2 py-0.5 text-primary-text text-xs">
 						Resolving
 					</span>
 				) : resolved ? (

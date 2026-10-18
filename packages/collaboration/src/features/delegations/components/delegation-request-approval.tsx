@@ -219,7 +219,7 @@ export function DelegationRequestApproval({
 									href={link.url}
 									target="_blank"
 									rel="noreferrer"
-									className="wrap-break-word min-w-0 flex-1 text-primary underline"
+									className="wrap-break-word min-w-0 flex-1 text-primary-text underline"
 								>
 									{link.title || link.url}
 								</a>

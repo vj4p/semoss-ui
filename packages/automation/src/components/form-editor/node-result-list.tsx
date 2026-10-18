@@ -110,7 +110,7 @@ export function NodeResultList({
 									)}
 								</div>
 							</div>
-							<div className="flex shrink-0 items-center gap-2 text-[11px] text-muted-foreground lg:pl-4">
+							<div className="flex shrink-0 items-center gap-2 text-muted-foreground text-xs lg:pl-4">
 								<Clock3 className="h-3.5 w-3.5" />
 								{formatDurationMs(result.DURATION_MS)}
 							</div>

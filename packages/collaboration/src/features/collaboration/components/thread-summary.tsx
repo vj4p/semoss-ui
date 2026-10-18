@@ -98,7 +98,7 @@ export function ThreadSummary({
 						type="button"
 						variant="ghost"
 						size="sm"
-						className="-ml-2 text-primary"
+						className="-ml-2 text-primary-text"
 						aria-expanded={isExpanded}
 						aria-controls={summaryId}
 						onClick={() =>

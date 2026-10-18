@@ -80,7 +80,7 @@ export function BrainReview() {
 							aria-label="Memories to check"
 							className="flex items-start gap-3 border-b px-4 py-4 md:gap-4 md:px-6"
 						>
-							<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+							<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
 								<Brain className="size-4" aria-hidden="true" />
 							</div>
 							<div className="min-w-0 flex-1">
@@ -136,7 +136,7 @@ export function BrainReview() {
 							key={`${thread.id}-${link.topicId}`}
 							className="flex flex-wrap items-center gap-3 border-b px-4 py-3 hover:bg-muted/30 md:px-6"
 						>
-							<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+							<div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
 								<Folder className="size-4" aria-hidden="true" />
 							</div>
 							<div className="min-w-0 flex-1">

@@ -92,7 +92,7 @@ export function LoopNode({ data }: NodeProps) {
 					className={`group relative h-full ${isExpanded ? "pointer-events-none w-full bg-transparent" : "w-70 bg-card shadow-sm"} rounded-2xl border-2 ${borderClass} ${d.highlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""} ${d.groupSelectionActive ? "ring-2 ring-chart-2 ring-offset-2 ring-offset-background" : ""} ${d.locked ? "opacity-75" : ""}`}
 				>
 					<header className="pointer-events-auto flex items-start gap-3 border-b bg-primary/5 px-4 py-3">
-						<span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+						<span className="relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
 							<Repeat2 className="size-4" aria-hidden />
 							<span className="-top-1.5 -left-1.5 absolute flex size-4 items-center justify-center rounded-full border bg-background font-medium text-muted-foreground text-xs">
 								{d.index + 1}
@@ -145,7 +145,7 @@ export function LoopNode({ data }: NodeProps) {
 						<div className="flex items-center justify-between gap-2 px-1">
 							<span className="flex items-center gap-1.5 font-medium text-xs">
 								<Layers3
-									className="size-3.5 text-primary"
+									className="size-3.5 text-primary-text"
 									aria-hidden
 								/>
 								{getLoopBodyLabel(config)}

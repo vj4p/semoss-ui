@@ -121,7 +121,7 @@ function makePill(name: string, label: string): HTMLSpanElement {
 	span.dataset.var = name;
 	span.className =
 		"inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium " +
-		"bg-primary/10 text-primary border border-primary/20 select-none cursor-default mx-0.5";
+		"bg-primary/10 text-primary-text border border-primary/20 select-none cursor-default mx-0.5";
 	span.textContent = label;
 	span.title = `\${${name}}`;
 	return span;

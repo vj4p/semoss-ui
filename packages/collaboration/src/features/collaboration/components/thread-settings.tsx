@@ -77,7 +77,7 @@ export function ThreadSettings({
 										<Star
 											className={
 												link.primary
-													? "fill-primary text-primary"
+													? "fill-primary text-primary-text"
 													: "text-muted-foreground"
 											}
 											aria-hidden="true"
@@ -201,7 +201,7 @@ export function ThreadSettings({
 									<div className="min-w-0 flex-1">
 										<Link
 											className={cn(
-												"break-words font-medium text-sm hover:text-primary hover:underline",
+												"break-words font-medium text-sm hover:text-primary-text hover:underline",
 												(!participant.included ||
 													person?.neverIngest) &&
 													"text-muted-foreground",
