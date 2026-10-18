@@ -18,6 +18,22 @@ It is the home of large shared building blocks such as the file explorer, the Mo
 editor wrappers, the FlexLayout wrapper, the shared login page, engine/MCP/prompt/skill UI,
 forms, and the workbench primitives.
 
+### Sign-in and app switching
+
+- `LoginShell` is the one layout for every sign-in screen: brand top left, `ThemeToggle` top right,
+  the form in a centered column, and on wide screens a hero image (or the default `LoginArt`).
+  Pages keep their own redirect and theme logic and pass `brand`, `heroSrc` and the form.
+- `LoginForm` offers credentials first and single sign-on providers below, a show/hide password
+  button, and a **Forgot password?** link that opens `ForgotPasswordDialog`. The dialog posts to
+  `/api/auth/user/setupResetPassword` through `requestPasswordReset` (the SDK's `post` adds the CSRF
+  token) and renders **outside** the sign-in `<form>`: a React portal's submit event bubbles to its
+  parent form and would otherwise also submit a login. Pass `resetSubject` to name the email.
+- `LoginPage` wraps an app in the auth gate (used by Terminal). The client keeps its own page for its
+  register, one-time-code and provider logic but uses `LoginShell` for layout.
+- `AppSwitcher` is a menu of plain links to the platform's apps (each is a separate bundle, so they are
+  anchors, not router links), built from the current URL by `appHref`. It renders nothing inside a
+  frame (`isEmbedded()` from `@semoss/utility/browser`), where the host app already has its chrome.
+
 ### The file explorer (`components/file/`)
 
 State lives in `useFileExplorer(options)`, which returns one `FileExplorerApi`; `FileExplorer`,

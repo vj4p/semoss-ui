@@ -215,3 +215,20 @@ pnpm --filter @semoss/client test
 pnpm --filter @semoss/client type-check
 pnpm --filter @semoss/client dev      # Manual verification
 ```
+
+## Theme, sign-in and shell (UI refresh)
+
+- **Theme:** `App.tsx` mounts `ThemeProvider` with the platform key (`PLATFORM_THEME_STORAGE_KEY`,
+  `PLATFORM_LEGACY_THEME_KEYS`) and `defaultTheme="system"`, so the choice is shared with every other
+  app. The navbar's `ThemeToggle` is always visible when dark mode is allowed (`enableDarkMode` is on
+  unless an admin sets it to `false`).
+- **App switcher:** the navbar's fixed right slot holds `AppSwitcher` and `ThemeToggle`. Pages still
+  add their own controls through the `NavbarLeft`/`NavbarRight` portals.
+- **Sign-in:** `pages/login-page.tsx` keeps the provider, register, one-time-code and forgot-password
+  logic and uses `LoginShell` from `@semoss/shared` for layout. Order is credentials, then "or", then
+  single sign-on providers, then Register Now.
+- **Home:** no hero banner; the Playground launch is the first card of "Try these fan favorites".
+- **Tag chips** (`utility/tags.ts`) use `light-dark()` so they follow the theme.
+- `components/shared/Navbar.tsx` and `navbar.tsx` are two git entries for one file on a
+  case-insensitive filesystem. After editing, sync the index entry:
+  `git update-index --cacheinfo 100644,$(git hash-object -w navbar.tsx),<path>/Navbar.tsx`.

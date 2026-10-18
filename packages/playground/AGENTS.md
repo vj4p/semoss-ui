@@ -397,3 +397,13 @@ Follow the [utility guide](../../libs/utility/AGENTS.md). Keep domain policy and
 UI behavior here, and preserve public compatibility adapters when moving helpers.
 Date buckets, their order, and timestamp normalization come directly from
 `@semoss/utility/date`. Keep sidebar translations and the favorites group here.
+
+## Theme, sign-in and shell (UI refresh)
+
+- Playground has no top bar, so the **app switcher and theme toggle live in the sidebar footer**, beside
+  the user. In the collapsed icon rail (a common default) they stack above the avatar; they are not
+  hidden there. A test that finds them must expand or inspect the rail, not only the full sidebar.
+- The composer uses `composerSurfaceClass`; icon buttons use the 8px control radius, and only the agent
+  and connector chips are fully round.
+- Tool-call status uses `StatusBadge` with the existing translated labels ("Not Run" maps to Denied).
+- Sign-in uses `LoginShell`.

@@ -34,24 +34,31 @@ Tokens are raw values on `:root` (light) and `.dark` (dark), mapped to Tailwind 
 | `background` / `foreground` | `bg-background`, `text-foreground` | Page surface and default text |
 | `card` / `card-foreground` | `bg-card`, `text-card-foreground` | Card surfaces |
 | `popover` / `popover-foreground` | `bg-popover` | Popovers, dropdowns, menus |
-| `primary` / `primary-foreground` | `bg-primary`, `text-primary` | Brand blue; primary actions, links |
+| `primary` / `primary-foreground` | `bg-primary`, `ring-primary` | Brand blue **fills** (buttons, selection); white text on it is 5.7:1 |
+| `primary-text` | `text-primary-text` | Links and text-only primary accents. Same blue in light; a lighter blue in dark so text stays AA |
+| `canvas` | `bg-canvas` | App background behind panels (`bg-card`) |
 | `muted` / `muted-foreground` | `bg-muted`, `text-muted-foreground` | De-emphasized text/surfaces |
 | `accent` / `accent-foreground` | `hover:bg-accent` | Hover/active tints |
-| `destructive` / `destructive-foreground` | `text-destructive`, `bg-destructive/10` | Errors, dangerous actions |
-| `success` / `success-foreground` | `text-success`, `bg-success/10` | Success/positive status |
-| `warning` / `warning-foreground` | `text-warning`, `bg-warning/10` | Warning/caution status |
+| `destructive` / `destructive-foreground` / `destructive-tint` | `text-destructive`, `bg-destructive-tint` | Errors, dangerous actions |
+| `success` / `success-foreground` / `success-tint` | `text-success`, `bg-success-tint` | Success/positive status |
+| `warning` / `warning-foreground` / `warning-tint` | `text-warning`, `bg-warning-tint` | Warning/caution status |
+| `info` / `info-foreground` / `info-tint` | `text-info`, `bg-info-tint` | Neutral informational callouts (replaces `blue-*`) |
 | `border` / `input` / `ring` / `ring-offset` | `border-border`, `ring-ring/50` | Borders, input outlines, focus rings |
 | `chart-1` … `chart-5` | `bg-chart-1`, `text-chart-2` | Data visualization series colors |
 | `sidebar-*` | `bg-sidebar`, `border-sidebar-border` | Sidebar chrome (8 tokens) |
-| `login-*` | — | Login page skin only |
 
-Status colors are **only** `destructive`, `success`, and `warning`. There is no `info` token —
-propose one before inventing blue status styling.
+Status colors are `destructive`, `success`, `warning` and `info`. Each text color is AA on
+`background` and `card` in both themes; `-foreground` is the text on a solid fill of that role and
+`-tint` is a soft fill behind text of the same role. `globals.contrast.spec.ts` asserts every pairing
+(text 4.5:1, focus ring 3:1) for both themes and fails the build when a token change breaks one.
 
 ### Other tokens
 
-- **Radius**: `--radius: 0.625rem`, exposed as `rounded-sm/md/lg/xl`.
-- **Fonts**: `--font-sans` (Geist), `--font-mono` (Geist Mono) → `font-sans`, `font-mono`.
+- **Radius**: a fixed scale, `rounded-sm/md/lg/xl` = 6/8/12/16px. Controls 8px, panels (`Card`) 12px,
+  overlays (`Dialog`) 16px; fully round only for chips and avatars.
+- **Fonts**: `--font-sans` (Geist Variable), `--font-mono` (Geist Mono Variable) → `font-sans`,
+  `font-mono`. Self-hosted through `@fontsource-variable/*`, imported by `globals.css`; nothing loads
+  from a CDN, so air-gapped installs render the real font. Do not override `font-family` in an app.
 - **Type scale**: the full Tailwind scale (`--text-xs` … `--text-9xl`, weights, tracking,
   leading) is re-declared as runtime CSS variables so it can be read at runtime.
 - **Heading/section utilities**: `.heading-xl/lg/md/sm`, `.container-padding-x`,
@@ -81,9 +88,25 @@ source. Deleting it is planned future work.
 - **Data display**: `Table`, `TreeView`, `Badge` (+`badgeVariants`), `Avatar`, `Accordion`,
   `Code`, `Markdown`
 - **Navigation**: `Breadcrumb`, `Pagination`, `Tabs`, `Stepper`
-- **Theming**: `ThemeProvider`, `useTheme` (`"dark" | "light" | "system"`)
+- **Theming**: `ThemeProvider`, `useTheme` (`"dark" | "light" | "system"`), `ThemeToggle` (an icon
+  button with a Light / Dark / System menu; put one in every app's chrome). The choice is shared by
+  every app: pass `storageKey={PLATFORM_THEME_STORAGE_KEY}` and
+  `legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}` (see below)
+- **Status**: `StatusBadge`, `STATUS_TEXT_CLASS`, `STATUS_LABELS`, `statusKindFromBackend` — the one
+  status vocabulary (Queued, Running, Waiting on you, Done, Failed, Denied, Cancelled)
+- **Composer**: `composerSurfaceClass` — the chat composer's surface, shared by Harness and Playground
 - **Utilities & hooks**: `cn`, `useCacheState`, `useDebouncedCallback`, `useDebouncedValue`,
   `useInfiniteScroll`, `useIsMobile`
+
+### One theme across the platform
+
+Every app stores the theme under `PLATFORM_THEME_STORAGE_KEY` (`smss-ui-theme`). Apps share an
+origin, so a choice made in one applies in all of them, and `ThemeProvider` listens for the `storage`
+event so open tabs and embedded frames follow a change live. `legacyStorageKeys` adopts a choice an
+app stored under its old key (the client's first), so nobody loses a setting. Default is `system`.
+
+Colors that depend on the theme but cannot be a class (a per-tag color computed from data) use CSS
+`light-dark(<light>, <dark>)`, which follows the `color-scheme` the provider sets on `<html>`.
 
 ### Typography map
 

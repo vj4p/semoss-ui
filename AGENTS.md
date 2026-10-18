@@ -93,6 +93,7 @@ semoss/
 │   ├── vscode-extension/           # semoss-vscode - VSCode extension
 │   └── cli/                        # @semoss/cli - CLI tooling
 ├── skills/         # Provider-neutral *.skill.md guidance
+├── skins/          # Restyling for prebuilt apps with no source here (BI); see skins/bi/README.md
 ├── pnpm-workspace.yaml
 ├── turbo.json
 └── biome.json
@@ -181,6 +182,7 @@ For validation and handoff, follow the React skill's
 
 **Applications** (`packages/*`):
 - [packages/client/AGENTS.md](./packages/client/AGENTS.md) - Main web application specifics
+- [packages/harness/AGENTS.md](./packages/harness/AGENTS.md) - Harness (agent room) app specifics
 - [packages/playground/AGENTS.md](./packages/playground/AGENTS.md) - Playground (chat) app specifics
 - [packages/terminal/AGENTS.md](./packages/terminal/AGENTS.md) - Embedded terminal app specifics
 - [packages/auditlog/AGENTS.md](./packages/auditlog/AGENTS.md) - Audit log dashboard app specifics

@@ -225,6 +225,12 @@ Before handing off a UI change, review the affected surface at:
 | Input | Keyboard-only operation and visible focus |
 | Magnification | 200% browser zoom without lost content or controls |
 
+Verify in a real browser, not by reading code: `docs/e2e/` holds Playwright suites for the local
+stack (`public.js` needs no login; `authed.js` reads `E2E_USER`/`E2E_PASS` from the environment).
+They scan every visible text element for contrast, which found defects no class-level review did
+(a hidden theme control in a collapsed rail, light text on fixed light cards). Run them after any
+change to tokens, shells or sign-in.
+
 Also run the relevant behavior tests and package type-check/build commands, and manually
 audit full touched frontend files against this rulebook. `pnpm lint:design` is currently
 missing from root scripts; do not report an automated design audit as passing. Record
@@ -329,7 +335,15 @@ currently processed by a design linter. Never use an unexplained disable.
 4. **Third-party style bridges:** adapter CSS such as FlexLayout may map the library's custom
   properties to SEMOSS semantic variables. A literal required by an external API needs a
   line-level suppression naming that constraint.
-5. **Host-controlled extension UI:** VS Code webviews should use `--vscode-*` host variables,
+5. **Data-derived colors:** a color computed per item from data (the catalog's tag chips) cannot be a
+  token class. Return it with CSS `light-dark(<light>, <dark>)` so it follows the theme, and test that
+  both values are readable (`packages/client/src/utility/tags.test.ts`).
+6. **Legacy BI:** the prebuilt BI app (`packages/legacy`, no source here) is restyled by
+  `skins/bi/`, which redefines BI's own `--color-*` variables instead of using `@semoss/ui` tokens. Its
+  literal values must match `globals.css`; `skins/bi/skin.test.mjs` checks contrast. A few areas BI
+  builds with fixed colors stay on the light palette ("light islands"); document any new ones in the
+  skin, not in feature code.
+7. **Host-controlled extension UI:** VS Code webviews should use `--vscode-*` host variables,
   including documented fallbacks where required. Chrome extension CSS cannot consume the UI
   package directly; new literals must match a current `globals.css` token and carry a
   line-level suppression naming that token.
