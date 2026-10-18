@@ -5,6 +5,7 @@ import { type Location, Navigate, useLocation } from "react-router";
 import {
 	getLoginProviderInitials,
 	getLoginProviderKey,
+	LoginShell,
 	loadLoginProviderLogos,
 } from "@semoss/shared";
 import {
@@ -20,7 +21,6 @@ import {
 	Input,
 	Label,
 	Separator,
-	ThemeToggle,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -460,16 +460,6 @@ export const LoginPage = () => {
 	return (
 		<>
 			<style>{`
-				@media (min-width: 1024px) {
-					.login-grid {
-						grid-template-columns: 1fr clamp(512px, calc(100vw - 512px), 60vw);
-					}
-				}
-
-				.dark .login-grid {
-					background: linear-gradient(48deg, rgba(32, 39, 54, 0.50) 7.37%, rgba(30, 41, 75, 0.49) 39.18%, rgba(120, 133, 213, 0.00) 84.89%);
-				}
-
 				@keyframes loginFeaturePillFadeUp {
 					from {
 						opacity: 0;
@@ -490,692 +480,450 @@ export const LoginPage = () => {
 					}
 				}
 			`}</style>
-			<div className="semoss-login-page login-grid relative grid min-h-screen w-full bg-background">
-				<div className="absolute end-4 top-4 z-20">
-					<ThemeToggle />
-				</div>
-				<div className="relative flex min-h-screen w-full flex-col overflow-hidden">
-					<div className="relative z-10 flex w-full flex-1 items-center justify-center overflow-y-auto px-6 pt-4 pb-4 md:px-10 md:pt-8 md:pb-6">
-						<div className="relative w-full max-w-[520px] overflow-hidden rounded-2xl p-6 md:p-8 dark:bg-background/95 dark:shadow-sm">
-							<div className="mb-6">
-								<div className="mb-2 flex flex-row items-center gap-2">
-									{themeLogo ? (
-										<img
-											src={themeLogo}
-											alt={theme.name || "logo"}
-										/>
-									) : null}
-									{includeNameWithLogo ? (
-										<span className="font-bold text-xl">
-											{theme.name}
-										</span>
-									) : null}
-								</div>
-								<h4 className="mb-2 min-h-[2.2rem] scroll-m-20 font-semibold text-2xl tracking-tight md:min-h-[2.6rem] md:text-3xl">
-									{register
-										? "Create your account"
-										: "Welcome back"}
-								</h4>
-								<p className="min-h-[1.25rem] text-muted-foreground text-sm md:text-base">
-									{register
-										? "Register to access your workspace."
-										: "Sign in to continue to your workspace."}
-								</p>
-							</div>
+			<LoginShell
+				brand={
+					<>
+						{themeLogo ? (
+							<img src={themeLogo} alt={theme.name || "logo"} />
+						) : null}
+						{includeNameWithLogo ? (
+							<span className="font-bold text-xl">
+								{theme.name}
+							</span>
+						) : null}
+					</>
+				}
+				heroSrc={activeHeroImage}
+			>
+				<div className="relative w-full overflow-hidden">
+					<div className="mb-6">
+						<h4 className="mb-2 min-h-[2.2rem] scroll-m-20 font-semibold text-2xl tracking-tight md:min-h-[2.6rem] md:text-3xl">
+							{register ? "Create your account" : "Welcome back"}
+						</h4>
+						<p className="min-h-[1.25rem] text-muted-foreground text-sm md:text-base">
+							{register
+								? "Register to access your workspace."
+								: "Sign in to continue to your workspace."}
+						</p>
+					</div>
 
-							{error && (
-								<Alert variant="destructive">
-									<AlertDescription>{error}</AlertDescription>
-								</Alert>
-							)}
+					{error && (
+						<Alert variant="destructive">
+							<AlertDescription>{error}</AlertDescription>
+						</Alert>
+					)}
 
-							{success && (
-								<div className="rounded-lg border border-success bg-success-tint px-4 py-3 text-sm text-success">
-									{success}
-								</div>
-							)}
+					{success && (
+						<div className="rounded-lg border border-success bg-success-tint px-4 py-3 text-sm text-success">
+							{success}
+						</div>
+					)}
 
-							<form>
-								<div className="flex flex-col gap-4 [&_input]:border-input [&_input]:bg-background [&_input]:text-foreground [&_input]:shadow-none [&_input]:focus-visible:border-primary [&_input]:focus-visible:ring-primary/30 [&_label]:font-medium [&_label]:text-foreground">
-									{!register && hasOAuth && (
-										<>
-											{availableProviders.map((p) => {
-												if (!p.isOauth) return null;
-
-												const providerKey =
-													getLoginProviderKey(
-														p.provider,
-													);
-												const providerLogo =
-													oauthProviderLogos[
-														providerKey
-													];
-												const providerInitials =
-													getLoginProviderInitials(
-														p.name || p.provider,
-													);
-
-												return (
-													<Button
-														key={p.provider}
+					<form>
+						<div className="flex flex-col gap-4 [&_input]:border-input [&_input]:bg-background [&_input]:text-foreground [&_input]:shadow-none [&_input]:focus-visible:border-primary [&_input]:focus-visible:ring-primary/30 [&_label]:font-medium [&_label]:text-foreground">
+							{hasUsernamePassword && (
+								<>
+									{!register &&
+										hasMoreThanOneUserNamePassword && (
+											<div className="flex overflow-hidden rounded-md border border-input">
+												{isNative && (
+													<button
 														type="button"
-														variant="outline"
-														className="w-full gap-2"
-														onClick={() =>
-															oauth(p.provider)
-														}
+														onClick={() => {
+															setLoginType(
+																"native",
+															);
+															setSuccess("");
+															setError("");
+														}}
+														className={cn(
+															"flex-1 px-4 py-2 font-medium text-sm transition-colors",
+															loginType ===
+																"native"
+																? "bg-primary text-primary-foreground"
+																: "bg-background text-primary-text hover:bg-muted",
+														)}
+														data-testid="loginPage-button-native"
 													>
-														{providerLogo ? (
-															<img
-																src={
-																	providerLogo
-																}
-																alt=""
-																aria-hidden="true"
-																className="h-4 w-4 shrink-0 object-contain"
-																loading="lazy"
-																decoding="async"
-															/>
-														) : (
-															<span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/70 bg-muted/60 font-semibold text-muted-foreground text-xs">
-																{
-																	providerInitials
-																}
-															</span>
+														{getLoginTypeLabel(
+															"native",
 														)}
-														{p.name}
-													</Button>
-												);
-											})}
-											{hasUsernamePassword && (
-												<div className="flex items-center gap-4 py-1">
-													<Separator className="flex-1" />
-													<span className="font-medium text-muted-foreground text-sm">
-														or
-													</span>
-													<Separator className="flex-1" />
-												</div>
-											)}
-										</>
-									)}
-
-									{hasUsernamePassword && (
-										<>
-											{!register &&
-												hasMoreThanOneUserNamePassword && (
-													<div className="flex overflow-hidden rounded-md border border-input">
-														{isNative && (
-															<button
-																type="button"
-																onClick={() => {
-																	setLoginType(
-																		"native",
-																	);
-																	setSuccess(
-																		"",
-																	);
-																	setError(
-																		"",
-																	);
-																}}
-																className={cn(
-																	"flex-1 px-4 py-2 font-medium text-sm transition-colors",
-																	loginType ===
-																		"native"
-																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary-text hover:bg-muted",
-																)}
-																data-testid="loginPage-button-native"
-															>
-																{getLoginTypeLabel(
-																	"native",
-																)}
-															</button>
-														)}
-														{isLdap && (
-															<button
-																type="button"
-																onClick={() => {
-																	setLoginType(
-																		"ldap",
-																	);
-																	setSuccess(
-																		"",
-																	);
-																	setError(
-																		"",
-																	);
-																}}
-																className={cn(
-																	"flex-1 px-4 py-2 font-medium text-sm transition-colors",
-																	loginType ===
-																		"ldap"
-																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary-text hover:bg-muted",
-																)}
-																data-testid="loginPage-button-ldap"
-															>
-																{getLoginTypeLabel(
-																	"ldap",
-																)}
-															</button>
-														)}
-														{isLinOTP && (
-															<button
-																type="button"
-																onClick={() => {
-																	setLoginType(
-																		"linotp",
-																	);
-																	setSuccess(
-																		"",
-																	);
-																	setError(
-																		"",
-																	);
-																}}
-																className={cn(
-																	"flex-1 px-4 py-2 font-medium text-sm transition-colors",
-																	loginType ===
-																		"linotp"
-																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary-text hover:bg-muted",
-																)}
-																data-testid="loginPage-button-linotp"
-															>
-																{getLoginTypeLabel(
-																	"linotp",
-																)}
-															</button>
-														)}
-													</div>
+													</button>
 												)}
-
-											{!showOTPCodeField && register && (
-												<>
-													<div className="flex gap-3">
-														<Controller
-															name="FIRST_NAME"
-															control={
-																registerControl
-															}
-															rules={{
-																required:
-																	"First name is required",
-															}}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-firstName`}
-																	>
-																		First
-																		Name *
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-firstName`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-firstNameRegister"
-																		aria-invalid={
-																			!!errors.FIRST_NAME
-																		}
-																	/>
-																	{errors.FIRST_NAME && (
-																		<p className="text-destructive text-sm">
-																			{
-																				errors
-																					.FIRST_NAME
-																					.message
-																			}
-																		</p>
-																	)}
-																</div>
-															)}
-														/>
-														<Controller
-															name="LAST_NAME"
-															control={
-																registerControl
-															}
-															rules={{
-																required:
-																	"Last name is required",
-															}}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-lastName`}
-																	>
-																		Last
-																		Name *
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-lastName`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-lastNameRegister"
-																		aria-invalid={
-																			!!errors.LAST_NAME
-																		}
-																	/>
-																	{errors.LAST_NAME && (
-																		<p className="text-destructive text-sm">
-																			{
-																				errors
-																					.LAST_NAME
-																					.message
-																			}
-																		</p>
-																	)}
-																</div>
-															)}
-														/>
-													</div>
-													<div className="flex gap-3">
-														<Controller
-															name="USERNAME"
-															control={
-																registerControl
-															}
-															rules={{
-																required:
-																	"Username is required",
-															}}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-username`}
-																	>
-																		Username
-																		*
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-username`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-usernameRegister"
-																		aria-invalid={
-																			!!errors.USERNAME
-																		}
-																	/>
-																	{errors.USERNAME && (
-																		<p className="text-destructive text-sm">
-																			{
-																				errors
-																					.USERNAME
-																					.message
-																			}
-																		</p>
-																	)}
-																</div>
-															)}
-														/>
-														<Controller
-															name="EMAIL"
-															control={
-																registerControl
-															}
-															rules={{
-																required:
-																	"Email is required",
-																pattern: {
-																	value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-																	message:
-																		"Please enter a valid email address",
-																},
-															}}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-email`}
-																	>
-																		Email *
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-email`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-emailRegister"
-																		aria-invalid={
-																			!!errors.EMAIL
-																		}
-																	/>
-																	{errors.EMAIL && (
-																		<p className="text-destructive text-sm">
-																			{
-																				errors
-																					.EMAIL
-																					.message
-																			}
-																		</p>
-																	)}
-																</div>
-															)}
-														/>
-													</div>
-													<div className="flex gap-3">
-														<Controller
-															name="PHONE"
-															control={
-																registerControl
-															}
-															rules={{
-																pattern: {
-																	value: /^\d{10}$/,
-																	message:
-																		"Please enter valid Phone Number",
-																},
-															}}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-phone`}
-																	>
-																		Phone
-																		Number
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-phone`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-phone"
-																		aria-invalid={
-																			!!errors.PHONE
-																		}
-																	/>
-																	{errors.PHONE && (
-																		<p className="text-destructive text-sm">
-																			{
-																				errors
-																					.PHONE
-																					.message
-																			}
-																		</p>
-																	)}
-																</div>
-															)}
-														/>
-														<Controller
-															name="EXTENTION"
-															control={
-																registerControl
-															}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-extension`}
-																	>
-																		Phone
-																		Extension
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-extension`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-extension"
-																	/>
-																</div>
-															)}
-														/>
-														<Controller
-															name="COUNTRY_CODE"
-															control={
-																registerControl
-															}
-															render={({
-																field,
-															}) => (
-																<div className="flex flex-1 flex-col gap-1.5">
-																	<Label
-																		htmlFor={`${uid}-reg-countryCode`}
-																	>
-																		Country
-																		Code
-																	</Label>
-																	<Input
-																		id={`${uid}-reg-countryCode`}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-countryCode"
-																	/>
-																</div>
-															)}
-														/>
-													</div>
-													<Controller
-														name="PASSWORD"
-														control={
-															registerControl
-														}
-														rules={{
-															required:
-																"Password is required",
-															validate: (
-																value,
-															) => {
-																const rules =
-																	regPasswordRules(
-																		value,
-																	);
-																if (
-																	!rules.length
-																)
-																	return "Minimum 8 characters";
-																if (
-																	!rules.upper
-																)
-																	return "At least one uppercase letter";
-																if (
-																	!rules.lower
-																)
-																	return "At least one lowercase letter";
-																if (
-																	!rules.special
-																)
-																	return "At least one special character";
-																return true;
-															},
+												{isLdap && (
+													<button
+														type="button"
+														onClick={() => {
+															setLoginType(
+																"ldap",
+															);
+															setSuccess("");
+															setError("");
 														}}
-														render={({ field }) => (
-															<div className="flex flex-col gap-1.5">
-																<Label
-																	htmlFor={`${uid}-reg-password`}
-																>
-																	Password *
-																</Label>
-																<Tooltip
-																	disableHoverableContent={
-																		false
-																	}
-																>
-																	<TooltipTrigger
-																		asChild
-																	>
-																		<Input
-																			id={`${uid}-reg-password`}
-																			type="password"
-																			value={
-																				field.value ||
-																				""
-																			}
-																			onChange={(
-																				e,
-																			) =>
-																				field.onChange(
-																					e
-																						.target
-																						.value,
-																				)
-																			}
-																			data-testid="loginPage-textField-passwordRegister"
-																			aria-invalid={
-																				!!errors.PASSWORD
-																			}
-																		/>
-																	</TooltipTrigger>
-																	<TooltipContent
-																		side="right"
-																		className="flex flex-col gap-0.5"
-																	>
-																		<p>
-																			• At
-																			least
-																			8
-																			characters
-																		</p>
-																		<p>
-																			•
-																			One
-																			uppercase
-																			letter
-																		</p>
-																		<p>
-																			•
-																			One
-																			lowercase
-																			letter
-																		</p>
-																		<p>
-																			•
-																			One
-																			special
-																			character
-																			[!,
-																			@,
-																			#,
-																			$,
-																			%,
-																			^,
-																			&,
-																			*]
-																		</p>
-																	</TooltipContent>
-																</Tooltip>
-																{errors.PASSWORD && (
-																	<p className="text-destructive text-sm">
-																		{
-																			errors
-																				.PASSWORD
-																				.message
-																		}
-																	</p>
-																)}
-															</div>
+														className={cn(
+															"flex-1 px-4 py-2 font-medium text-sm transition-colors",
+															loginType === "ldap"
+																? "bg-primary text-primary-foreground"
+																: "bg-background text-primary-text hover:bg-muted",
 														)}
-													/>
-													<Controller
-														name="PASSWORD_CONFIRMATION"
-														control={
-															registerControl
-														}
-														rules={{
-															required:
-																"Please confirm your password",
-															validate: (value) =>
-																value ===
-																	regPassword ||
-																"Passwords do not match",
+														data-testid="loginPage-button-ldap"
+													>
+														{getLoginTypeLabel(
+															"ldap",
+														)}
+													</button>
+												)}
+												{isLinOTP && (
+													<button
+														type="button"
+														onClick={() => {
+															setLoginType(
+																"linotp",
+															);
+															setSuccess("");
+															setError("");
 														}}
-														render={({ field }) => (
-															<div className="flex flex-col gap-1.5">
-																<Label
-																	htmlFor={`${uid}-reg-passwordConfirm`}
-																>
-																	Password
-																	Confirmation
-																	*
-																</Label>
+														className={cn(
+															"flex-1 px-4 py-2 font-medium text-sm transition-colors",
+															loginType ===
+																"linotp"
+																? "bg-primary text-primary-foreground"
+																: "bg-background text-primary-text hover:bg-muted",
+														)}
+														data-testid="loginPage-button-linotp"
+													>
+														{getLoginTypeLabel(
+															"linotp",
+														)}
+													</button>
+												)}
+											</div>
+										)}
+
+									{!showOTPCodeField && register && (
+										<>
+											<div className="flex gap-3">
+												<Controller
+													name="FIRST_NAME"
+													control={registerControl}
+													rules={{
+														required:
+															"First name is required",
+													}}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-firstName`}
+															>
+																First Name *
+															</Label>
+															<Input
+																id={`${uid}-reg-firstName`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-firstNameRegister"
+																aria-invalid={
+																	!!errors.FIRST_NAME
+																}
+															/>
+															{errors.FIRST_NAME && (
+																<p className="text-destructive text-sm">
+																	{
+																		errors
+																			.FIRST_NAME
+																			.message
+																	}
+																</p>
+															)}
+														</div>
+													)}
+												/>
+												<Controller
+													name="LAST_NAME"
+													control={registerControl}
+													rules={{
+														required:
+															"Last name is required",
+													}}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-lastName`}
+															>
+																Last Name *
+															</Label>
+															<Input
+																id={`${uid}-reg-lastName`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-lastNameRegister"
+																aria-invalid={
+																	!!errors.LAST_NAME
+																}
+															/>
+															{errors.LAST_NAME && (
+																<p className="text-destructive text-sm">
+																	{
+																		errors
+																			.LAST_NAME
+																			.message
+																	}
+																</p>
+															)}
+														</div>
+													)}
+												/>
+											</div>
+											<div className="flex gap-3">
+												<Controller
+													name="USERNAME"
+													control={registerControl}
+													rules={{
+														required:
+															"Username is required",
+													}}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-username`}
+															>
+																Username *
+															</Label>
+															<Input
+																id={`${uid}-reg-username`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-usernameRegister"
+																aria-invalid={
+																	!!errors.USERNAME
+																}
+															/>
+															{errors.USERNAME && (
+																<p className="text-destructive text-sm">
+																	{
+																		errors
+																			.USERNAME
+																			.message
+																	}
+																</p>
+															)}
+														</div>
+													)}
+												/>
+												<Controller
+													name="EMAIL"
+													control={registerControl}
+													rules={{
+														required:
+															"Email is required",
+														pattern: {
+															value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+															message:
+																"Please enter a valid email address",
+														},
+													}}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-email`}
+															>
+																Email *
+															</Label>
+															<Input
+																id={`${uid}-reg-email`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-emailRegister"
+																aria-invalid={
+																	!!errors.EMAIL
+																}
+															/>
+															{errors.EMAIL && (
+																<p className="text-destructive text-sm">
+																	{
+																		errors
+																			.EMAIL
+																			.message
+																	}
+																</p>
+															)}
+														</div>
+													)}
+												/>
+											</div>
+											<div className="flex gap-3">
+												<Controller
+													name="PHONE"
+													control={registerControl}
+													rules={{
+														pattern: {
+															value: /^\d{10}$/,
+															message:
+																"Please enter valid Phone Number",
+														},
+													}}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-phone`}
+															>
+																Phone Number
+															</Label>
+															<Input
+																id={`${uid}-reg-phone`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-phone"
+																aria-invalid={
+																	!!errors.PHONE
+																}
+															/>
+															{errors.PHONE && (
+																<p className="text-destructive text-sm">
+																	{
+																		errors
+																			.PHONE
+																			.message
+																	}
+																</p>
+															)}
+														</div>
+													)}
+												/>
+												<Controller
+													name="EXTENTION"
+													control={registerControl}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-extension`}
+															>
+																Phone Extension
+															</Label>
+															<Input
+																id={`${uid}-reg-extension`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-extension"
+															/>
+														</div>
+													)}
+												/>
+												<Controller
+													name="COUNTRY_CODE"
+													control={registerControl}
+													render={({ field }) => (
+														<div className="flex flex-1 flex-col gap-1.5">
+															<Label
+																htmlFor={`${uid}-reg-countryCode`}
+															>
+																Country Code
+															</Label>
+															<Input
+																id={`${uid}-reg-countryCode`}
+																value={
+																	field.value ||
+																	""
+																}
+																onChange={(e) =>
+																	field.onChange(
+																		e.target
+																			.value,
+																	)
+																}
+																data-testid="loginPage-textField-countryCode"
+															/>
+														</div>
+													)}
+												/>
+											</div>
+											<Controller
+												name="PASSWORD"
+												control={registerControl}
+												rules={{
+													required:
+														"Password is required",
+													validate: (value) => {
+														const rules =
+															regPasswordRules(
+																value,
+															);
+														if (!rules.length)
+															return "Minimum 8 characters";
+														if (!rules.upper)
+															return "At least one uppercase letter";
+														if (!rules.lower)
+															return "At least one lowercase letter";
+														if (!rules.special)
+															return "At least one special character";
+														return true;
+													},
+												}}
+												render={({ field }) => (
+													<div className="flex flex-col gap-1.5">
+														<Label
+															htmlFor={`${uid}-reg-password`}
+														>
+															Password *
+														</Label>
+														<Tooltip
+															disableHoverableContent={
+																false
+															}
+														>
+															<TooltipTrigger
+																asChild
+															>
 																<Input
-																	id={`${uid}-reg-passwordConfirm`}
+																	id={`${uid}-reg-password`}
 																	type="password"
 																	value={
 																		field.value ||
@@ -1190,217 +938,194 @@ export const LoginPage = () => {
 																				.value,
 																		)
 																	}
-																	data-testid="loginPage-textField-passwordConfirm"
+																	data-testid="loginPage-textField-passwordRegister"
 																	aria-invalid={
-																		!!errors.PASSWORD_CONFIRMATION
+																		!!errors.PASSWORD
 																	}
 																/>
-																{errors.PASSWORD_CONFIRMATION && (
-																	<p className="text-destructive text-sm">
-																		{
-																			errors
-																				.PASSWORD_CONFIRMATION
-																				.message
-																		}
-																	</p>
-																)}
-															</div>
-														)}
-													/>
-													<div className="flex flex-col gap-2">
-														<Button
-															type="button"
-															className="w-full"
-															onClick={
-																registerAccount
-															}
-															data-testid="loginPage-button-register"
-														>
-															Register
-														</Button>
-														<div className="flex items-center justify-center gap-1 text-sm">
-															Already have an
-															account?{" "}
-															<Button
-																type="button"
-																variant="link"
-																className="h-auto p-0"
-																onClick={() => {
-																	setRegister(
-																		false,
-																	);
-																	setError(
-																		"",
-																	);
-																}}
-																data-testid="loginPage-button-back"
+															</TooltipTrigger>
+															<TooltipContent
+																side="right"
+																className="flex flex-col gap-0.5"
 															>
-																Login Now
-															</Button>
-														</div>
-													</div>
-												</>
-											)}
-
-											{!showOTPCodeField && !register && (
-												<>
-													<Controller
-														name="USERNAME"
-														control={control}
-														rules={{
-															required:
-																"Username is required",
-														}}
-														render={({ field }) => (
-															<div className="flex flex-col gap-1.5">
-																<Label
-																	htmlFor={`${uid}-login-username`}
-																>
-																	Username
-																</Label>
-																<Input
-																	id={`${uid}-login-username`}
-																	value={
-																		field.value ||
-																		""
-																	}
-																	onChange={(
-																		e,
-																	) =>
-																		field.onChange(
-																			e
-																				.target
-																				.value,
-																		)
-																	}
-																	data-testid="loginPage-textField-username"
-																	aria-invalid={
-																		!!formErrors.USERNAME
-																	}
-																/>
-																{formErrors.USERNAME && (
-																	<p className="text-destructive text-sm">
-																		{
-																			formErrors
-																				.USERNAME
-																				.message
-																		}
-																	</p>
-																)}
-															</div>
-														)}
-													/>
-													<Controller
-														name="PASSWORD"
-														control={control}
-														rules={{
-															required:
-																"Password is required",
-														}}
-														render={({ field }) => (
-															<div className="flex flex-col gap-1.5">
-																<Label
-																	htmlFor={`${uid}-login-password`}
-																>
-																	Password
-																</Label>
-																<div className="relative">
-																	<Input
-																		id={`${uid}-login-password`}
-																		type={
-																			showPassword
-																				? "text"
-																				: "password"
-																		}
-																		value={
-																			field.value ||
-																			""
-																		}
-																		onChange={(
-																			e,
-																		) =>
-																			field.onChange(
-																				e
-																					.target
-																					.value,
-																			)
-																		}
-																		data-testid="loginPage-textField-password"
-																		aria-invalid={
-																			!!formErrors.PASSWORD
-																		}
-																		className="pr-10"
-																	/>
-																	<Button
-																		type="button"
-																		variant="ghost"
-																		size="icon-sm"
-																		className="-translate-y-1/2 absolute top-1/2 right-1 h-8 w-8 text-muted-foreground hover:text-foreground"
-																		onClick={() =>
-																			setShowPassword(
-																				(
-																					prev,
-																				) =>
-																					!prev,
-																			)
-																		}
-																		aria-label={
-																			showPassword
-																				? "Hide password"
-																				: "Show password"
-																		}
-																	>
-																		{showPassword ? (
-																			<EyeOff className="h-4 w-4" />
-																		) : (
-																			<Eye className="h-4 w-4" />
-																		)}
-																	</Button>
-																</div>
-																{formErrors.PASSWORD && (
-																	<p className="text-destructive text-sm">
-																		{
-																			formErrors
-																				.PASSWORD
-																				.message
-																		}
-																	</p>
-																)}
-															</div>
-														)}
-													/>
-													{canRequestPasswordReset && (
-														<div className="flex justify-end">
-															<Button
-																type="button"
-																variant="link"
-																className="h-auto px-0 py-0 text-sm"
-																onClick={
-																	openForgotPasswordDialog
+																<p>
+																	• At least 8
+																	characters
+																</p>
+																<p>
+																	• One
+																	uppercase
+																	letter
+																</p>
+																<p>
+																	• One
+																	lowercase
+																	letter
+																</p>
+																<p>
+																	• One
+																	special
+																	character
+																	[!, @, #, $,
+																	%, ^, &, *]
+																</p>
+															</TooltipContent>
+														</Tooltip>
+														{errors.PASSWORD && (
+															<p className="text-destructive text-sm">
+																{
+																	errors
+																		.PASSWORD
+																		.message
 																}
-															>
-																Forgot password?
-															</Button>
-														</div>
-													)}
-												</>
-											)}
+															</p>
+														)}
+													</div>
+												)}
+											/>
+											<Controller
+												name="PASSWORD_CONFIRMATION"
+												control={registerControl}
+												rules={{
+													required:
+														"Please confirm your password",
+													validate: (value) =>
+														value === regPassword ||
+														"Passwords do not match",
+												}}
+												render={({ field }) => (
+													<div className="flex flex-col gap-1.5">
+														<Label
+															htmlFor={`${uid}-reg-passwordConfirm`}
+														>
+															Password
+															Confirmation *
+														</Label>
+														<Input
+															id={`${uid}-reg-passwordConfirm`}
+															type="password"
+															value={
+																field.value ||
+																""
+															}
+															onChange={(e) =>
+																field.onChange(
+																	e.target
+																		.value,
+																)
+															}
+															data-testid="loginPage-textField-passwordConfirm"
+															aria-invalid={
+																!!errors.PASSWORD_CONFIRMATION
+															}
+														/>
+														{errors.PASSWORD_CONFIRMATION && (
+															<p className="text-destructive text-sm">
+																{
+																	errors
+																		.PASSWORD_CONFIRMATION
+																		.message
+																}
+															</p>
+														)}
+													</div>
+												)}
+											/>
+											<div className="flex flex-col gap-2">
+												<Button
+													type="button"
+													className="w-full"
+													onClick={registerAccount}
+													data-testid="loginPage-button-register"
+												>
+													Register
+												</Button>
+												<div className="flex items-center justify-center gap-1 text-sm">
+													Already have an account?{" "}
+													<Button
+														type="button"
+														variant="link"
+														className="h-auto p-0"
+														onClick={() => {
+															setRegister(false);
+															setError("");
+														}}
+														data-testid="loginPage-button-back"
+													>
+														Login Now
+													</Button>
+												</div>
+											</div>
+										</>
+									)}
 
-											{showOTPCodeField && (
-												<Controller
-													name="OTP_CONFIRM"
-													control={control}
-													rules={{ required: true }}
-													render={({ field }) => (
-														<div className="flex flex-col gap-1.5">
-															<Label
-																htmlFor={`${uid}-login-otp`}
-															>
-																OTP Confirmation
-																Code
-															</Label>
+									{!showOTPCodeField && !register && (
+										<>
+											<Controller
+												name="USERNAME"
+												control={control}
+												rules={{
+													required:
+														"Username is required",
+												}}
+												render={({ field }) => (
+													<div className="flex flex-col gap-1.5">
+														<Label
+															htmlFor={`${uid}-login-username`}
+														>
+															Username
+														</Label>
+														<Input
+															id={`${uid}-login-username`}
+															value={
+																field.value ||
+																""
+															}
+															onChange={(e) =>
+																field.onChange(
+																	e.target
+																		.value,
+																)
+															}
+															data-testid="loginPage-textField-username"
+															aria-invalid={
+																!!formErrors.USERNAME
+															}
+														/>
+														{formErrors.USERNAME && (
+															<p className="text-destructive text-sm">
+																{
+																	formErrors
+																		.USERNAME
+																		.message
+																}
+															</p>
+														)}
+													</div>
+												)}
+											/>
+											<Controller
+												name="PASSWORD"
+												control={control}
+												rules={{
+													required:
+														"Password is required",
+												}}
+												render={({ field }) => (
+													<div className="flex flex-col gap-1.5">
+														<Label
+															htmlFor={`${uid}-login-password`}
+														>
+															Password
+														</Label>
+														<div className="relative">
 															<Input
-																id={`${uid}-login-otp`}
+																id={`${uid}-login-password`}
+																type={
+																	showPassword
+																		? "text"
+																		: "password"
+																}
 																value={
 																	field.value ||
 																	""
@@ -1411,90 +1136,208 @@ export const LoginPage = () => {
 																			.value,
 																	)
 																}
-																data-testid="loginPage-textField-otpCode"
+																data-testid="loginPage-textField-password"
+																aria-invalid={
+																	!!formErrors.PASSWORD
+																}
+																className="pr-10"
 															/>
-														</div>
-													)}
-												/>
-											)}
-
-											{!register && (
-												<>
-													<Button
-														type="button"
-														className="w-full"
-														onClick={login}
-														data-testid="loginPage-button-login"
-													>
-														{isLoading ? (
-															<span className="flex items-center gap-2">
-																<Loader2 className="h-4 w-4 animate-spin" />
-																Logging in...
-															</span>
-														) : (
-															"Login"
-														)}
-													</Button>
-													{nativeRegistration && (
-														<div className="flex items-center justify-center gap-1 text-sm">
-															Don&apos;t have an
-															account?{" "}
 															<Button
 																type="button"
-																variant="link"
-																className="h-auto p-0"
-																onClick={() => {
-																	setRegister(
-																		true,
-																	);
-																	setError(
-																		"",
-																	);
-																}}
-																data-testid="loginPage-button-registerPage"
+																variant="ghost"
+																size="icon-sm"
+																className="-translate-y-1/2 absolute top-1/2 right-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+																onClick={() =>
+																	setShowPassword(
+																		(
+																			prev,
+																		) =>
+																			!prev,
+																	)
+																}
+																aria-label={
+																	showPassword
+																		? "Hide password"
+																		: "Show password"
+																}
 															>
-																Register Now
+																{showPassword ? (
+																	<EyeOff className="h-4 w-4" />
+																) : (
+																	<Eye className="h-4 w-4" />
+																)}
 															</Button>
 														</div>
-													)}
-												</>
+														{formErrors.PASSWORD && (
+															<p className="text-destructive text-sm">
+																{
+																	formErrors
+																		.PASSWORD
+																		.message
+																}
+															</p>
+														)}
+													</div>
+												)}
+											/>
+											{canRequestPasswordReset && (
+												<div className="flex justify-end">
+													<Button
+														type="button"
+														variant="link"
+														className="h-auto px-0 py-0 text-sm"
+														onClick={
+															openForgotPasswordDialog
+														}
+													>
+														Forgot password?
+													</Button>
+												</div>
 											)}
 										</>
 									)}
-								</div>
-							</form>
-							{isLoading && (
-								<div
-									aria-hidden
-									className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
-								>
-									<div className="absolute inset-0 bg-white/35 dark:bg-background/25" />
-									<div
-										className="-left-1/3 -skew-x-12 absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent"
-										style={{
-											animation:
-												"loginCardShimmer 1200ms ease-out infinite",
-										}}
-									/>
-								</div>
+
+									{showOTPCodeField && (
+										<Controller
+											name="OTP_CONFIRM"
+											control={control}
+											rules={{ required: true }}
+											render={({ field }) => (
+												<div className="flex flex-col gap-1.5">
+													<Label
+														htmlFor={`${uid}-login-otp`}
+													>
+														OTP Confirmation Code
+													</Label>
+													<Input
+														id={`${uid}-login-otp`}
+														value={
+															field.value || ""
+														}
+														onChange={(e) =>
+															field.onChange(
+																e.target.value,
+															)
+														}
+														data-testid="loginPage-textField-otpCode"
+													/>
+												</div>
+											)}
+										/>
+									)}
+
+									{!register && (
+										<Button
+											type="button"
+											className="w-full"
+											onClick={login}
+											data-testid="loginPage-button-login"
+										>
+											{isLoading ? (
+												<span className="flex items-center gap-2">
+													<Loader2 className="h-4 w-4 animate-spin" />
+													Logging in...
+												</span>
+											) : (
+												"Login"
+											)}
+										</Button>
+									)}
+								</>
 							)}
+
+							{!register && hasOAuth && (
+								<>
+									{hasUsernamePassword && (
+										<div className="flex items-center gap-4 py-1">
+											<Separator className="flex-1" />
+											<span className="font-medium text-muted-foreground text-sm">
+												or
+											</span>
+											<Separator className="flex-1" />
+										</div>
+									)}
+									{availableProviders.map((p) => {
+										if (!p.isOauth) return null;
+
+										const providerKey = getLoginProviderKey(
+											p.provider,
+										);
+										const providerLogo =
+											oauthProviderLogos[providerKey];
+										const providerInitials =
+											getLoginProviderInitials(
+												p.name || p.provider,
+											);
+
+										return (
+											<Button
+												key={p.provider}
+												type="button"
+												variant="outline"
+												className="w-full gap-2"
+												onClick={() =>
+													oauth(p.provider)
+												}
+											>
+												{providerLogo ? (
+													<img
+														src={providerLogo}
+														alt=""
+														aria-hidden="true"
+														className="h-4 w-4 shrink-0 object-contain"
+														loading="lazy"
+														decoding="async"
+													/>
+												) : (
+													<span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/70 bg-muted/60 font-semibold text-muted-foreground text-xs">
+														{providerInitials}
+													</span>
+												)}
+												{p.name}
+											</Button>
+										);
+									})}
+								</>
+							)}
+							{!register &&
+								hasUsernamePassword &&
+								nativeRegistration && (
+									<div className="flex items-center justify-center gap-1 text-sm">
+										Don&apos;t have an account?{" "}
+										<Button
+											type="button"
+											variant="link"
+											className="h-auto p-0"
+											onClick={() => {
+												setRegister(true);
+												setError("");
+											}}
+											data-testid="loginPage-button-registerPage"
+										>
+											Register Now
+										</Button>
+									</div>
+								)}
 						</div>
-					</div>
+					</form>
+					{isLoading && (
+						<div
+							aria-hidden
+							className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
+						>
+							<div className="absolute inset-0 bg-white/35 dark:bg-background/25" />
+							<div
+								className="-left-1/3 -skew-x-12 absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent"
+								style={{
+									animation:
+										"loginCardShimmer 1200ms ease-out infinite",
+								}}
+							/>
+						</div>
+					)}
 				</div>
-				<aside className="relative hidden overflow-hidden lg:block">
-					<img
-						src={activeHeroImage}
-						alt=""
-						className="absolute inset-0 h-full w-full object-cover"
-						loading="lazy"
-						decoding="async"
-					/>
-					<div
-						aria-hidden
-						className="pointer-events-none absolute inset-y-0 left-0 z-10 w-96 bg-gradient-to-r from-white to-transparent dark:from-background"
-					/>
-				</aside>
-			</div>
+			</LoginShell>
 
 			<Dialog
 				open={forgotPassword}
