@@ -23,7 +23,7 @@ export const App = () => (
 		<AccessStoreProvider store={accessStore}>
 			<InsightProvider>
 				<ThemeProvider
-					defaultTheme="light"
+					defaultTheme="system"
 					storageKey="smss-ui-theme-collaboration"
 				>
 					<div className="min-h-screen">

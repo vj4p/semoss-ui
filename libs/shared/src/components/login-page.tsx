@@ -37,7 +37,7 @@ interface LoginPageProps {
  * Example:
  *
  *     <InsightProvider>
- *       <ThemeProvider defaultTheme="light" storageKey="...">
+ *       <ThemeProvider defaultTheme="system" storageKey="...">
  *         <LoginPage branding={<AppLogo />} imageSrc={...}>
  *           <YourApp />
  *         </LoginPage>

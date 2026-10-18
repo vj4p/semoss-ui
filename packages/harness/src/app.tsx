@@ -39,7 +39,7 @@ export const App = () => {
 		<I18nextProvider i18n={i18n}>
 			<InsightProvider>
 				<ThemeProvider
-					defaultTheme="light"
+					defaultTheme="system"
 					storageKey="smss-ui-theme-harness"
 				>
 					<LandscapeRestriction />

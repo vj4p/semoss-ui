@@ -40,7 +40,7 @@ export const App = () => {
 					<InsightProvider>
 						{/* TODO: read default theme from theme map somehow */}
 						<ThemeProvider
-							defaultTheme="light"
+							defaultTheme="system"
 							storageKey="smss-ui-theme-playground"
 						>
 							<LandscapeRestriction />

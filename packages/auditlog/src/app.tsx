@@ -30,7 +30,7 @@ function App() {
 		<I18nextProvider i18n={i18n}>
 			<InsightProvider>
 				<LoadingScreen>
-					<ThemeProvider defaultTheme="light">
+					<ThemeProvider defaultTheme="system">
 						<div className="absolute inset-0 h-screen w-screen overflow-auto">
 							<Router />
 						</div>
@@ -42,4 +42,5 @@ function App() {
 	);
 }
 
+// biome-ignore lint/style/noDefaultExport: App is the package entry, imported as a default by main.tsx
 export default App;

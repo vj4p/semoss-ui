@@ -75,7 +75,7 @@ export const App = () => {
 				<AccessStoreProvider store={sessionStore}>
 					<I18nextProvider i18n={i18n}>
 						<ThemeProvider
-							defaultTheme="light"
+							defaultTheme="system"
 							storageKey="smss-ui-theme-client"
 						>
 							<AppWrapper />
