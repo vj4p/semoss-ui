@@ -67,7 +67,7 @@ export const NavUser = () => {
 				align="end"
 				sideOffset={4}
 			>
-				{root.theme.featureFlags?.enableDarkMode && (
+				{root.theme.featureFlags?.enableDarkMode !== false && (
 					<DropdownMenuSub>
 						<DropdownMenuSubTrigger>
 							{theme === "dark" ? (
@@ -77,23 +77,11 @@ export const NavUser = () => {
 							) : (
 								<SunIcon />
 							)}
-							{theme === "dark" ? (
-								<>
-									Dark
-									<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
-										BETA
-									</span>
-								</>
-							) : theme === "system" ? (
-								<>
-									System
-									<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
-										BETA
-									</span>
-								</>
-							) : (
-								"Light"
-							)}
+							{theme === "dark"
+								? "Dark"
+								: theme === "system"
+									? "System"
+									: "Light"}
 						</DropdownMenuSubTrigger>
 						<DropdownMenuPortal>
 							<DropdownMenuSubContent>
@@ -110,9 +98,6 @@ export const NavUser = () => {
 								>
 									<MoonIcon />
 									Dark
-									<span className="ms-auto self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
-										BETA
-									</span>
 								</DropdownMenuCheckboxItem>
 								<DropdownMenuCheckboxItem
 									checked={theme === "system"}
@@ -120,9 +105,6 @@ export const NavUser = () => {
 								>
 									<MonitorIcon />
 									System
-									<span className="ms-auto self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
-										BETA
-									</span>
 								</DropdownMenuCheckboxItem>
 							</DropdownMenuSubContent>
 						</DropdownMenuPortal>

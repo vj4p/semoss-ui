@@ -5,6 +5,7 @@ import { runPixel } from "@semoss/sdk";
 import {
 	Badge,
 	Button,
+	ThemeToggle,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -23,6 +24,12 @@ export const Navbar: React.FC = () => {
 	const setNavbarElement = usePage((state) => state.setNavbarElement);
 	const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 	const [hasUnread, setHasUnread] = useState<number>(0);
+	const darkModeEnabled =
+		(
+			useConfig((state) => state.theme) as {
+				featureFlags?: { enableDarkMode?: boolean };
+			}
+		).featureFlags?.enableDarkMode !== false;
 	const notificationsEnabled = useConfig(
 		(state) => state.config.notificationEnabled,
 	);
@@ -89,6 +96,9 @@ export const Navbar: React.FC = () => {
 						<PlatformSearch />
 					</Suspense>
 				)}
+
+				{/* Theme: one click to light, dark or system */}
+				{darkModeEnabled && <ThemeToggle />}
 
 				{/* Notification bell */}
 				{notificationsEnabled && (

@@ -7,6 +7,7 @@ import React, {
 	useState,
 } from "react";
 import { Link, matchPath, Outlet, useLocation } from "react-router";
+import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
 import {
 	Breadcrumb,
@@ -19,6 +20,7 @@ import {
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
+	ThemeToggle,
 	useCacheState,
 	useTheme,
 } from "@semoss/ui/next";
@@ -34,6 +36,7 @@ import { setFavicon } from "@/utility/utils";
 export const MainLayout = observer(() => {
 	const { actions } = useInsight();
 	const { root } = useRoot();
+	const { t } = useTranslation("common");
 	const theme = root.theme;
 	const [navbarActions, setNavbarActions] = useState<ReactNode | null>(null);
 	const { pathname } = useLocation();
@@ -279,6 +282,17 @@ export const MainLayout = observer(() => {
 									<div className="flex-1" />
 									<div className="flex items-center gap-2">
 										{navbarActions ?? null}
+										{root.theme.featureFlags
+											?.enableDarkMode !== false && (
+											<ThemeToggle
+												labels={{
+													trigger: t("theme.mode"),
+													light: t("theme.light"),
+													dark: t("theme.dark"),
+													system: t("theme.system"),
+												}}
+											/>
+										)}
 										<ThemePicker />
 									</div>
 								</div>

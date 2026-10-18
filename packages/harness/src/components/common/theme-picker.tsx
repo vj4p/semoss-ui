@@ -1,10 +1,4 @@
-import {
-	CheckIcon,
-	MonitorIcon,
-	MoonIcon,
-	PaletteIcon,
-	SunIcon,
-} from "lucide-react";
+import { CheckIcon, PaletteIcon } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "@semoss/i18n";
 import {
@@ -12,34 +6,19 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-	Separator,
-	type Theme,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
-	useTheme,
 } from "@semoss/ui/next";
-import { useColorTheme, useRoot } from "@/hooks";
-
-const MODES: { id: Theme; labelKey: string; Icon: typeof SunIcon }[] = [
-	{ id: "light", labelKey: "theme.light", Icon: SunIcon },
-	{ id: "dark", labelKey: "theme.dark", Icon: MoonIcon },
-	{ id: "system", labelKey: "theme.system", Icon: MonitorIcon },
-];
+import { useColorTheme } from "@/hooks";
 
 /**
- * Single control for appearance: the light/dark mode owned by the platform's
- * ThemeProvider, plus the harness accent from useColorTheme. Both persist to
- * localStorage and apply immediately.
+ * The harness accent from useColorTheme. Persists to localStorage and applies
+ * immediately. Light and dark mode live in the header's ThemeToggle.
  */
 export const ThemePicker = observer(() => {
 	const { t } = useTranslation("common");
-	const { root } = useRoot();
-	const { theme, setTheme } = useTheme();
 	const { colorTheme, setColorTheme, colorThemes } = useColorTheme();
-
-	// Respect the same flag that gates the existing Appearance menu.
-	const darkModeEnabled = root.theme.featureFlags?.enableDarkMode !== false;
 
 	return (
 		<Popover>
@@ -59,33 +38,6 @@ export const ThemePicker = observer(() => {
 			</Tooltip>
 
 			<PopoverContent align="end" className="w-60">
-				{darkModeEnabled && (
-					<>
-						<div className="mb-2 font-medium text-muted-foreground text-xs">
-							{t("theme.mode")}
-						</div>
-						<div className="mb-3 grid grid-cols-3 gap-1.5">
-							{MODES.map(({ id, labelKey, Icon }) => (
-								<button
-									key={id}
-									type="button"
-									onClick={() => setTheme(id)}
-									aria-pressed={theme === id}
-									className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border px-2 py-2 text-xs transition-colors hover:bg-muted/60 ${
-										theme === id
-											? "border-primary bg-muted/40 text-foreground"
-											: "border-border text-muted-foreground"
-									}`}
-								>
-									<Icon className="size-4" />
-									{t(labelKey)}
-								</button>
-							))}
-						</div>
-						<Separator className="mb-3" />
-					</>
-				)}
-
 				<div className="mb-2 font-medium text-muted-foreground text-xs">
 					{t("theme.accent")}
 				</div>

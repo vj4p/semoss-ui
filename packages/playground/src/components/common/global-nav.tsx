@@ -54,6 +54,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	Spinner,
+	ThemeToggle,
 	toast,
 	useDebouncedValue,
 	useInfiniteScroll,
@@ -962,8 +963,31 @@ export const GlobalNav = observer(() => {
 								)}
 							</div>
 						)}
-						<SidebarMenuItem>
-							<NavUser />
+						<SidebarMenuItem className="flex items-center gap-1">
+							<div className="min-w-0 flex-1">
+								<NavUser />
+							</div>
+							{root.theme.featureFlags?.enableDarkMode !==
+								false && (
+								<div className="group-data-[collapsible=icon]:hidden">
+									<ThemeToggle
+										labels={{
+											trigger: t(
+												"settings.general.theme",
+											),
+											light: t(
+												"settings.general.themes.light",
+											),
+											dark: t(
+												"settings.general.themes.dark",
+											),
+											system: t(
+												"settings.general.themes.system",
+											),
+										}}
+									/>
+								</div>
+							)}
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarFooter>

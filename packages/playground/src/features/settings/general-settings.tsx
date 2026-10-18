@@ -46,7 +46,7 @@ export const GeneralSettings = () => {
 			<h3 id={headingId} className="font-semibold text-base">
 				{t("settings.general.appearance")}
 			</h3>
-			{root.theme.featureFlags?.enableDarkMode ? (
+			{root.theme.featureFlags?.enableDarkMode !== false ? (
 				<SettingsRow
 					label={t("settings.general.theme")}
 					labelId={themeLabelId}

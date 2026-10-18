@@ -145,12 +145,6 @@ export const LogoutPopover: React.FC<LogoutPopoverProps> = (props) => {
 													? "System"
 													: "Light"}
 										</span>
-										{(theme === "dark" ||
-											theme === "system") && (
-											<span className="ms-1 self-center rounded border px-1 py-0.5 font-medium text-xs leading-none">
-												BETA
-											</span>
-										)}
 										<ChevronRight className="ml-auto size-4 opacity-70" />
 									</Button>
 								</DropdownMenuTrigger>
@@ -174,9 +168,6 @@ export const LogoutPopover: React.FC<LogoutPopoverProps> = (props) => {
 									>
 										<Moon className="size-4" />
 										Dark
-										<span className="ms-auto self-center rounded border px-1 py-0.5 font-medium text-xs leading-none">
-											BETA
-										</span>
 									</DropdownMenuCheckboxItem>
 									<DropdownMenuCheckboxItem
 										checked={theme === "system"}
@@ -186,9 +177,6 @@ export const LogoutPopover: React.FC<LogoutPopoverProps> = (props) => {
 									>
 										<Monitor className="size-4" />
 										System
-										<span className="ms-auto self-center rounded border px-1 py-0.5 font-medium text-xs leading-none">
-											BETA
-										</span>
 									</DropdownMenuCheckboxItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
