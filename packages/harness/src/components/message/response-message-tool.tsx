@@ -9,6 +9,7 @@ import { isAskExecutionMode } from "@/utility/mcp-utils";
 import { RoomInlineTool } from "../room";
 import { ResponseMessageToolMenu } from "./response-message-tool-menu";
 import { ResponseMessageToolStreaming } from "./response-message-tool-streaming";
+import { ReviewApprovalButton } from "./review-approval-button";
 
 const getToolState = (
 	tool: ToolStore,
@@ -231,6 +232,12 @@ export const ResponseMessageTool: React.FC<ResponseMessageToolProps> = observer(
 								{t("actions.cancel")}
 							</button>
 						)}
+						{toolState.needsApproval && (
+							<ReviewApprovalButton
+								tool={tool}
+								isMobile={isMobile}
+							/>
+						)}
 						{toolState.actionType === "menu" && (
 							<ResponseMessageToolMenu
 								message={message}
@@ -313,6 +320,9 @@ export const ResponseMessageTool: React.FC<ResponseMessageToolProps> = observer(
 						>
 							{t("actions.cancel")}
 						</Button>
+					)}
+					{toolState.needsApproval && (
+						<ReviewApprovalButton tool={tool} isMobile={isMobile} />
 					)}
 					{toolState.actionType === "menu" && (
 						<ResponseMessageToolMenu

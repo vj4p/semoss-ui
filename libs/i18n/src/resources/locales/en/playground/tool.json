@@ -16,7 +16,8 @@
 		"collapse": "Collapse",
 		"openInSidebar": "Open in Sidebar",
 		"closeInSidebar": "Close Sidebar",
-		"openInline": "Open In-Line"
+		"openInline": "Open In-Line",
+		"reviewAndApprove": "Review and approve"
 	},
 	"tabs": {
 		"output": "Output",
