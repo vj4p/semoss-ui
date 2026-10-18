@@ -1,3 +1,4 @@
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useInsight } from "@semoss/sdk/react";
 import {
@@ -10,6 +11,10 @@ import {
 	FieldLabel,
 	FieldSeparator,
 	Input,
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
 	Spinner,
 	Tabs,
 	TabsList,
@@ -17,6 +22,7 @@ import {
 	toast,
 } from "@semoss/ui/next";
 import { LoginProviderIcon } from "../login-provider-icon";
+import { ForgotPasswordDialog } from "./forgot-password-dialog";
 
 /**
  * Username / password providers, in the order they are offered to the user.
@@ -35,7 +41,14 @@ type CredentialProvider = (typeof CREDENTIAL_PROVIDERS)[number]["provider"];
 const UNABLE_TO_LOGIN =
 	"Unable to login. Check your credentials and try again.";
 
-export function LoginForm() {
+export interface LoginFormProps {
+	/** Subject line of the password reset email. */
+	resetSubject?: string;
+}
+
+export function LoginForm({
+	resetSubject = "SEMOSS Reset Password Request",
+}: LoginFormProps = {}) {
 	const usernameId = useId();
 	const passwordId = useId();
 	const otpId = useId();
@@ -45,6 +58,8 @@ export function LoginForm() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [otp, setOtp] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
+	const [forgotOpen, setForgotOpen] = useState(false);
 
 	// linotp verifies the pin first and then challenges for the otp
 	const [showOTPField, setShowOTPField] = useState(false);
@@ -163,181 +178,242 @@ export function LoginForm() {
 	};
 
 	return (
-		<form
-			className="flex flex-col gap-6"
-			onSubmit={(e) => {
-				e.preventDefault();
-				void submitCredentials();
-			}}
-		>
-			<FieldGroup>
-				<div className="flex flex-col items-center gap-1 text-center">
-					<h1 className="font-bold text-2xl">Sign In</h1>
-					<p className="text-balance text-muted-foreground text-sm">
-						Log in to unlock your access
-					</p>
-				</div>
-				{hasCredentials && (
-					<>
-						{credentialProviders.length > 1 && !showOTPField && (
-							<Tabs
-								value={loginType}
-								onValueChange={(value) => {
-									setLoginType(value as CredentialProvider);
-									setError("");
-								}}
-							>
-								<TabsList className="w-full">
-									{credentialProviders.map((p) => (
-										<TabsTrigger
-											key={p.provider}
-											value={p.provider}
-											disabled={isLoading}
-											data-testid={`loginForm-tab-${p.provider}`}
-										>
-											{p.label}
-										</TabsTrigger>
-									))}
-								</TabsList>
-							</Tabs>
-						)}
-						{showOTPField ? (
-							<Field>
-								<FieldLabel htmlFor={otpId}>
-									OTP Confirmation Code
-								</FieldLabel>
-								<Input
-									id={otpId}
-									type="text"
-									placeholder="OTP Confirmation Code"
-									value={otp}
-									onChange={(e) => setOtp(e.target.value)}
-									disabled={isLoading}
-									data-testid="loginForm-input-otp"
-									required
-								/>
-							</Field>
-						) : (
-							<>
-								<Field>
-									<FieldLabel htmlFor={usernameId}>
-										Username
-									</FieldLabel>
-									<Input
-										id={usernameId}
-										type="text"
-										placeholder="Username"
-										value={username}
-										onChange={(e) =>
-											setUsername(e.target.value)
-										}
-										disabled={isLoading}
-										data-testid="loginForm-input-username"
-										required
-									/>
-								</Field>
-								<Field>
-									<FieldLabel htmlFor={passwordId}>
-										{loginType === "linotp"
-											? "Pin"
-											: "Password"}
-									</FieldLabel>
-									<Input
-										id={passwordId}
-										value={password}
-										placeholder={
-											loginType === "linotp"
-												? "Pin"
-												: "Password"
-										}
-										onChange={(e) =>
-											setPassword(e.target.value)
-										}
-										type="password"
-										disabled={isLoading}
-										data-testid="loginForm-input-password"
-										required
-									/>
-								</Field>
-							</>
-						)}
-						<Field>
-							<Button
-								type="submit"
-								disabled={isLoading}
-								data-testid="loginForm-button-login"
-							>
-								{loadingProvider === loginType && (
-									<Spinner className="size-4" />
+		<>
+			<form
+				className="flex flex-col gap-6"
+				onSubmit={(e) => {
+					e.preventDefault();
+					void submitCredentials();
+				}}
+			>
+				<FieldGroup>
+					<div className="flex flex-col items-center gap-1 text-center">
+						<h1 className="font-bold text-2xl">Sign In</h1>
+						<p className="text-balance text-muted-foreground text-sm">
+							Log in to unlock your access
+						</p>
+					</div>
+					{hasCredentials && (
+						<>
+							{credentialProviders.length > 1 &&
+								!showOTPField && (
+									<Tabs
+										value={loginType}
+										onValueChange={(value) => {
+											setLoginType(
+												value as CredentialProvider,
+											);
+											setError("");
+										}}
+									>
+										<TabsList className="w-full">
+											{credentialProviders.map((p) => (
+												<TabsTrigger
+													key={p.provider}
+													value={p.provider}
+													disabled={isLoading}
+													data-testid={`loginForm-tab-${p.provider}`}
+												>
+													{p.label}
+												</TabsTrigger>
+											))}
+										</TabsList>
+									</Tabs>
 								)}
-								{showOTPField ? "Confirm" : "Login"}
-							</Button>
-						</Field>
-					</>
-				)}
-				{hasCredentials && hasOAuth && !showOTPField && (
-					<FieldSeparator>or</FieldSeparator>
-				)}
-
-				{!showOTPField &&
-					availableProviders.map((p) => {
-						// skip ones that aren't oauth
-						if (!p.isOauth) {
-							return null;
-						}
-
-						return (
-							<Field key={p.provider}>
-								<Button
-									key={p.provider}
-									type="button"
-									variant="outline"
-									disabled={isLoading}
-									onClick={async () => {
-										setLoadingProvider(p.provider);
-
-										await actions
-											.login({
-												type: "oauth",
-												provider: p.provider,
-											})
-											.then(() => {
-												setLoadingProvider(null);
-
-												toast.success(
-													`Successfully logged in`,
-												);
-											})
-											.catch((e) => {
-												setLoadingProvider(null);
-
-												setError(e.message);
-
-												toast.error(e.message);
-											});
-									}}
-									className="w-full gap-2"
-								>
-									{loadingProvider === p.provider ? (
-										<Spinner className="size-4" />
-									) : (
-										<LoginProviderIcon
-											provider={p.provider}
-											className="h-4 w-4 shrink-0 object-contain"
+							{showOTPField ? (
+								<Field>
+									<FieldLabel htmlFor={otpId}>
+										OTP Confirmation Code
+									</FieldLabel>
+									<Input
+										id={otpId}
+										type="text"
+										placeholder="OTP Confirmation Code"
+										value={otp}
+										onChange={(e) => setOtp(e.target.value)}
+										disabled={isLoading}
+										data-testid="loginForm-input-otp"
+										required
+									/>
+								</Field>
+							) : (
+								<>
+									<Field>
+										<FieldLabel htmlFor={usernameId}>
+											Username
+										</FieldLabel>
+										<Input
+											id={usernameId}
+											type="text"
+											placeholder="Username"
+											value={username}
+											onChange={(e) =>
+												setUsername(e.target.value)
+											}
+											disabled={isLoading}
+											data-testid="loginForm-input-username"
+											required
 										/>
+									</Field>
+									<Field>
+										<FieldLabel htmlFor={passwordId}>
+											{loginType === "linotp"
+												? "Pin"
+												: "Password"}
+										</FieldLabel>
+										<InputGroup>
+											<InputGroupInput
+												id={passwordId}
+												value={password}
+												placeholder={
+													loginType === "linotp"
+														? "Pin"
+														: "Password"
+												}
+												onChange={(e) =>
+													setPassword(e.target.value)
+												}
+												type={
+													showPassword
+														? "text"
+														: "password"
+												}
+												disabled={isLoading}
+												data-testid="loginForm-input-password"
+												required
+											/>
+											<InputGroupAddon align="inline-end">
+												<InputGroupButton
+													aria-label={
+														showPassword
+															? "Hide password"
+															: "Show password"
+													}
+													aria-pressed={showPassword}
+													onClick={() =>
+														setShowPassword(
+															(previous) =>
+																!previous,
+														)
+													}
+												>
+													{showPassword ? (
+														<EyeOffIcon
+															aria-hidden
+														/>
+													) : (
+														<EyeIcon aria-hidden />
+													)}
+												</InputGroupButton>
+											</InputGroupAddon>
+										</InputGroup>
+										{loginType && (
+											<div className="flex justify-end">
+												<Button
+													type="button"
+													variant="link"
+													size="sm"
+													className="h-auto p-0"
+													disabled={isLoading}
+													onClick={() =>
+														setForgotOpen(true)
+													}
+												>
+													Forgot password?
+												</Button>
+											</div>
+										)}
+									</Field>
+								</>
+							)}
+							<Field>
+								<Button
+									type="submit"
+									disabled={isLoading}
+									data-testid="loginForm-button-login"
+								>
+									{loadingProvider === loginType && (
+										<Spinner className="size-4" />
 									)}
-									{p.name}
+									{showOTPField ? "Confirm" : "Login"}
 								</Button>
 							</Field>
-						);
-					})}
-			</FieldGroup>
-			{error && (
-				<Alert variant="destructive">
-					<AlertTitle>Error</AlertTitle>
-					<AlertDescription>{error}</AlertDescription>
-				</Alert>
+						</>
+					)}
+					{hasCredentials && hasOAuth && !showOTPField && (
+						<FieldSeparator>or</FieldSeparator>
+					)}
+
+					{!showOTPField &&
+						availableProviders.map((p) => {
+							// skip ones that aren't oauth
+							if (!p.isOauth) {
+								return null;
+							}
+
+							return (
+								<Field key={p.provider}>
+									<Button
+										key={p.provider}
+										type="button"
+										variant="outline"
+										disabled={isLoading}
+										onClick={async () => {
+											setLoadingProvider(p.provider);
+
+											await actions
+												.login({
+													type: "oauth",
+													provider: p.provider,
+												})
+												.then(() => {
+													setLoadingProvider(null);
+
+													toast.success(
+														`Successfully logged in`,
+													);
+												})
+												.catch((e) => {
+													setLoadingProvider(null);
+
+													setError(e.message);
+
+													toast.error(e.message);
+												});
+										}}
+										className="w-full gap-2"
+									>
+										{loadingProvider === p.provider ? (
+											<Spinner className="size-4" />
+										) : (
+											<LoginProviderIcon
+												provider={p.provider}
+												className="h-4 w-4 shrink-0 object-contain"
+											/>
+										)}
+										{p.name}
+									</Button>
+								</Field>
+							);
+						})}
+				</FieldGroup>
+				{error && (
+					<Alert variant="destructive">
+						<AlertTitle>Error</AlertTitle>
+						<AlertDescription>{error}</AlertDescription>
+					</Alert>
+				)}
+			</form>
+			{loginType && (
+				<ForgotPasswordDialog
+					open={forgotOpen}
+					onOpenChange={setForgotOpen}
+					type={
+						loginType.toUpperCase() as "NATIVE" | "LDAP" | "LINOTP"
+					}
+					subject={resetSubject}
+				/>
 			)}
-		</form>
+		</>
 	);
 }
