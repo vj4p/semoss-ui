@@ -156,6 +156,10 @@ settings page is not a dashboard and should not wrap every field group in a card
   page or form error.
 - **Success and warning:** pair color and iconography with text. Status must never be conveyed
   by color alone.
+- **Run and tool status:** use `StatusBadge` (or `STATUS_TEXT_CLASS` for a glyph) from
+  `@semoss/ui/next` with the shared words Queued, Running, Waiting on you, Done, Failed, Denied,
+  Cancelled. Map backend values with `statusKindFromBackend`; do not write a local color map.
+  Pass `label` to translate a word or to name an approval more specifically.
 - **Forms:** follow the [form skill](./skills/react-form-builder.skill.md).
   Use `Form` and its `Form*` wrappers, which compose the matching controls and Field
   labels, descriptions, and errors. Show validation next to its field and preserve
