@@ -964,11 +964,11 @@ export const GlobalNav = observer(() => {
 								)}
 							</div>
 						)}
-						<SidebarMenuItem className="flex items-center gap-1">
-							<div className="min-w-0 flex-1">
+						<SidebarMenuItem className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse group-data-[collapsible=icon]:gap-2">
+							<div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
 								<NavUser />
 							</div>
-							<div className="flex items-center group-data-[collapsible=icon]:hidden">
+							<div className="flex items-center group-data-[collapsible=icon]:flex-col">
 								<AppSwitcher current="playground" />
 								{root.theme.featureFlags?.enableDarkMode !==
 									false && (

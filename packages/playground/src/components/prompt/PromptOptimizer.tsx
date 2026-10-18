@@ -175,7 +175,6 @@ export const PromptOptimizer: React.FC<PromptOptimizerProps> = observer(
 					<span className="inline-flex">
 						<Button
 							type="button"
-							className="rounded-full"
 							variant="ghost"
 							size="icon-sm"
 							aria-label={

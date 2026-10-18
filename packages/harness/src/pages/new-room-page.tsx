@@ -585,7 +585,7 @@ export const NewRoomPage = observer(() => {
 									predefinedPrompts={
 										tempRoomStore.options.predefinedPrompts
 									}
-									className="max-h-64 min-h-48 bg-background"
+									className="max-h-64 min-h-48"
 									isLoading={isLoading}
 									initialValue={initialPrompt}
 									model={chat.models.selected}

@@ -6,7 +6,8 @@
  * are applied to <html> alongside `light`/`dark` by useColorTheme, so an accent
  * choice is independent of light/dark and survives toggling between them.
  *
- * Only `--primary` and the focus `--ring` are overridden. Backgrounds, borders
+ * Only `--primary` and the focus `--ring` are overridden. The ring is fully opaque: at 60% it measured
+ * under the 3:1 a focus indicator needs against the page. Backgrounds, borders
  * and text stay on the platform tokens, so contrast behaviour in both modes is
  * whatever the design system already guarantees. Following globals.css's own
  * convention, each accent is a single value shared by light and dark rather
@@ -21,35 +22,35 @@
 .theme-default,
 .dark.theme-default {
 	--primary: rgba(5, 96, 216, 1);
-	--ring: rgba(5, 96, 216, 0.6);
+	--ring: rgba(5, 96, 216, 1);
 }
 
 .theme-violet,
 .dark.theme-violet {
 	--primary: rgba(124, 58, 237, 1);
-	--ring: rgba(124, 58, 237, 0.6);
+	--ring: rgba(124, 58, 237, 1);
 }
 
 .theme-emerald,
 .dark.theme-emerald {
 	--primary: rgba(4, 120, 87, 1);
-	--ring: rgba(4, 120, 87, 0.6);
+	--ring: rgba(4, 120, 87, 1);
 }
 
 .theme-amber,
 .dark.theme-amber {
 	--primary: rgba(180, 83, 9, 1);
-	--ring: rgba(180, 83, 9, 0.6);
+	--ring: rgba(180, 83, 9, 1);
 }
 
 .theme-rose,
 .dark.theme-rose {
 	--primary: rgba(225, 29, 72, 1);
-	--ring: rgba(225, 29, 72, 0.6);
+	--ring: rgba(225, 29, 72, 1);
 }
 
 .theme-slate,
 .dark.theme-slate {
 	--primary: rgba(71, 85, 105, 1);
-	--ring: rgba(71, 85, 105, 0.6);
+	--ring: rgba(71, 85, 105, 1);
 }
