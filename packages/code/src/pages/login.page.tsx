@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { useInsight } from "@semoss/sdk/react";
 import { LoginForm } from "@semoss/shared";
+import { ThemeToggle } from "@semoss/ui/next";
 
 /**
  * Where the login page was sent from, which is where to go once signed in.
@@ -41,7 +42,10 @@ export const LoginPage = () => {
 		return <Navigate to={fromPath(location.state)} replace />;
 	}
 	return (
-		<main className="items-center-safe justify-center-safe flex h-full overflow-y-auto bg-background p-6 text-foreground">
+		<main className="items-center-safe justify-center-safe relative flex h-full overflow-y-auto bg-background p-6 text-foreground">
+			<div className="absolute end-4 top-4">
+				<ThemeToggle />
+			</div>
 			<div className="w-full max-w-xs">
 				<LoginForm />
 			</div>

@@ -20,6 +20,7 @@ import {
 	Input,
 	Label,
 	Separator,
+	ThemeToggle,
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -490,6 +491,9 @@ export const LoginPage = () => {
 				}
 			`}</style>
 			<div className="semoss-login-page login-grid relative grid min-h-screen w-full bg-background">
+				<div className="absolute end-4 top-4 z-20">
+					<ThemeToggle />
+				</div>
 				<div className="relative flex min-h-screen w-full flex-col overflow-hidden">
 					<div className="relative z-10 flex w-full flex-1 items-center justify-center overflow-y-auto px-6 pt-4 pb-4 md:px-10 md:pt-8 md:pb-6">
 						<div className="relative w-full max-w-[520px] overflow-hidden rounded-2xl p-6 md:p-8 dark:bg-background/95 dark:shadow-sm">

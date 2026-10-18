@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useInsight } from "@semoss/sdk/react";
-import { Spinner, useTheme } from "@semoss/ui/next";
+import { Spinner, ThemeToggle, useTheme } from "@semoss/ui/next";
 import { LoginForm } from "./form/login-form";
 
 interface LoginPageProps {
@@ -79,10 +79,13 @@ export const LoginPage = ({
 		<div
 			className={
 				hasImage
-					? "grid min-h-svh lg:grid-cols-2"
-					: "flex min-h-svh items-center justify-center"
+					? "relative grid min-h-svh lg:grid-cols-2"
+					: "relative flex min-h-svh items-center justify-center"
 			}
 		>
+			<div className="absolute end-4 top-4 z-10">
+				<ThemeToggle />
+			</div>
 			<div
 				className={
 					hasImage
