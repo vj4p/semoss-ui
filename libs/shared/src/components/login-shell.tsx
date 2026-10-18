@@ -11,15 +11,25 @@ export interface LoginShellProps {
 	children: ReactNode;
 }
 
+/** Node centers as percentages of the panel; the lines use the same points. */
 const ART_NODES = [
-	{ label: "Database", className: "start-[8%] top-[18%]" },
-	{ label: "Files", className: "start-[8%] top-[60%]" },
+	{ label: "Database", x: 16, y: 22, className: "left-[16%] top-[22%]" },
+	{ label: "Files", x: 16, y: 66, className: "left-[16%] top-[66%]" },
 	{
 		label: "Model",
-		className: "start-[38%] top-[38%] border-primary text-primary-text",
+		x: 50,
+		y: 44,
+		className: "left-[50%] top-[44%] border-primary text-primary-text",
 	},
-	{ label: "Insight", className: "start-[66%] top-[20%]" },
-	{ label: "Agent", className: "start-[66%] top-[64%]" },
+	{ label: "Insight", x: 80, y: 24, className: "left-[80%] top-[24%]" },
+	{ label: "Agent", x: 80, y: 70, className: "left-[80%] top-[70%]" },
+];
+
+const ART_EDGES: [number, number][] = [
+	[0, 2],
+	[1, 2],
+	[2, 3],
+	[2, 4],
 ];
 
 /** A quiet picture of the platform's parts, used when a theme supplies no hero image. */
@@ -32,21 +42,27 @@ export function LoginArt() {
 		>
 			<svg
 				className="absolute inset-0 size-full"
-				viewBox="0 0 480 560"
+				viewBox="0 0 100 100"
 				preserveAspectRatio="none"
 				aria-hidden="true"
 			>
 				<g stroke="var(--border)" strokeWidth="1.5" fill="none">
-					<path d="M95 115L225 215" />
-					<path d="M80 325L225 215" />
-					<path d="M235 215L340 135" />
-					<path d="M235 215L335 375" />
+					{ART_EDGES.map(([from, to]) => (
+						<line
+							key={`${from}-${to}`}
+							x1={ART_NODES[from].x}
+							y1={ART_NODES[from].y}
+							x2={ART_NODES[to].x}
+							y2={ART_NODES[to].y}
+							vectorEffect="non-scaling-stroke"
+						/>
+					))}
 				</g>
 			</svg>
 			{ART_NODES.map((node) => (
 				<span
 					key={node.label}
-					className={`absolute rounded-lg border bg-card px-3 py-1.5 font-medium text-xs ${node.className}`}
+					className={`-translate-x-1/2 -translate-y-1/2 absolute rounded-lg border bg-card px-3 py-1.5 font-medium text-xs ${node.className}`}
 				>
 					{node.label}
 				</span>
