@@ -117,10 +117,10 @@ const COLUMN_GAP = 110;
 const ROW_HEIGHT = 92;
 
 const EDGE_COLORS = {
-	success: "#16a34a",
-	failure: "#dc2626",
-	active: "#3b82f6",
-	tool: "#9ca3af",
+	success: "var(--success)",
+	failure: "var(--destructive)",
+	active: "var(--info)",
+	tool: "var(--muted-foreground)",
 };
 
 /**
@@ -363,8 +363,8 @@ const NODE_KIND_STYLES: Record<NodeKind, string> = {
 };
 
 const NODE_KIND_ICONS: Record<NodeKind, ReactNode> = {
-	room: <MessageSquare className="size-4 shrink-0 text-primary" />,
-	run: <Bot className="size-4 shrink-0 text-primary" />,
+	room: <MessageSquare className="size-4 shrink-0 text-primary-text" />,
+	run: <Bot className="size-4 shrink-0 text-primary-text" />,
 	subagent: <Bot className="size-4 shrink-0 text-muted-foreground" />,
 	tool: <Wrench className="size-4 shrink-0 text-muted-foreground" />,
 };
@@ -381,9 +381,9 @@ const statusDotClass = (status: string): string => {
 		return "bg-destructive";
 	}
 	if (isActiveStatus(status)) {
-		return "bg-blue-500";
+		return "bg-info";
 	}
-	return "bg-green-600";
+	return "bg-success";
 };
 
 const ActivityGraphNode = ({ data, selected }: NodeProps<ActivityFlowNode>) => {
@@ -401,7 +401,7 @@ const ActivityGraphNode = ({ data, selected }: NodeProps<ActivityFlowNode>) => {
 				isConnectable={false}
 				className="!size-1.5 !border-none !bg-border"
 			/>
-			<div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wide">
+			<div className="flex items-center gap-1.5 text-muted-foreground text-xs uppercase tracking-wide">
 				{NODE_KIND_ICONS[data.kind]}
 				<span>{NODE_KIND_TITLES[data.kind]}</span>
 				{typeof data.count === "number" && (
@@ -420,7 +420,7 @@ const ActivityGraphNode = ({ data, selected }: NodeProps<ActivityFlowNode>) => {
 				{data.label}
 			</p>
 			{(data.status || data.duration || data.sublabel) && (
-				<div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
+				<div className="mt-1 flex items-center gap-2 text-muted-foreground text-xs">
 					{data.status && (
 						<span className="flex items-center gap-1">
 							<span
@@ -592,7 +592,7 @@ const buildTranscriptStepNodes = (run: AgentRunDetail): TreeNodeSpec[] => {
 							result.toolStatus === "error" ? (
 								<XCircle className="size-3.5 text-destructive" />
 							) : (
-								<CheckCircle2 className="size-3.5 text-green-600" />
+								<CheckCircle2 className="size-3.5 text-success" />
 							),
 						label: (
 							<span className="text-muted-foreground text-xs">
@@ -644,9 +644,7 @@ const buildTranscriptStepNodes = (run: AgentRunDetail): TreeNodeSpec[] => {
 			const textPart = message.parts.find((part) => part.type === "TEXT");
 			stepNodes.push({
 				id: message.messageId,
-				leadingIcon: (
-					<CheckCircle2 className="size-3.5 text-green-600" />
-				),
+				leadingIcon: <CheckCircle2 className="size-3.5 text-success" />,
 				label: (
 					<span className="font-medium text-sm">Final answer</span>
 				),
@@ -759,7 +757,7 @@ const RunDetailPanel = ({
 					{run.finalText && (
 						<div>
 							<p className="mb-1 flex items-center gap-1 font-medium text-muted-foreground text-xs">
-								<CheckCircle2 className="size-3.5 text-green-600" />
+								<CheckCircle2 className="size-3.5 text-success" />
 								Final answer
 							</p>
 							<Markdown className="text-sm">
@@ -847,7 +845,7 @@ const ToolDetailPanel = ({
 								(result.toolStatus === "error" ? (
 									<XCircle className="size-3.5 text-destructive" />
 								) : (
-									<CheckCircle2 className="size-3.5 text-green-600" />
+									<CheckCircle2 className="size-3.5 text-success" />
 								))}
 						</div>
 						<CodeBlock
@@ -907,15 +905,18 @@ const RoomDetailPanel = ({
 );
 
 const LEGEND_ITEMS: { label: string; className: string }[] = [
-	{ label: "Success", className: "border-t-2 border-[#16a34a]" },
-	{ label: "Failed", className: "border-t-2 border-[#dc2626] border-dashed" },
+	{ label: "Success", className: "border-t-2 border-success" },
+	{
+		label: "Failed",
+		className: "border-t-2 border-destructive border-dashed",
+	},
 	{
 		label: "Running",
-		className: "border-t-2 border-[#3b82f6] border-dashed",
+		className: "border-t-2 border-info border-dashed",
 	},
 	{
 		label: "Tool call",
-		className: "border-t-2 border-[#9ca3af] border-dotted",
+		className: "border-t-2 border-muted-foreground border-dotted",
 	},
 ];
 
@@ -1114,7 +1115,7 @@ export const AgentRunGraph = ({
 					{LEGEND_ITEMS.map((item) => (
 						<div
 							key={item.label}
-							className="flex items-center gap-2 text-[10px] text-muted-foreground"
+							className="flex items-center gap-2 text-muted-foreground text-xs"
 						>
 							<span className={cn("w-6", item.className)} />
 							{item.label}

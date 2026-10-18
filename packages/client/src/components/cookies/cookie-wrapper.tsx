@@ -73,7 +73,7 @@ export const CookieWrapper = observer((props: CookieWrapperProps) => {
 					</DialogHeader>
 					{/* biome-ignore lint/correctness/useUniqueElementIds: single application cookie banner */}
 					<div
-						className="text-sm [&_a:hover]:opacity-80 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4"
+						className="text-sm [&_a:hover]:opacity-80 [&_a]:text-primary-text [&_a]:underline [&_a]:underline-offset-4"
 						id="cookie-policy-banner"
 						// biome-ignore lint/security/noDangerouslySetInnerHtml: third-party cookie script content
 						dangerouslySetInnerHTML={{ __html: cookieBanner }}

@@ -309,7 +309,7 @@ const ManageEnginesDialog = ({
 												{option.engine_name}
 											</span>
 											{selected ? (
-												<CheckIcon className="size-4 shrink-0 text-primary" />
+												<CheckIcon className="size-4 shrink-0 text-primary-text" />
 											) : null}
 										</button>
 									</li>

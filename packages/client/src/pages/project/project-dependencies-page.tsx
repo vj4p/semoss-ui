@@ -26,11 +26,11 @@ import { TYPE_TO_ROUTE } from "@/constants";
 import { useProject } from "@/hooks";
 
 const PERMISSION_ICONS = {
-	OWNER: <User className="h-4 w-4 text-primary" />,
-	READ_ONLY: <Eye className="h-4 w-4 text-primary" />,
-	EDIT: <Edit className="h-4 w-4 text-primary" />,
-	DISCOVERABLE: <Eye className="h-4 w-4 text-primary" />,
-	NONE: <Ban className="h-4 w-4 text-primary" />,
+	OWNER: <User className="h-4 w-4 text-primary-text" />,
+	READ_ONLY: <Eye className="h-4 w-4 text-primary-text" />,
+	EDIT: <Edit className="h-4 w-4 text-primary-text" />,
+	DISCOVERABLE: <Eye className="h-4 w-4 text-primary-text" />,
+	NONE: <Ban className="h-4 w-4 text-primary-text" />,
 };
 
 type PermissionIconKey = Role | "NONE";

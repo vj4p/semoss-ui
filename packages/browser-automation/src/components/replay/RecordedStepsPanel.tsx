@@ -46,7 +46,7 @@ export function RecordedStepsPanel({
 	onSave,
 }: RecordedStepsPanelProps) {
 	return (
-		<section className="border-line border-b bg-surface-raised/20">
+		<section className="border-border border-b bg-muted/20">
 			<div className="flex items-center gap-2 px-2 py-1.5">
 				<Button
 					size="icon-sm"
@@ -73,7 +73,7 @@ export function RecordedStepsPanel({
 				</Button>
 			</div>
 			{open && (
-				<div className="space-y-1.5 border-line border-t bg-canvas/40 p-2">
+				<div className="space-y-1.5 border-border border-t bg-background/40 p-2">
 					{steps.length === 0 ? (
 						<p className="p-4 text-muted-foreground text-sm">
 							{isRecording
@@ -86,9 +86,9 @@ export function RecordedStepsPanel({
 							return (
 								<div
 									key={`${step.timestamp ?? index}-${index}`}
-									className="flex items-start gap-2 rounded-md border border-line bg-surface px-2.5 py-2 shadow-sm"
+									className="flex items-start gap-2 rounded-md border border-border bg-card px-2.5 py-2 shadow-sm"
 								>
-									<span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent/10 font-semibold text-accent text-xs">
+									<span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10 font-semibold text-primary-text text-xs">
 										{index + 1}
 									</span>
 									<div className="min-w-0 flex-1">

@@ -331,7 +331,7 @@ const _MetamodelNode = (props: MetamodelNodeProps) => {
 									{data.isEditable &&
 										(p.isPrimary ? (
 											<Key
-												className="size-5 text-primary"
+												className="size-5 text-primary-text"
 												data-testid={`metamodel-node-${id}-property-${p.id}-primary-key`}
 											/>
 										) : p.isForeign ? (

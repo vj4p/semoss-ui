@@ -206,7 +206,7 @@ export const BlocksWorkspaceActions = observer(() => {
 						}}
 					>
 						<Bot
-							className={`size-4 ${workspace.agentModelEngine ? "text-primary" : "text-muted-foreground"}`}
+							className={`size-4 ${workspace.agentModelEngine ? "text-primary-text" : "text-muted-foreground"}`}
 						/>
 					</Button>
 				</TooltipTrigger>

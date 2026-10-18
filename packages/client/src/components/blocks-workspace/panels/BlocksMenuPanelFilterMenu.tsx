@@ -23,7 +23,7 @@ export const BlocksMenuPanelFilterMenu = ({
 	return (
 		<PopoverContent side="bottom" align="end" className="w-64 p-0">
 			<div className="flex items-center justify-between px-3 py-2">
-				<span className="font-medium text-primary text-sm">
+				<span className="font-medium text-primary-text text-sm">
 					Filter By
 				</span>
 			</div>

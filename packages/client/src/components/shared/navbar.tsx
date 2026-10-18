@@ -117,7 +117,7 @@ export const Navbar: React.FC = () => {
 										hasUnread > 0 && (
 											<Badge
 												variant="destructive"
-												className="absolute top-0 right-0 flex h-4 px-1 text-[8px]"
+												className="absolute top-0 right-0 flex h-4 px-1 text-xs"
 											>
 												{hasUnread > 9
 													? "9+"

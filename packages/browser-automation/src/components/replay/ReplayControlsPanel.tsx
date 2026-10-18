@@ -23,7 +23,7 @@ export function ReplayControlsPanel({
 	playback: PlaybackController;
 }) {
 	return (
-		<section className="border-line border-b">
+		<section className="border-border border-b">
 			<div className="flex items-center gap-2 px-2 py-1.5">
 				<Button
 					size="icon-sm"
@@ -49,7 +49,7 @@ export function ReplayControlsPanel({
 				{playback.isRunning && <Badge>Running</Badge>}
 			</div>
 			{playback.controlsOpen && (
-				<div className="flex flex-col gap-2 border-line border-t p-2">
+				<div className="flex flex-col gap-2 border-border border-t p-2">
 					<Select
 						value={playback.project?.value ?? ""}
 						onValueChange={(value) =>

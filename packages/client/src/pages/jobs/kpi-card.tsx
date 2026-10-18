@@ -5,7 +5,7 @@ type Tone = "default" | "success" | "warning" | "destructive";
 const toneClasses: Record<Tone, string> = {
 	default: "text-foreground",
 	success: "text-success",
-	warning: "text-yellow-600 dark:text-yellow-400",
+	warning: "text-warning",
 	destructive: "text-destructive",
 };
 

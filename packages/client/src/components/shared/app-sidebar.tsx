@@ -98,7 +98,7 @@ const CATALOG_ROUTES = [
 
 const SIDEBAR_WIDTH = "18rem";
 const NAV_BUTTON_CLASS =
-	"h-auto rounded-none px-4 py-2 text-sm data-[active=true]:rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary";
+	"h-auto rounded-none px-4 py-2 text-sm data-[active=true]:rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary-text";
 
 export const Sidebar: React.FC = () => {
 	const themeName = useConfig((state) => state.theme.name);
@@ -259,7 +259,7 @@ export const Sidebar: React.FC = () => {
 													{r.text}
 												</span>
 												{r.route === "/automation" && (
-													<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
+													<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-xs leading-none">
 														BETA
 													</span>
 												)}

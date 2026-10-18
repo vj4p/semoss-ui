@@ -57,7 +57,7 @@ const FormMenuBlockCard: React.FC<FormMenuCardProps> = ({
 							<Tooltip disableHoverableContent={false}>
 								<TooltipTrigger asChild>
 									<span>
-										<Info className="size-4 text-primary" />
+										<Info className="size-4 text-primary-text" />
 									</span>
 								</TooltipTrigger>
 								<TooltipContent>

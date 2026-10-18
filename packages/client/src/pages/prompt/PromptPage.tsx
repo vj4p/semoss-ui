@@ -355,14 +355,14 @@ export const PromptPage = () => {
 								<TabsTrigger
 									value="My Prompts"
 									data-testid="promptPage-myPrompts-btn"
-									className="after:-bottom-px relative flex-none! whitespace-nowrap rounded-none border-0! bg-transparent! px-1 pb-3 text-sm shadow-none! after:absolute after:right-0 after:left-0 after:h-0.5 after:bg-primary after:opacity-0 hover:bg-transparent! data-[state=active]:bg-transparent! data-[state=active]:text-primary! data-[state=active]:shadow-none! data-[state=active]:after:opacity-100"
+									className="after:-bottom-px relative flex-none! whitespace-nowrap rounded-none border-0! bg-transparent! px-1 pb-3 text-sm shadow-none! after:absolute after:right-0 after:left-0 after:h-0.5 after:bg-primary after:opacity-0 hover:bg-transparent! data-[state=active]:bg-transparent! data-[state=active]:text-primary-text! data-[state=active]:shadow-none! data-[state=active]:after:opacity-100"
 								>
 									My Prompts
 								</TabsTrigger>
 								<TabsTrigger
 									value="Global Prompts"
 									data-testid="promptPage-globalPrompts-btn"
-									className="after:-bottom-px relative flex-none! whitespace-nowrap rounded-none border-0! bg-transparent! px-1 pb-3 text-sm shadow-none! after:absolute after:right-0 after:left-0 after:h-0.5 after:bg-primary after:opacity-0 hover:bg-transparent! data-[state=active]:bg-transparent! data-[state=active]:text-primary! data-[state=active]:shadow-none! data-[state=active]:after:opacity-100"
+									className="after:-bottom-px relative flex-none! whitespace-nowrap rounded-none border-0! bg-transparent! px-1 pb-3 text-sm shadow-none! after:absolute after:right-0 after:left-0 after:h-0.5 after:bg-primary after:opacity-0 hover:bg-transparent! data-[state=active]:bg-transparent! data-[state=active]:text-primary-text! data-[state=active]:shadow-none! data-[state=active]:after:opacity-100"
 								>
 									Global Prompts
 								</TabsTrigger>

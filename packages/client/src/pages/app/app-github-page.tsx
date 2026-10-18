@@ -408,7 +408,7 @@ export const AppGithubPage = () => {
 								</span>
 							) : null}
 							{installationValid === true ? (
-								<span className="mt-1 flex items-center gap-1.5 text-green-600 text-xs dark:text-green-500">
+								<span className="mt-1 flex items-center gap-1.5 text-success text-xs">
 									<ShieldCheck className="size-3.5" />
 									{t("project.installation.valid")}
 								</span>
@@ -434,7 +434,7 @@ export const AppGithubPage = () => {
 						</div>
 					</div>
 
-					<div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-700 text-xs dark:text-amber-400">
+					<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 p-3 text-warning text-xs">
 						<TriangleAlert className="mt-0.5 size-4 shrink-0" />
 						<span>{t("project.syncWarning")}</span>
 					</div>
@@ -490,7 +490,7 @@ export const AppGithubPage = () => {
 													variant="outline"
 													className={`w-14 shrink-0 justify-center ${
 														ok
-															? "border-green-600/30 bg-green-600/10 text-green-600 dark:text-green-500"
+															? "border-success/30 bg-success/10 text-success"
 															: "border-destructive/30 bg-destructive/10 text-destructive"
 													}`}
 												>

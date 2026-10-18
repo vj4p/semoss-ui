@@ -338,10 +338,6 @@ not a currently enforced directive. Do not suppress positive examples.
 
 ## Deprecated Styling Systems
 
-- **`packages/browser-automation/src/index.css` `@theme` block** (`--color-canvas`,
-  `--color-surface`, `--color-accent: #36c7b0`, …): a rival, dark-only palette. **Deprecated**
-  — do not extend it, do not add tokens, do not diverge its values further from `globals.css`.
-  When touching a file that uses it, migrate those usages to `@semoss/ui` semantic classes.
 - **`libs/ui/src/next/theme.ts`**: dead MUI-shaped palette with wrong values (`#1976d2` vs the
   source in `globals.css`). Zero consumers. Never import; deletion is future work.
 
@@ -372,4 +368,3 @@ design rulebook; neither a successful lint check nor a build replaces manual des
   automated design enforcement or working suppression directives until verified.
 - A z-index scale token set; today, rely on lib overlay components.
 - Delete `libs/ui/src/next/theme.ts`.
-- Migrate `packages/browser-automation` off its local `@theme` block.

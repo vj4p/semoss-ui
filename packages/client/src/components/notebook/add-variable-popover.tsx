@@ -741,7 +741,7 @@ export const AddVariablePopover = observer((props: AddVariablePopoverProps) => {
 										className="flex flex-col gap-0.5 rounded border border-border/60 bg-background px-2 py-1.5"
 									>
 										<div className="flex items-center gap-1.5">
-											<span className="inline-flex items-center rounded bg-primary/10 px-1 py-0.5 font-medium text-[11px] text-primary uppercase tracking-wider">
+											<span className="inline-flex items-center rounded bg-primary/10 px-1 py-0.5 font-medium text-primary-text text-xs uppercase tracking-wider">
 												{hit.kind}
 											</span>
 											<span
@@ -750,18 +750,18 @@ export const AddVariablePopover = observer((props: AddVariablePopoverProps) => {
 											>
 												{hit.sourceLabel}
 											</span>
-											<span className="inline-flex items-center rounded bg-muted px-1 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+											<span className="inline-flex items-center rounded bg-muted px-1 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 												{hit.widget}
 											</span>
 											<span
-												className="truncate font-mono text-[11px] text-muted-foreground"
+												className="truncate font-mono text-muted-foreground text-xs"
 												style={noLigatureStyle}
 											>
 												{hit.pathLabel}
 											</span>
 										</div>
 										<code
-											className="block overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[11px] text-muted-foreground"
+											className="block overflow-hidden text-ellipsis whitespace-nowrap font-mono text-muted-foreground text-xs"
 											style={noLigatureStyle}
 										>
 											{hit.snippet}
@@ -859,7 +859,7 @@ export const AddVariablePopover = observer((props: AddVariablePopoverProps) => {
 						<div className="-mx-6 border-border/60 border-t bg-muted/30 px-6 pt-3 pb-3">
 							<button
 								type="button"
-								className="flex items-center gap-1.5 font-medium text-primary text-sm hover:text-primary/80"
+								className="flex items-center gap-1.5 font-medium text-primary-text text-sm hover:text-primary-text/80"
 								onClick={() => setShowPreview(!showPreview)}
 							>
 								<Eye className="size-4" />

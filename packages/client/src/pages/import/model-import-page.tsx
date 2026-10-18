@@ -1174,7 +1174,7 @@ export const ModelImportPage: React.FC = () => {
 											data-testid={formatToDataTestId(
 												"connect-to-all-providers-tab",
 											)}
-											className="h-auto shrink-0 rounded-xl border border-border bg-background px-4 py-2.5 font-medium text-sm transition-colors hover:bg-muted/70 data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+											className="h-auto shrink-0 rounded-xl border border-border bg-background px-4 py-2.5 font-medium text-sm transition-colors hover:bg-muted/70 data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary-text"
 										>
 											<span className="text-sm leading-none">
 												All Providers
@@ -1187,7 +1187,7 @@ export const ModelImportPage: React.FC = () => {
 												data-testid={formatToDataTestId(
 													`connect-to-${provider.name}-tab`,
 												)}
-												className="h-auto shrink-0 rounded-xl border border-border bg-background px-4 py-2.5 font-medium text-sm transition-colors hover:bg-muted/70 data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+												className="h-auto shrink-0 rounded-xl border border-border bg-background px-4 py-2.5 font-medium text-sm transition-colors hover:bg-muted/70 data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary-text"
 											>
 												<ProviderIcon
 													provider={provider.name}

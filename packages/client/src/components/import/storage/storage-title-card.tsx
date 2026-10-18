@@ -85,7 +85,7 @@ export const StorageTitleCard: React.FC<StorageTileCardProps> = ({
 			{!storage.disable ? (
 				<button
 					type="button"
-					className="w-full px-0 py-0 text-left text-primary text-xs hover:text-primary/80"
+					className="w-full px-0 py-0 text-left text-primary-text text-xs hover:text-primary-text/80"
 					onClick={(e) => {
 						e.stopPropagation();
 						// Add docs navigation logic here if needed

@@ -238,7 +238,7 @@ export const EditProjectDependenciesDialog = ({
 					</div>
 				</div>
 				{isSelected && (
-					<Check className="size-4 shrink-0 text-primary" />
+					<Check className="size-4 shrink-0 text-primary-text" />
 				)}
 			</button>
 		);

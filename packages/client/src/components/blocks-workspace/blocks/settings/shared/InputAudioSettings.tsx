@@ -291,7 +291,9 @@ export const InputAudioSettings = observer(
 					variant="ghost"
 					size="icon-sm"
 					onClick={() => handleRecording()}
-					className={recording ? "text-destructive" : "text-primary"}
+					className={
+						recording ? "text-destructive" : "text-primary-text"
+					}
 				>
 					{recording ? <MicOff /> : <Mic />}
 				</Button>

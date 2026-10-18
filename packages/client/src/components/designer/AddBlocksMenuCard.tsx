@@ -229,7 +229,7 @@ export const AddBlocksMenuCard = observer((props: AddBlocksMenuItemProps) => {
 						<Tooltip disableHoverableContent={false}>
 							<TooltipTrigger asChild>
 								<span className="inline-flex items-center">
-									<Info className="size-4 text-primary" />
+									<Info className="size-4 text-primary-text" />
 								</span>
 							</TooltipTrigger>
 							<TooltipContent>

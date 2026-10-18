@@ -35,7 +35,7 @@ export const PromptTokenChip = ({
 					? "bg-primary text-primary-foreground"
 					: hovered && !disableHover
 						? "bg-secondary text-secondary-foreground"
-						: "bg-primary/10 text-primary",
+						: "bg-primary/10 text-primary-text",
 			)}
 		>
 			{label}

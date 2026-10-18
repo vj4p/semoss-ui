@@ -651,7 +651,7 @@ export const AgentActivityPage = () => {
 						onClick={() => handleRoomClick(room)}
 						className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
 					>
-						<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+						<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-text">
 							<MessageSquare className="size-4" />
 						</span>
 						<span

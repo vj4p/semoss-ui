@@ -455,7 +455,7 @@ export const ExcelDataSelection = ({
 						{/* Header Section */}
 						<div className="mb-2 flex w-full items-center justify-between">
 							<div className="flex flex-row items-center gap-2">
-								<FileSpreadsheet className="size-6 text-primary" />
+								<FileSpreadsheet className="size-6 text-primary-text" />
 								<P className="pl-1 text-foreground">
 									{fileName[fileIndex]}
 								</P>
@@ -947,7 +947,7 @@ export const ExcelDataSelection = ({
 																				] ? (
 																					<X className="size-4 text-destructive" />
 																				) : (
-																					<Plus className="size-4 text-primary" />
+																					<Plus className="size-4 text-primary-text" />
 																				)}
 																			</Button>
 																		</TableCell>

@@ -449,7 +449,7 @@ export const SettingsLayout = () => {
 												size="sm"
 												className={`h-8 rounded-full px-3 ${
 													adminMode
-														? "border-green-700/30 bg-green-700/10 text-green-800 hover:bg-green-700/20"
+														? "border-success/30 bg-success/10 text-success hover:bg-success/20"
 														: "border-border bg-muted text-foreground hover:bg-muted/80"
 												}`}
 												onClick={() =>

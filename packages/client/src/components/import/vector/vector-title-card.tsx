@@ -101,7 +101,7 @@ export const VectorTitleCard: React.FC<VectorTileCardProps> = ({
 						{vector.display || vector.name}
 					</p>
 				</div>
-				<p className="mt-1 line-clamp-3 max-h-[calc(3*1.3em)] min-h-[calc(3*1.3em)] text-[11px] text-muted-foreground leading-[1.3]">
+				<p className="mt-1 line-clamp-3 max-h-[calc(3*1.3em)] min-h-[calc(3*1.3em)] text-muted-foreground text-xs leading-[1.3]">
 					{vector.description}
 				</p>
 			</div>

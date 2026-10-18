@@ -466,7 +466,7 @@ export const NotebookVariable = observer((props: NotebookTokenProps) => {
 							<span className="text-muted-foreground text-sm">
 								Suggested name:
 							</span>
-							<p className="font-bold text-primary">
+							<p className="font-bold text-primary-text">
 								{suggestedNewName}
 							</p>
 						</div>

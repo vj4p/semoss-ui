@@ -11,7 +11,7 @@ const STATE_CONFIG: Record<
 	idle: {
 		label: "Idle",
 		dot: "bg-slate-500",
-		tone: "border-line text-ink-muted",
+		tone: "border-border text-muted-foreground",
 	},
 	connecting: {
 		label: "Connecting",
@@ -20,18 +20,18 @@ const STATE_CONFIG: Record<
 	},
 	connected: {
 		label: "Live",
-		dot: "bg-accent",
-		tone: "border-accent/40 text-accent",
+		dot: "bg-primary",
+		tone: "border-primary/40 text-primary-text",
 	},
 	error: {
 		label: "Error",
-		dot: "bg-danger",
-		tone: "border-danger/40 text-danger",
+		dot: "bg-destructive",
+		tone: "border-destructive/40 text-destructive",
 	},
 	closed: {
 		label: "Disconnected",
 		dot: "bg-slate-500",
-		tone: "border-line text-ink-muted",
+		tone: "border-border text-muted-foreground",
 	},
 };
 

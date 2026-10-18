@@ -39,14 +39,14 @@ export function RecordingStepRow({
 	const needsValue = isType && playback.valueRequiredStepId === stepId;
 	return (
 		<div
-			className={`border-line border-b ${needsValue ? "border-warning bg-warning/10" : ""}`}
+			className={`border-border border-b ${needsValue ? "border-warning bg-warning/10" : ""}`}
 		>
 			<div className="flex items-start gap-2 p-2">
 				<button
 					type="button"
 					disabled={disabled}
 					onClick={() => void playback.runStep(tabId, step)}
-					className={`min-w-0 flex-1 rounded p-1 text-left hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-60 ${isRunning ? "bg-primary/10" : ""}`}
+					className={`min-w-0 flex-1 rounded p-1 text-left hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60 ${isRunning ? "bg-primary/10" : ""}`}
 				>
 					<div className="flex flex-wrap items-center gap-2 font-semibold text-sm">
 						#{stepId ?? index + 1} {step.type || "STEP"}

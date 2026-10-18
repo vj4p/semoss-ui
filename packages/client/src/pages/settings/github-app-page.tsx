@@ -402,7 +402,7 @@ export const GitHubAppPage = () => {
 													</h4>
 													<Badge
 														variant="outline"
-														className="shrink-0 border-green-600/30 bg-green-600/10 text-green-600 dark:text-green-500"
+														className="shrink-0 border-success/30 bg-success/10 text-success"
 													>
 														{t("list.connected")}
 													</Badge>

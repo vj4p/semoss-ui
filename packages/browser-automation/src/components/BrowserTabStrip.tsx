@@ -28,7 +28,7 @@ export function BrowserTabStrip({
 }: BrowserTabStripProps) {
 	if (tabs.length === 0) return null;
 	return (
-		<div className="order-[-1] flex items-end gap-0.5 overflow-x-auto border-line border-b bg-surface-hover px-1 pt-1">
+		<div className="order-[-1] flex items-end gap-0.5 overflow-x-auto border-border border-b bg-muted px-1 pt-1">
 			{tabs.map((tab) => {
 				const active = tab.tabId === activeTabId;
 				const label =
@@ -40,7 +40,7 @@ export function BrowserTabStrip({
 						? isRecording
 							? {
 									label: "Recording",
-									dot: "bg-danger shadow-[0_0_8px_rgba(240,82,103,0.65)]",
+									dot: "bg-destructive shadow-[0_0_8px_rgba(240,82,103,0.65)]",
 								}
 							: {
 									label: "Live",
@@ -59,7 +59,7 @@ export function BrowserTabStrip({
 				return (
 					<div
 						key={tab.tabId}
-						className={`mb-[-1px] flex w-[210px] max-w-[80vw] shrink-0 items-center rounded-t-md border ${active ? "border-line border-b-surface bg-surface" : "border-transparent"}`}
+						className={`mb-[-1px] flex w-[210px] max-w-[80vw] shrink-0 items-center rounded-t-md border ${active ? "border-border border-b-surface bg-card" : "border-transparent"}`}
 					>
 						{active && (
 							<Tooltip>

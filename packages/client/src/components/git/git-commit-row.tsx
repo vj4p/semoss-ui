@@ -188,7 +188,7 @@ export const GitCommitRow = ({
 											>
 												{file.fileName}
 											</span>
-											<span className="text-[8px] text-muted-foreground">
+											<span className="text-muted-foreground text-xs">
 												{file.changeType}
 											</span>
 										</button>

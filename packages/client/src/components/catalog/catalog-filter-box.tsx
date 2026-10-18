@@ -367,13 +367,13 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 			{access ? (
 				<div className="px-3 pt-1">
 					<div className="flex h-8 items-center gap-2 px-2">
-						<span className="font-medium text-[13px] text-foreground">
+						<span className="font-medium text-foreground text-sm">
 							Access
 						</span>
 						{access.length > 0 && (
 							<Badge
 								variant="secondary"
-								className="h-5 min-w-5 rounded-full px-1.5 font-medium text-[10px] leading-none [font-variant-numeric:tabular-nums]"
+								className="h-5 min-w-5 rounded-full px-1.5 font-medium text-xs leading-none [font-variant-numeric:tabular-nums]"
 							>
 								{access.length}
 							</Badge>
@@ -390,7 +390,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 									aria-pressed={isSelected}
 									className={
 										isSelected
-											? "inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-medium text-primary text-xs transition-all duration-200 hover:bg-primary/20 active:scale-95"
+											? "inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-medium text-primary-text text-xs transition-all duration-200 hover:bg-primary/20 active:scale-95"
 											: "inline-flex items-center gap-1.5 rounded-full border border-border bg-transparent px-2.5 py-1 text-foreground text-xs transition-all duration-200 hover:border-foreground/30 hover:bg-accent active:scale-95"
 									}
 									data-testid={formatToDataTestId(
@@ -476,7 +476,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 									className="flex h-8 w-full items-center justify-between rounded-md px-2 py-1 hover:bg-accent/50 has-[>svg]:px-2"
 								>
 									<span className="flex items-center gap-2">
-										<span className="font-medium text-[13px] text-foreground">
+										<span className="font-medium text-foreground text-sm">
 											{toTitleCase(
 												formatUnderscoreLabel(key),
 											)}
@@ -484,7 +484,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 										{activeCount > 0 && (
 											<Badge
 												variant="secondary"
-												className="h-5 min-w-5 rounded-full px-1.5 font-medium text-[10px] leading-none [font-variant-numeric:tabular-nums]"
+												className="h-5 min-w-5 rounded-full px-1.5 font-medium text-xs leading-none [font-variant-numeric:tabular-nums]"
 											>
 												{activeCount}
 											</Badge>
@@ -510,7 +510,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 											}
 											aria-pressed={true}
 											aria-label={`Remove ${opt.value} filter`}
-											className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-medium text-primary text-xs transition-all duration-200 hover:bg-primary/20 active:scale-95"
+											className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-medium text-primary-text text-xs transition-all duration-200 hover:bg-primary/20 active:scale-95"
 											style={getValuePillStyle(
 												opt.value,
 												true,
@@ -521,7 +521,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 										>
 											<span>{opt.value}</span>
 											{opt.count != null && (
-												<span className="text-[10px] text-primary/60">
+												<span className="text-primary-text/60 text-xs">
 													{opt.count}
 												</span>
 											)}
@@ -549,7 +549,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 										>
 											<span>{opt.value}</span>
 											{opt.count != null && (
-												<span className="text-[10px] opacity-70">
+												<span className="text-xs opacity-70">
 													{opt.count}
 												</span>
 											)}
@@ -562,7 +562,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 									<Button
 										type="button"
 										variant="ghost"
-										className="mt-0.5 h-auto px-2 py-1 font-normal text-primary text-xs hover:bg-transparent hover:text-primary/80"
+										className="mt-0.5 h-auto px-2 py-1 font-normal text-primary-text text-xs hover:bg-transparent hover:text-primary-text/80"
 										onClick={() => {
 											setExpandedSections((prev) => ({
 												...prev,
@@ -611,7 +611,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 							{totalActiveFilters > 0 && (
 								<Badge
 									variant="default"
-									className="h-5 min-w-5 rounded-full px-1.5 text-[10px] leading-none [font-variant-numeric:tabular-nums]"
+									className="h-5 min-w-5 rounded-full px-1.5 text-xs leading-none [font-variant-numeric:tabular-nums]"
 								>
 									{totalActiveFilters}
 								</Badge>
@@ -620,7 +620,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 								<Button
 									type="button"
 									variant="ghost"
-									className="h-auto px-2 py-1 font-medium text-primary text-xs hover:text-primary/80"
+									className="h-auto px-2 py-1 font-medium text-primary-text text-xs hover:text-primary-text/80"
 									onClick={clearAllFilters}
 									data-testid="filterbox-clear-all"
 								>

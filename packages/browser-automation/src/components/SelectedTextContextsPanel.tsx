@@ -50,7 +50,7 @@ export const SelectedTextContextsPanel: React.FC<
 		}
 	}, [contexts, editingId]);
 	return (
-		<section className="border-line border-b bg-surface-raised/30">
+		<section className="border-border border-b bg-muted/30">
 			<div className="flex items-center gap-2 px-2 py-2">
 				<Button
 					size="icon-sm"
@@ -67,7 +67,7 @@ export const SelectedTextContextsPanel: React.FC<
 				</Button>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-1.5 font-semibold text-sm">
-						<FileText className="size-3.5 text-accent" />
+						<FileText className="size-3.5 text-primary-text" />
 						Captured contexts
 					</div>
 					<div className="text-muted-foreground text-xs">
@@ -77,7 +77,7 @@ export const SelectedTextContextsPanel: React.FC<
 				<Badge variant="secondary">{contexts.length}</Badge>
 			</div>
 			{open && (
-				<div className="border-line border-t bg-canvas/40 p-2.5">
+				<div className="border-border border-t bg-background/40 p-2.5">
 					{contexts.length === 0 ? (
 						<p className="text-muted-foreground text-sm">
 							Choose Capture Context, then drag over website text.
@@ -90,9 +90,9 @@ export const SelectedTextContextsPanel: React.FC<
 									<AccordionItem
 										key={context.id}
 										value={context.id}
-										className="overflow-hidden rounded-lg border border-accent/20 bg-surface shadow-sm"
+										className="overflow-hidden rounded-lg border border-primary/20 bg-card shadow-sm"
 									>
-										<AccordionTrigger className="border-accent border-l-2 px-3 py-3 hover:bg-accent/5 hover:no-underline">
+										<AccordionTrigger className="border-primary border-l-2 px-3 py-3 hover:bg-primary/5 hover:no-underline">
 											<span className="min-w-0 flex-1 text-left">
 												<span className="block truncate font-semibold">
 													{contextLabel(
@@ -108,7 +108,7 @@ export const SelectedTextContextsPanel: React.FC<
 												</span>
 											</span>
 										</AccordionTrigger>
-										<AccordionContent className="border-line border-t px-3 pt-3 pb-3">
+										<AccordionContent className="border-border border-t px-3 pt-3 pb-3">
 											<div className="mb-2 flex flex-wrap gap-1">
 												<Badge>Selected text</Badge>
 												<Badge variant="secondary">
@@ -147,8 +147,8 @@ export const SelectedTextContextsPanel: React.FC<
 													aria-label="Selected website text"
 												/>
 											) : (
-												<div className="rounded-md border border-line bg-canvas shadow-black/10 shadow-inner">
-													<div className="border-line border-b px-2.5 py-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
+												<div className="rounded-md border border-border bg-background shadow-black/10 shadow-inner">
+													<div className="border-border border-b px-2.5 py-1.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
 														Extracted website text
 													</div>
 													<pre className="max-h-[360px] overflow-auto whitespace-pre-wrap break-words p-3 font-sans text-sm leading-6">

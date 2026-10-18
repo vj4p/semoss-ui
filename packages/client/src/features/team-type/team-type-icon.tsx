@@ -25,7 +25,7 @@ export const TeamTypeIcon = ({ type, name, className }: TeamTypeIconProps) => {
 	if (isCustom) {
 		return (
 			<Users
-				className={cn("size-4 shrink-0 text-primary", className)}
+				className={cn("size-4 shrink-0 text-primary-text", className)}
 				aria-hidden
 			/>
 		);

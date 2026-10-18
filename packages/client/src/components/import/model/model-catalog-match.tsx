@@ -250,7 +250,7 @@ export const ModelCatalogMatch = (props: ModelCatalogMatchProps) => {
 										{suggestion.key}
 									</span>
 									{describeSuggestion(suggestion) && (
-										<span className="font-normal text-[11px] text-muted-foreground">
+										<span className="font-normal text-muted-foreground text-xs">
 											{describeSuggestion(suggestion)}
 										</span>
 									)}

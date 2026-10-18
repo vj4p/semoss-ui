@@ -705,7 +705,7 @@ export const LayersPanel = observer((): JSX.Element => {
 							.join("")
 							.toLowerCase()
 							.indexOf(search.toLowerCase()) > -1
-							? "text-primary"
+							? "text-primary-text"
 							: ""
 					}`}
 				>
@@ -777,7 +777,7 @@ export const LayersPanel = observer((): JSX.Element => {
 														className={`h-4 w-4 ${
 															rename
 																? "text-muted-foreground"
-																: "text-primary"
+																: "text-primary-text"
 														}`}
 													/>
 												</Button>
@@ -827,7 +827,7 @@ export const LayersPanel = observer((): JSX.Element => {
 									aria-label="Add variable"
 									variant="ghost"
 									size="icon-sm"
-									className="size-6 text-primary group-focus-within/layer:opacity-100 group-hover/layer:opacity-100 [@media(hover:hover)]:opacity-0"
+									className="size-6 text-primary-text group-focus-within/layer:opacity-100 group-hover/layer:opacity-100 [@media(hover:hover)]:opacity-0"
 									onClick={(e: React.SyntheticEvent) => {
 										e.stopPropagation();
 										setVariableModal(block.id);
@@ -983,7 +983,7 @@ export const LayersPanel = observer((): JSX.Element => {
 					isSelected
 						? "bg-accent text-accent-foreground"
 						: "hover:bg-muted"
-				} ${isSearchMatch ? "text-primary" : ""}`}
+				} ${isSearchMatch ? "text-primary-text" : ""}`}
 			>
 				<Button
 					type="button"

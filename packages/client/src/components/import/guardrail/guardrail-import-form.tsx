@@ -677,11 +677,11 @@ export const GuardrailForm = ({
 								)}
 								{val.key === "FUNCTION_NAME" && (
 									<div className="relative mt-2">
-										<Muted className="mb-1 text-[11px]">
+										<Muted className="mb-1 text-xs">
 											Here is an example dict response
 											that is expected:
 										</Muted>
-										<pre className="overflow-x-auto rounded bg-muted/60 p-2 pr-9 font-mono text-[11px] text-foreground leading-relaxed">
+										<pre className="overflow-x-auto rounded bg-muted/60 p-2 pr-9 font-mono text-foreground text-xs leading-relaxed">
 											{
 												LOCAL_PYTHON_GUARDRAIL_RETURN_STRUCTURE
 											}

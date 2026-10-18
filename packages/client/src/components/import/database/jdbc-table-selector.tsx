@@ -165,7 +165,7 @@ export const TableViewSelector = ({
 				>
 					<div className="flex flex-wrap items-center justify-between gap-2">
 						<div className="flex items-center gap-2">
-							<Icon className="size-4 text-primary" />
+							<Icon className="size-4 text-primary-text" />
 							<CardTitle className="text-base">{title}</CardTitle>
 						</div>
 						<div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ export const TableViewSelector = ({
 
 				<Card className="border-border/70">
 					<CardContent className="p-6 text-center">
-						<Database className="mx-auto mb-3 size-8 text-primary" />
+						<Database className="mx-auto mb-3 size-8 text-primary-text" />
 						<CardTitle className="text-base">
 							Connection was successful
 						</CardTitle>

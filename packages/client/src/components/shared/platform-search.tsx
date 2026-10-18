@@ -125,7 +125,7 @@ export const PlatformSearch = () => {
 								<Badge
 									variant={isAll ? "default" : "outline"}
 									className={cn(
-										"h-8 w-full cursor-pointer justify-center rounded-md border-border text-[11px] transition-colors",
+										"h-8 w-full cursor-pointer justify-center rounded-md border-border text-xs transition-colors",
 										!isAll &&
 											"bg-background hover:bg-accent",
 										isAll && "shadow-sm",
@@ -162,7 +162,7 @@ export const PlatformSearch = () => {
 													: "outline"
 											}
 											className={cn(
-												"h-8 w-full cursor-pointer justify-center rounded-md border-border text-[11px] transition-colors",
+												"h-8 w-full cursor-pointer justify-center rounded-md border-border text-xs transition-colors",
 												!isSelected &&
 													"bg-background hover:bg-accent",
 												isSelected && "shadow-sm",

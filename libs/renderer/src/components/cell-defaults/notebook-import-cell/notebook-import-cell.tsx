@@ -394,7 +394,7 @@ export const NotebookImportCell: CellComponent<NotebookImportCellDef> =
 				)}
 				<div className="relative overflow-hidden rounded-md border bg-[#FAFAFA]">
 					<span
-						className="pointer-events-none absolute top-2 right-3 z-10 select-none rounded-sm bg-background/80 px-1.5 py-0.5 font-medium font-mono text-[10px] text-muted-foreground uppercase tracking-wider"
+						className="pointer-events-none absolute top-2 right-3 z-10 select-none rounded-sm bg-background/80 px-1.5 py-0.5 font-medium font-mono text-muted-foreground text-xs uppercase tracking-wider"
 						aria-hidden
 					>
 						{isSparql ? "SPARQL" : "SQL"}

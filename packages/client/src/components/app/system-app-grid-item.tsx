@@ -81,7 +81,7 @@ export const SystemAppGridItem: React.FC<SystemAppGridItemProps> = ({
 									<Badge
 										variant="outline"
 										title={tag}
-										className="border-primary/20 bg-primary/10 text-primary"
+										className="border-primary/20 bg-primary/10 text-primary-text"
 									>
 										<span className="px-2 font-medium text-xs">
 											{tag}
@@ -141,7 +141,7 @@ export const SystemAppGridItem: React.FC<SystemAppGridItemProps> = ({
 							<Badge
 								variant="outline"
 								title={tag}
-								className="border-primary/20 bg-primary/10 text-primary"
+								className="border-primary/20 bg-primary/10 text-primary-text"
 							>
 								<span className="px-2 font-medium text-xs">
 									{tag}

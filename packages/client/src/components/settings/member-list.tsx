@@ -162,7 +162,7 @@ export const MemberList = ({
 										user.admin ? (
 											<span
 												title="Admin"
-												className="inline-flex shrink-0 text-primary"
+												className="inline-flex shrink-0 text-primary-text"
 											>
 												<ShieldCheck
 													className="size-4"

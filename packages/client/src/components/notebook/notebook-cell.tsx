@@ -528,12 +528,12 @@ export const NotebookCell = observer(
 						Output
 					</span>
 					{outputIsJson && (
-						<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+						<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 							JSON
 						</span>
 					)}
 					{outputHasImage && (
-						<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+						<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 							Image
 						</span>
 					)}
@@ -917,7 +917,7 @@ export const NotebookCell = observer(
 														? "border-success/50 text-success group-hover/run:border-success group-hover/run:text-success"
 														: cell.isError
 															? "border-destructive/50 text-destructive group-hover/run:border-destructive group-hover/run:text-destructive/80"
-															: "border-muted-foreground/40 text-muted-foreground group-hover/run:border-primary group-hover/run:text-primary"
+															: "border-muted-foreground/40 text-muted-foreground group-hover/run:border-primary group-hover/run:text-primary-text"
 											}`}
 										>
 											{cell.isLoading ? (
@@ -974,7 +974,7 @@ export const NotebookCell = observer(
 													size="sm"
 													aria-label={`Copy {{${variableName}}}`}
 													type="button"
-													className="h-7 w-auto min-w-0 flex-1 justify-start gap-1 px-1 py-0 font-normal text-foreground text-sm hover:text-primary"
+													className="h-7 w-auto min-w-0 flex-1 justify-start gap-1 px-1 py-0 font-normal text-foreground text-sm hover:text-primary-text"
 													onClick={(e) => {
 														e.stopPropagation();
 														copyTextToClipboard(
@@ -1015,7 +1015,7 @@ export const NotebookCell = observer(
 															"Rename variable"
 														}
 														type="button"
-														className="@md:inline-flex hidden cursor-pointer items-center rounded-sm border-none bg-transparent p-0.5 text-muted-foreground outline-none transition-colors hover:text-primary focus:outline-none focus-visible:outline-none"
+														className="@md:inline-flex hidden cursor-pointer items-center rounded-sm border-none bg-transparent p-0.5 text-muted-foreground outline-none transition-colors hover:text-primary-text focus:outline-none focus-visible:outline-none"
 														disabled={
 															cell.isLoading
 														}
@@ -1074,7 +1074,7 @@ export const NotebookCell = observer(
 										</TooltipContent>
 									</Tooltip>
 								)}
-								<span className="@lg:inline-flex hidden @lg:items-center whitespace-nowrap rounded bg-muted px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+								<span className="@lg:inline-flex hidden @lg:items-center whitespace-nowrap rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 									{cellTypeLabel}
 								</span>
 							</div>
@@ -1663,7 +1663,7 @@ export const NotebookCell = observer(
 										Output
 									</span>
 									{outputIsJson && (
-										<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+										<span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 											JSON
 										</span>
 									)}

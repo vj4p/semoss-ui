@@ -152,7 +152,7 @@ export const EngineUsagePage = () => {
 							href="../../terminal/dist/"
 							rel="noopener noreferrer"
 							target="_blank"
-							className="text-primary underline underline-offset-4 hover:text-primary/80"
+							className="text-primary-text underline underline-offset-4 hover:text-primary-text/80"
 						>
 							here
 						</a>{" "}

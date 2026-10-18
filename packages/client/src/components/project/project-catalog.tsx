@@ -426,7 +426,7 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 					type === "AUTOMATION" ? (
 						<span className="flex items-center gap-2">
 							{config.name} Catalog
-							<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
+							<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-xs leading-none">
 								BETA
 							</span>
 						</span>

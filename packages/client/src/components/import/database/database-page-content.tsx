@@ -77,7 +77,7 @@ const DatabaseCard = ({
 						alt={database.name}
 						className="h-[30px] w-[30px] rounded-lg object-cover"
 					/>
-					<span className="ml-auto whitespace-nowrap rounded-2xl bg-muted px-2.5 py-1 text-[13px] text-muted-foreground">
+					<span className="ml-auto whitespace-nowrap rounded-2xl bg-muted px-2.5 py-1 text-muted-foreground text-sm">
 						Coming Soon
 					</span>
 				</div>

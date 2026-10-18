@@ -225,7 +225,7 @@ export const ModelTileCard: React.FC<ModelTileCardProps> = ({
 						)}
 						{!model.disable && model.image && (
 							<Badge
-								className="rounded-2xl border-none bg-primary/10 px-2.5 font-semibold text-[13px] text-primary"
+								className="rounded-2xl border-none bg-primary/10 px-2.5 font-semibold text-primary-text text-sm"
 								data-testid={formatToDataTestId(
 									`importPageContent-${model.name}-image-tag`,
 								)}
@@ -235,7 +235,7 @@ export const ModelTileCard: React.FC<ModelTileCardProps> = ({
 						)}
 						{!model.disable && model.audio && (
 							<Badge
-								className="rounded-2xl border-none bg-primary/10 px-2.5 font-semibold text-[13px] text-primary"
+								className="rounded-2xl border-none bg-primary/10 px-2.5 font-semibold text-primary-text text-sm"
 								data-testid={formatToDataTestId(
 									`importPageContent-${model.name}-audio-tag`,
 								)}
@@ -254,7 +254,7 @@ export const ModelTileCard: React.FC<ModelTileCardProps> = ({
 					</p>
 				</div>
 				<p
-					className="mt-1 line-clamp-3 text-[12px] text-muted-foreground leading-[1.3]"
+					className="mt-1 line-clamp-3 text-muted-foreground text-xs leading-[1.3]"
 					title={model.description || ""}
 				>
 					{model.description}

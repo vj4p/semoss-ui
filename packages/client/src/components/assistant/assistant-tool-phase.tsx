@@ -60,7 +60,7 @@ const StatusDot = ({ status, active }: StatusDotProps) => {
 		return <OctagonXIcon className="size-3.5 text-destructive" />;
 	}
 	if (status.toUpperCase() === "INPUT_REQUIRED") {
-		return <CircleAlertIcon className="size-3.5 text-primary" />;
+		return <CircleAlertIcon className="size-3.5 text-primary-text" />;
 	}
 	return <span className="size-2 rounded-full bg-muted-foreground" />;
 };

@@ -45,13 +45,13 @@ const isObjectValue = (
 };
 
 const renderPrimitive = (value: unknown) => {
-	if (value === null) return <span className="text-blue-500">null</span>;
+	if (value === null) return <span className="text-info">null</span>;
 	if (typeof value === "string")
 		return <span className="text-destructive">"{value}"</span>;
 	if (typeof value === "number")
-		return <span className="text-green-600">{value}</span>;
+		return <span className="text-success">{value}</span>;
 	if (typeof value === "boolean")
-		return <span className="text-blue-500">{value.toString()}</span>;
+		return <span className="text-info">{value.toString()}</span>;
 	return <span className="text-muted-foreground">{`${value}`}</span>;
 };
 
@@ -87,7 +87,9 @@ const JsonTreeNode = ({
 	const nextParentRefs = [...parentRefs, value];
 
 	if (isEmpty) {
-		return <span className="text-primary">{isArray ? "[]" : "{}"}</span>;
+		return (
+			<span className="text-primary-text">{isArray ? "[]" : "{}"}</span>
+		);
 	}
 
 	return (
@@ -107,9 +109,9 @@ const JsonTreeNode = ({
 						{isExpanded ? <ChevronDown /> : <ChevronRight />}
 					</button>
 				)}
-				<span className="text-primary">{isArray ? "[" : "{"}</span>
+				<span className="text-primary-text">{isArray ? "[" : "{"}</span>
 				{isChild && !isExpanded && (
-					<span className="text-primary">
+					<span className="text-primary-text">
 						{isArray ? "...]" : "...}"}
 					</span>
 				)}
@@ -130,7 +132,7 @@ const JsonTreeNode = ({
 								</>
 							) : (
 								<>
-									<span className="text-primary">
+									<span className="text-primary-text">
 										"{entryKey}"
 									</span>
 									:{" "}
@@ -147,7 +149,7 @@ const JsonTreeNode = ({
 				</div>
 			)}
 			{isExpanded && (
-				<div className="text-primary">{isArray ? "]" : "}"}</div>
+				<div className="text-primary-text">{isArray ? "]" : "}"}</div>
 			)}
 		</div>
 	);
@@ -158,7 +160,7 @@ const hasNestedObject = (value: unknown): boolean => {
 	return Object.values(value).some(isObjectValue);
 };
 
-// Matches the viewer's `text-[13px] leading-[1.4]` rendering.
+// Matches the viewer's `text-sm leading-[1.4]` rendering.
 export const JSON_VIEWER_LINE_HEIGHT_PX = 18.2;
 const LINE_HEIGHT_PX = JSON_VIEWER_LINE_HEIGHT_PX;
 
@@ -245,7 +247,7 @@ export const JsonValueViewer = ({
 				</Tooltip>
 			)}
 			<div
-				className="overflow-auto font-mono text-[13px] text-foreground leading-[1.4]"
+				className="overflow-auto font-mono text-foreground text-sm leading-[1.4]"
 				style={
 					fixedHeight
 						? { height: `min(60vh, ${expandedHeightPx}px)` }

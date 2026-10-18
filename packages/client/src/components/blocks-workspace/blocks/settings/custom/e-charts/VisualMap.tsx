@@ -51,7 +51,9 @@ export const VisualMap = observer(
 		return (
 			<div className="mt-px h-full w-full">
 				<div className="relative top-[1%] left-[8%] max-h-[530px] w-[95%] overflow-y-auto">
-					<span className="block text-primary">Select Visual</span>
+					<span className="block text-primary-text">
+						Select Visual
+					</span>
 					<CloseOutlinedIcon
 						className="absolute top-0 z-10 ml-[84%] cursor-pointer text-muted-foreground"
 						onClick={handleClose}

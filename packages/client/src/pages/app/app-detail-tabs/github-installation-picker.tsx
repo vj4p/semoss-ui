@@ -269,7 +269,7 @@ export const GithubInstallationPicker = ({
 								{disabled ? (
 									<Badge
 										variant="outline"
-										className="ml-auto shrink-0 border-amber-500/40 text-amber-600 dark:text-amber-400"
+										className="ml-auto shrink-0 border-warning/40 text-warning"
 									>
 										{t("project.installPicker.suspended")}
 									</Badge>

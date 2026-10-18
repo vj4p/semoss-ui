@@ -76,17 +76,17 @@ export const PlatformSearchApp = ({
 						<AppCatalogAvatar
 							projectId={app.project_id}
 							name={appName || "App"}
-							className="size-8 shrink-0 rounded-md text-[11px]"
+							className="size-8 shrink-0 rounded-md text-xs"
 						/>
 						<div className="flex flex-1 flex-col truncate">
 							<span className="truncate font-medium text-sm">
 								{appName}
 							</span>
-							<span className="truncate text-[11px] text-muted-foreground">
+							<span className="truncate text-muted-foreground text-xs">
 								{app.project_id}
 							</span>
 							{app.description && (
-								<span className="line-clamp-1 text-[11px] text-muted-foreground">
+								<span className="line-clamp-1 text-muted-foreground text-xs">
 									{app.description}
 								</span>
 							)}

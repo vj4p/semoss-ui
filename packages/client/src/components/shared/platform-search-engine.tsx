@@ -90,11 +90,11 @@ export const PlatformSearchEngine = ({
 							<span className="truncate font-medium text-sm">
 								{engineName}
 							</span>
-							<span className="truncate text-[11px] text-muted-foreground">
+							<span className="truncate text-muted-foreground text-xs">
 								{engineId}
 							</span>
 							{engine.description && (
-								<span className="line-clamp-1 text-[11px] text-muted-foreground">
+								<span className="line-clamp-1 text-muted-foreground text-xs">
 									{engine.description}
 								</span>
 							)}

@@ -156,7 +156,7 @@ export const ViewAppPage = observer(() => {
 							data-testid={"viewAppPage-bookmark-btn"}
 						>
 							<Bookmark
-								className={`size-4 ${bookmarked ? "fill-primary text-primary" : ""}`}
+								className={`size-4 ${bookmarked ? "fill-primary text-primary-text" : ""}`}
 							/>
 						</Button>
 					</TooltipTrigger>

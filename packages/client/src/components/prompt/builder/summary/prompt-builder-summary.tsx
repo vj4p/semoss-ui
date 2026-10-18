@@ -43,7 +43,7 @@ export const PromptBuilderSummary = (props: {
 	return (
 		<nav className="flex flex-col gap-1">
 			<div className="mb-2 rounded-md px-3 py-2">
-				<p className="mb-1 font-bold text-primary text-xs">
+				<p className="mb-1 font-bold text-primary-text text-xs">
 					Overall Completion
 				</p>
 				<PromptBuilderSummaryProgress progress={builderProgress()} />
@@ -85,7 +85,7 @@ export const PromptBuilderSummary = (props: {
 								disabled
 									? "cursor-default text-muted-foreground opacity-50"
 									: isStepComplete
-										? "text-primary"
+										? "text-primary-text"
 										: "text-foreground",
 								isActive && !disabled && "bg-primary/10",
 								!isActive && !disabled && "hover:bg-muted",
@@ -97,7 +97,7 @@ export const PromptBuilderSummary = (props: {
 									disabled
 										? "bg-muted text-muted-foreground"
 										: isStepComplete
-											? "bg-primary/15 text-primary"
+											? "bg-primary/15 text-primary-text"
 											: isActive
 												? "bg-primary text-primary-foreground"
 												: "bg-muted text-muted-foreground",
@@ -114,7 +114,7 @@ export const PromptBuilderSummary = (props: {
 										"h-4 w-4 shrink-0",
 										isActive
 											? "text-foreground"
-											: "text-primary",
+											: "text-primary-text",
 									)}
 								/>
 							) : (

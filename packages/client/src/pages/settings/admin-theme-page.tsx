@@ -936,7 +936,7 @@ export const AdminThemePage: React.FC = () => {
 										</div>
 									)}
 									{isValidJson && jsonErrors.length > 0 && (
-										<div className="flex flex-col gap-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-amber-600 text-sm dark:text-amber-400">
+										<div className="flex flex-col gap-1 rounded-md border border-warning/40 bg-warning/5 p-2 text-sm text-warning">
 											{jsonErrors.map((err, i) => (
 												// biome-ignore lint/suspicious/noArrayIndexKey: marker order is stable
 												<span key={i}>{err}</span>

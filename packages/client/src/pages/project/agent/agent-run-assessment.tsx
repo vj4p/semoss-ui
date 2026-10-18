@@ -145,7 +145,7 @@ export const AnalyzeRunPanel = ({
 					{run.input || run.runId}
 				</p>
 				<p
-					className="truncate font-mono text-[10px] text-muted-foreground"
+					className="truncate font-mono text-muted-foreground text-xs"
 					title={run.runId}
 				>
 					{run.runId}

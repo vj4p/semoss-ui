@@ -432,7 +432,7 @@ export const MyProfilePage = () => {
 									<div>
 										<button
 											type="button"
-											className="cursor-pointer font-medium text-primary text-sm underline"
+											className="cursor-pointer font-medium text-primary-text text-sm underline"
 											onClick={() =>
 												setPasswordModal(true)
 											}
@@ -523,7 +523,7 @@ export const MyProfilePage = () => {
 						Loading models...
 					</span>
 				) : getModals.status === "ERROR" ? (
-					<span className="font-medium text-red-600 text-sm">
+					<span className="font-medium text-destructive text-sm">
 						Error loading models
 					</span>
 				) : (
@@ -819,7 +819,7 @@ export const MyProfilePage = () => {
 				</div>
 				{getUserAccessKeys.status === "SUCCESS" &&
 					getUserAccessKeys.data?.length === 0 && (
-						<div className="mx-auto my-[75px] block w-full text-center text-[13px] text-muted-foreground">
+						<div className="mx-auto my-[75px] block w-full text-center text-muted-foreground text-sm">
 							No Personal Access Tokens to display at this time
 							<br />
 							Click New Key to create a new Personal Access Token
@@ -849,7 +849,7 @@ export const MyProfilePage = () => {
 							className="my-profile-page__generate-key-form"
 						>
 							<div className="flex flex-col gap-3">
-								<div className="rounded-md border border-primary/20 bg-primary/10 px-4 py-3 text-primary text-sm">
+								<div className="rounded-md border border-primary/20 bg-primary/10 px-4 py-3 text-primary-text text-sm">
 									Note: Your private key will only be
 									generated once
 								</div>

@@ -27,7 +27,7 @@ export const AutomationActionIndicator: React.FC<
 
 	return (
 		<div
-			className="absolute z-30 flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 shadow-lg"
+			className="absolute z-30 flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-lg"
 			style={{
 				left,
 				top,
@@ -36,8 +36,8 @@ export const AutomationActionIndicator: React.FC<
 				pointerEvents: "auto",
 			}}
 		>
-			<Spinner className="h-4 w-4 shrink-0 text-accent" />
-			<span className="text-ink-muted text-xs">Generating…</span>
+			<Spinner className="h-4 w-4 shrink-0 text-primary-text" />
+			<span className="text-muted-foreground text-xs">Generating…</span>
 		</div>
 	);
 };

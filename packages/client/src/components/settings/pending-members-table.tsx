@@ -324,7 +324,7 @@ export const PendingMembersTable = (props: PendingMemberTableProps) => {
 								{pendingCountLabel}
 							</P>
 							{renderedMembers.length > 0 && (
-								<AlertCircle className="ml-2 size-5 shrink-0 text-orange-500" />
+								<AlertCircle className="ml-2 size-5 shrink-0 text-warning" />
 							)}
 						</div>
 
@@ -615,7 +615,7 @@ export const PendingMembersTable = (props: PendingMemberTableProps) => {
 																				}}
 																				data-testid="approve-pending-member-btn"
 																			>
-																				<Check className="size-4 text-green-600" />
+																				<Check className="size-4 text-success" />
 																			</Button>
 																			<Button
 																				variant="ghost"

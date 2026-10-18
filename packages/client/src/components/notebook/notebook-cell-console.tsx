@@ -65,7 +65,7 @@ export const NotebookCellConsole = (props: ConsoleProps) => {
 					<div key={`${i}-${m}`} className="flex items-start gap-2">
 						<span
 							aria-hidden="true"
-							className="select-none pt-px text-right font-mono text-[11px] text-muted-foreground/70 tabular-nums"
+							className="select-none pt-px text-right font-mono text-muted-foreground/70 text-xs tabular-nums"
 							style={{ minWidth: `${gutterChars}ch` }}
 						>
 							{i + 1}

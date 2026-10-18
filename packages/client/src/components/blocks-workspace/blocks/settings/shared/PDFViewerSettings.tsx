@@ -410,7 +410,7 @@ const EngineTab: React.FC<{
 								<SelectItem key={e.id} value={e.id}>
 									<span className="flex flex-col text-left">
 										<span>{e.name}</span>
-										<span className="text-[11px] text-muted-foreground">
+										<span className="text-muted-foreground text-xs">
 											id: {e.id}
 										</span>
 									</span>

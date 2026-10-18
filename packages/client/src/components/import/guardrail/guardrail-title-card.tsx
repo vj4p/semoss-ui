@@ -102,7 +102,7 @@ export const GuardrailTitleCard: React.FC<GuardrailTileCardProps> = ({
 					</p>
 				</div>
 				<p
-					className="mt-1 line-clamp-3 text-[11px] text-muted-foreground leading-[1.3]"
+					className="mt-1 line-clamp-3 text-muted-foreground text-xs leading-[1.3]"
 					title={guardrail.description || ""}
 				>
 					{guardrail.description}
@@ -112,7 +112,7 @@ export const GuardrailTitleCard: React.FC<GuardrailTileCardProps> = ({
 				<Button
 					type="button"
 					variant="link"
-					className="mt-2 flex justify-end p-0 text-[12px]"
+					className="mt-2 flex justify-end p-0 text-xs"
 					onClick={(e) => {
 						e.stopPropagation();
 						window.open(

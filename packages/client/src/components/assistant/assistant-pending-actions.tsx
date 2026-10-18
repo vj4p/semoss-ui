@@ -149,7 +149,7 @@ export const AssistantPendingActions = ({
 		<div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<div className="flex min-w-0 items-center gap-2 font-medium text-sm">
-					<CircleAlertIcon className="size-4 shrink-0 text-primary" />
+					<CircleAlertIcon className="size-4 shrink-0 text-primary-text" />
 					<span>
 						{reviewActions.length} review{" "}
 						{reviewActions.length === 1 ? "action" : "actions"}

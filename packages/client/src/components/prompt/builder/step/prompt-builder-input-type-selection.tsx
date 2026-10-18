@@ -234,7 +234,7 @@ export const PromptBuilderInputTypeSelection = (props: {
 										{selectOptions.map((option) => (
 											<span
 												key={option}
-												className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs"
+												className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary-text text-xs"
 											>
 												{option}
 												<button

@@ -437,7 +437,7 @@ export const AddGroupAccessDialog = ({
 												</span>
 												<Check
 													className={cn(
-														"mt-0.5 size-4 shrink-0 text-primary",
+														"mt-0.5 size-4 shrink-0 text-primary-text",
 														!isSelected &&
 															"invisible",
 													)}

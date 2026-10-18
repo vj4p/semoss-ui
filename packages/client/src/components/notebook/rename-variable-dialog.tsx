@@ -181,7 +181,7 @@ export const RenameVariableDialog = observer(
 												className="flex min-w-0 flex-col gap-0.5 rounded border border-border/60 bg-background px-2 py-1.5"
 											>
 												<div className="flex min-w-0 items-center gap-1.5">
-													<span className="inline-flex items-center rounded bg-primary/10 px-1 py-0.5 font-medium text-[11px] text-primary uppercase tracking-wider">
+													<span className="inline-flex items-center rounded bg-primary/10 px-1 py-0.5 font-medium text-primary-text text-xs uppercase tracking-wider">
 														{hit.kind}
 													</span>
 													<span
@@ -190,18 +190,18 @@ export const RenameVariableDialog = observer(
 													>
 														{hit.sourceLabel}
 													</span>
-													<span className="inline-flex items-center rounded bg-muted px-1 py-0.5 font-medium text-[11px] text-muted-foreground uppercase tracking-wider">
+													<span className="inline-flex items-center rounded bg-muted px-1 py-0.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
 														{hit.widget}
 													</span>
 													<span
-														className="truncate font-mono text-[11px] text-muted-foreground"
+														className="truncate font-mono text-muted-foreground text-xs"
 														style={noLigatureStyle}
 													>
 														{hit.pathLabel}
 													</span>
 												</div>
 												<code
-													className="block overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[11px] text-muted-foreground"
+													className="block overflow-hidden text-ellipsis whitespace-nowrap font-mono text-muted-foreground text-xs"
 													style={noLigatureStyle}
 												>
 													{hit.snippet}

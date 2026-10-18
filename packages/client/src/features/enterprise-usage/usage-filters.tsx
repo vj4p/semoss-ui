@@ -170,7 +170,7 @@ export function UsageFilters({ filters, onApply }: UsageFiltersProps) {
 				>
 					Reset Filters
 				</Button>
-				<output className="text-primary text-xs">
+				<output className="text-primary-text text-xs">
 					{hasChanges ? "Unapplied Changes" : ""}
 				</output>
 			</div>

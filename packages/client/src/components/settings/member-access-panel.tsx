@@ -179,9 +179,9 @@ export const MemberAccessPanel = ({
 			</div>
 
 			{member.locked ? (
-				<div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 p-3">
 					<div className="flex items-center gap-2">
-						<Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+						<Lock className="size-4 shrink-0 text-warning" />
 						<div className="flex flex-col">
 							<span className="font-medium text-sm">
 								This user is locked

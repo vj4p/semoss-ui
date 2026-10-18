@@ -336,7 +336,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = (
 						variant="outline"
 						onClick={() => deleteNotifications()}
 						data-testid="clear-all-notifications"
-						className="min-w-0 font-semibold text-primary"
+						className="min-w-0 font-semibold text-primary-text"
 					>
 						Clear All
 					</Button>

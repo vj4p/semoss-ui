@@ -83,7 +83,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 
 	return (
 		<div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 xl:w-auto xl:flex-1 xl:flex-nowrap">
-			<div className="flex shrink-0 items-center gap-0.5 rounded-md border border-line bg-surface-raised/70 p-0.5">
+			<div className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-muted/70 p-0.5">
 				<ToolbarTip label="Back">
 					<Button
 						size="icon-sm"
@@ -116,7 +116,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 				</ToolbarTip>
 			</div>
 
-			<div className="flex h-9 min-w-40 flex-[1_1_16rem] items-center gap-1 rounded-md border border-line bg-canvas px-1 shadow-black/20 shadow-inner focus-within:border-accent/70 focus-within:ring-2 focus-within:ring-accent/15">
+			<div className="flex h-9 min-w-40 flex-[1_1_16rem] items-center gap-1 rounded-md border border-border bg-background px-1 shadow-black/20 shadow-inner focus-within:border-primary/70 focus-within:ring-2 focus-within:ring-primary/15">
 				<Input
 					value={urlInput}
 					onChange={(event) => setUrlInput(event.target.value)}
@@ -142,7 +142,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 				</ToolbarTip>
 			</div>
 
-			<div className="flex shrink-0 items-center gap-1.5 border-line border-l pl-2">
+			<div className="flex shrink-0 items-center gap-1.5 border-border border-l pl-2">
 				<ToolbarTip
 					label={
 						isRecording
@@ -163,7 +163,9 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 					>
 						<Circle
 							className={
-								isRecording ? "fill-current" : "text-danger"
+								isRecording
+									? "fill-current"
+									: "text-destructive"
 							}
 						/>
 						<span className="hidden sm:inline">

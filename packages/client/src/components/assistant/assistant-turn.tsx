@@ -384,7 +384,7 @@ const FeedItems = ({ run, nested = false }: FeedItemsProps) => {
 			{pendingBlock ? (
 				<RailRow
 					marker={
-						<CircleAlertIcon className="size-3.5 text-primary" />
+						<CircleAlertIcon className="size-3.5 text-primary-text" />
 					}
 				>
 					{pendingBlock}
@@ -439,7 +439,7 @@ const RunHeader = ({ run }: RunHeaderProps) => {
 	const meta = working
 		? { label: "Working", className: "text-muted-foreground" }
 		: status === "INPUT_REQUIRED"
-			? { label: "Needs input", className: "text-primary" }
+			? { label: "Needs input", className: "text-primary-text" }
 			: status === "COMPLETED"
 				? { label: "Completed", className: "text-success" }
 				: status === "CANCELLED"
@@ -448,7 +448,7 @@ const RunHeader = ({ run }: RunHeaderProps) => {
 
 	return (
 		<div className="flex items-center gap-2 text-sm">
-			<span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+			<span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-text">
 				<SparklesIcon className="size-3.5" />
 			</span>
 			<span className="font-semibold">{ASSISTANT_LABEL}</span>

@@ -261,10 +261,10 @@ export const LLMCell: CellComponent<LLMCellDef> = observer((props) => {
 								key={pIdx}
 								className="rounded-md border border-primary/30 bg-primary/5 p-2"
 							>
-								<div className="mb-1 inline-flex items-center rounded bg-primary/15 px-1.5 py-0.5 font-medium text-[10px] text-primary uppercase tracking-wider">
+								<div className="mb-1 inline-flex items-center rounded bg-primary/15 px-1.5 py-0.5 font-medium text-primary-text text-xs uppercase tracking-wider">
 									{label}
 								</div>
-								<pre className="whitespace-pre-wrap break-words font-mono text-[11px]">
+								<pre className="whitespace-pre-wrap break-words font-mono text-xs">
 									{JSON.stringify(
 										part.data ?? part.text,
 										null,
@@ -444,7 +444,7 @@ export const LLMCell: CellComponent<LLMCellDef> = observer((props) => {
 													Params (JSON)
 												</span>
 												{paramsState === "valid" && (
-													<span className="text-green-600 text-xs">
+													<span className="text-success text-xs">
 														✓ valid
 													</span>
 												)}

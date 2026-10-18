@@ -1090,8 +1090,8 @@ Error ${e.message || "Unknown error"}
 									<P
 										className={
 											isPositionOnlyChange
-												? "whitespace-nowrap font-medium text-[11px] text-foreground"
-												: "whitespace-nowrap font-medium text-[11px] text-foreground"
+												? "whitespace-nowrap font-medium text-foreground text-xs"
+												: "whitespace-nowrap font-medium text-foreground text-xs"
 										}
 									>
 										{saveReminderText}
@@ -1403,13 +1403,13 @@ Error ${e.message || "Unknown error"}
 										<TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur supports-backdrop-filter:bg-muted/60">
 											<TableRow>
 												<TableHead className="h-10 w-12 px-2" />
-												<TableHead className="h-10 min-w-[220px] px-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
+												<TableHead className="h-10 min-w-[220px] px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
 													Name
 												</TableHead>
-												<TableHead className="h-10 min-w-[220px] px-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
+												<TableHead className="h-10 min-w-[220px] px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
 													Logical Names
 												</TableHead>
-												<TableHead className="h-10 min-w-[260px] px-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
+												<TableHead className="h-10 min-w-[260px] px-3 font-semibold text-muted-foreground text-xs uppercase tracking-wide">
 													Description
 												</TableHead>
 											</TableRow>
@@ -1533,8 +1533,8 @@ Error ${e.message || "Unknown error"}
 																	className={
 																		isMetadataMatch ||
 																		isColumnSearchMatch
-																			? "rounded bg-primary/20 px-1 py-0.5 font-medium text-[13px] text-foreground leading-5"
-																			: "font-medium text-[13px] text-foreground leading-5"
+																			? "rounded bg-primary/20 px-1 py-0.5 font-medium text-foreground text-sm leading-5"
+																			: "font-medium text-foreground text-sm leading-5"
 																	}
 																>
 																	{
@@ -1543,7 +1543,7 @@ Error ${e.message || "Unknown error"}
 																</span>
 																<Badge
 																	variant="outline"
-																	className="h-5 rounded-sm px-1.5 font-medium text-[10px] text-muted-foreground uppercase tracking-wide"
+																	className="h-5 rounded-sm px-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide"
 																>
 																	{columnType}
 																</Badge>
@@ -1562,7 +1562,7 @@ Error ${e.message || "Unknown error"}
 																					ln
 																				}
 																				variant="secondary"
-																				className="h-5 rounded-sm px-1.5 font-medium text-[10px]"
+																				className="h-5 rounded-sm px-1.5 font-medium text-xs"
 																			>
 																				{
 																					ln

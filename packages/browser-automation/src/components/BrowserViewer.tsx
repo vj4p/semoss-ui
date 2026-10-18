@@ -412,29 +412,29 @@ export const BrowserViewer: React.FC<BrowserViewerProps> = ({
 	return (
 		<div
 			ref={containerRef}
-			className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden bg-canvas p-4"
+			className="relative flex min-w-0 flex-1 items-center justify-center overflow-hidden bg-background p-4"
 			style={{ cursor: "default" }}
 		>
 			<div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(54,199,176,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(54,199,176,0.08)_1px,transparent_1px)] [background-size:24px_24px]" />
 			{connectionState === "idle" && (
 				<div className="relative max-w-sm text-center">
-					<div className="mb-3 font-semibold text-ink text-sm">
+					<div className="mb-3 font-semibold text-foreground text-sm">
 						Remote Browser
 					</div>
-					<p className="text-ink-muted text-sm leading-6">
+					<p className="text-muted-foreground text-sm leading-6">
 						Enter a URL above to start a secure remote browser
 						session.
 					</p>
 				</div>
 			)}
 			{connectionState === "connecting" && (
-				<div className="relative flex items-center gap-3 text-ink-muted text-sm">
-					<span className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+				<div className="relative flex items-center gap-3 text-muted-foreground text-sm">
+					<span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
 					Connecting to browser
 				</div>
 			)}
 			{connectionState === "error" && (
-				<div className="relative rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-danger text-sm">
+				<div className="relative rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive text-sm">
 					Connection failed. Restart the browser session.
 				</div>
 			)}

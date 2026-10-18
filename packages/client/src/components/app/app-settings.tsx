@@ -253,8 +253,10 @@ export const AppSettings = (props: AppSettingsProps) => {
 								}
 								onClick={() => publish()}
 							>
-								<PublishedWithChanges className="size-4 text-primary" />
-								<span className="text-primary">Publish</span>
+								<PublishedWithChanges className="size-4 text-primary-text" />
+								<span className="text-primary-text">
+									Publish
+								</span>
 							</Button>
 							<div className="relative mt-2">
 								<InsertLink className="-translate-y-1/2 absolute top-1/2 left-3 size-4 text-muted-foreground" />

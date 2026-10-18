@@ -104,7 +104,7 @@ export const FunctionTitleCard = ({
 					</p>
 				</div>
 				<p
-					className="mt-1 line-clamp-3 text-[12px] text-muted-foreground leading-[1.3]"
+					className="mt-1 line-clamp-3 text-muted-foreground text-xs leading-[1.3]"
 					title={selectedFunction.description || ""}
 				>
 					{selectedFunction.description}

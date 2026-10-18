@@ -268,7 +268,7 @@ export const DataSelection = ({
 							}
 						>
 							<div className="flex items-center gap-2">
-								<FileSpreadsheet className="size-4 text-primary" />
+								<FileSpreadsheet className="size-4 text-primary-text" />
 								<P className="font-medium text-foreground text-sm">
 									{fileName[fileIdx]}
 								</P>
@@ -489,7 +489,7 @@ export const DataSelection = ({
 																	/>
 																) : (
 																	<Plus
-																		className="size-3.5 text-primary"
+																		className="size-3.5 text-primary-text"
 																		data-testid={`toggle-icon-add-${fileIdx}-${index}`}
 																	/>
 																)}

@@ -850,7 +850,7 @@ export const buildReasoningConfigPayload = (
  * and off are unmistakable without filling the button.
  */
 export const TOGGLE_ON_CLASS =
-	"data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:ring-1 data-[state=on]:ring-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary";
+	"data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-primary-text data-[state=on]:ring-1 data-[state=on]:ring-primary data-[state=on]:hover:bg-primary/10 data-[state=on]:hover:text-primary-text";
 
 /**
  * Advisory note under a field. Purely informational - nothing is disabled and
@@ -879,7 +879,7 @@ export const SettingsWarning = ({
 				"flex items-start gap-1.5 text-xs",
 				tone === "danger"
 					? "font-medium text-destructive"
-					: "text-amber-600 dark:text-amber-400",
+					: "text-warning",
 			)}
 			data-testid={testId}
 		>
@@ -916,11 +916,10 @@ export const SettingsEntry = ({
  * mid-tone hues fail contrast against the dark card background.
  */
 const BADGE_TONES = {
-	blue: "border-blue-500/40 bg-blue-500/10 text-blue-700 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-300",
-	violet: "border-violet-500/40 bg-violet-500/10 text-violet-700 dark:border-violet-400/40 dark:bg-violet-400/10 dark:text-violet-300",
-	teal: "border-teal-500/40 bg-teal-500/10 text-teal-700 dark:border-teal-400/40 dark:bg-teal-400/10 dark:text-teal-300",
-	emerald:
-		"border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-400/10 dark:text-emerald-300",
+	blue: "border-info/40 bg-info/10 text-info ",
+	violet: "border-chart-4/40 bg-chart-4/10 text-chart-4 ",
+	teal: "border-chart-2/40 bg-chart-2/10 text-chart-2 ",
+	emerald: "border-success/40 bg-success/10 text-success ",
 } as const;
 
 export type BadgeTone = keyof typeof BADGE_TONES;

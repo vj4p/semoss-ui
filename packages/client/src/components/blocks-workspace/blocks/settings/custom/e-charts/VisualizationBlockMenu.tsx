@@ -64,7 +64,7 @@ export const VisualizationBlockMenu: BlockComponent = ({ id }) => {
 						key={tab}
 						className={`flex-1 px-4 py-2 font-medium text-sm transition-colors ${
 							selectedTab === tab
-								? "border-primary border-b-2 text-primary shadow-sm"
+								? "border-primary border-b-2 text-primary-text shadow-sm"
 								: "text-muted-foreground hover:text-foreground"
 						}`}
 						onClick={() => setSelectedTab(tab)}

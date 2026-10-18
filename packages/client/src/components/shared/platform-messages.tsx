@@ -13,7 +13,7 @@ import { useConfig, useSession } from "@/hooks/";
 const RawHtml = ({ html }: { html: string }) => {
 	return (
 		<div
-			className="[&_a:hover]:opacity-80 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4"
+			className="[&_a:hover]:opacity-80 [&_a]:text-primary-text [&_a]:underline [&_a]:underline-offset-4"
 			// biome-ignore lint/security/noDangerouslySetInnerHtml: server-controlled terms content
 			dangerouslySetInnerHTML={{ __html: html }}
 		/>

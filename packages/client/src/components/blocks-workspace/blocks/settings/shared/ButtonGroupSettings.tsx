@@ -131,7 +131,7 @@ export const ButtonGroupSettings = observer(
 										variant="ghost"
 										size="icon-sm"
 										className={cn(
-											isActive && "text-primary",
+											isActive && "text-primary-text",
 										)}
 										onClick={() => onChange(option.value)}
 										data-testid={formatToDataTestId(

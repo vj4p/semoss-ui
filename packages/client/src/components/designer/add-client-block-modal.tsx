@@ -475,7 +475,7 @@ export const AddClientBlockModal = (props: EditDetailsModalProps) => {
 									<TooltipTrigger asChild>
 										<button
 											type="button"
-											className="inline-flex items-center gap-2 self-start font-medium text-primary text-sm hover:underline"
+											className="inline-flex items-center gap-2 self-start font-medium text-primary-text text-sm hover:underline"
 											onClick={handleCanvasPreview}
 										>
 											<Eye className="size-4" />

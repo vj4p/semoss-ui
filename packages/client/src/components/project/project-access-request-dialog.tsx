@@ -439,7 +439,7 @@ export const ProjectAccessRequestDialog = ({
 												<div className="space-y-1">
 													<Link
 														to={`${TYPE_TO_ROUTE[dep.engine_type as keyof typeof TYPE_TO_ROUTE]}/${dep.engine_id}`}
-														className="text-primary"
+														className="text-primary-text"
 													>
 														<p className="font-medium text-sm">
 															{dep.engine_name}

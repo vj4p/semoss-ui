@@ -225,7 +225,7 @@ export const AssistantTimeline = () => {
 			<div className="relative min-h-0 flex-1">
 				<div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
 					<div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
-						<SparklesIcon className="size-8 text-emerald-500" />
+						<SparklesIcon className="size-8 text-success" />
 					</div>
 					<div className="flex max-w-sm flex-col gap-2">
 						<p className="font-semibold text-foreground text-lg">

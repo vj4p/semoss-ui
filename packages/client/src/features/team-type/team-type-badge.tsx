@@ -22,7 +22,7 @@ export const TeamTypeBadge = ({ type, className }: TeamTypeBadgeProps) => {
 			className={cn(
 				"gap-1.5 bg-background font-normal",
 				type === CUSTOM_TEAM_TYPE &&
-					"border-primary/30 bg-primary/10 text-primary",
+					"border-primary/30 bg-primary/10 text-primary-text",
 				className,
 			)}
 		>

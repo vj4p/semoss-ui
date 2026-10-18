@@ -459,7 +459,7 @@ export const PromptDetailPage = () => {
 								<Badge
 									key={tag}
 									variant="outline"
-									className="border-primary text-primary"
+									className="border-primary text-primary-text"
 								>
 									{tag}
 								</Badge>
@@ -558,7 +558,7 @@ export const PromptDetailPage = () => {
 																versions.length -
 																	index) + 1}
 														</span>
-														<div className="text-[11px] text-muted-foreground">
+														<div className="text-muted-foreground text-xs">
 															{formatTimeAgo(
 																version.date_created,
 															)}
@@ -567,7 +567,7 @@ export const PromptDetailPage = () => {
 																: ""}
 														</div>
 														{version.intent && (
-															<div className="text-[11px] text-muted-foreground">
+															<div className="text-muted-foreground text-xs">
 																{version.intent}
 															</div>
 														)}
@@ -581,7 +581,7 @@ export const PromptDetailPage = () => {
 																				tag
 																			}
 																			variant="outline"
-																			className="text-[10px]"
+																			className="text-xs"
 																		>
 																			{
 																				tag

@@ -75,7 +75,7 @@ const ValidationItem = ({
 }) => (
 	<div className="mb-3 flex items-center gap-2 text-muted-foreground text-sm">
 		<CircleCheck
-			className={`size-4 shrink-0 ${isValid ? "text-green-500" : "text-muted-foreground"}`}
+			className={`size-4 shrink-0 ${isValid ? "text-success" : "text-muted-foreground"}`}
 		/>
 		{label}
 	</div>

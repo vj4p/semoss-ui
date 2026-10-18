@@ -530,7 +530,7 @@ export const LoginPage = () => {
 							)}
 
 							{success && (
-								<div className="rounded-lg border border-green-500 bg-green-50 px-4 py-3 text-green-700 text-sm dark:bg-green-950/30 dark:text-green-400">
+								<div className="rounded-lg border border-success bg-success-tint px-4 py-3 text-sm text-success">
 									{success}
 								</div>
 							)}
@@ -577,7 +577,7 @@ export const LoginPage = () => {
 																decoding="async"
 															/>
 														) : (
-															<span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/70 bg-muted/60 font-semibold text-[9px] text-muted-foreground">
+															<span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-border/70 bg-muted/60 font-semibold text-muted-foreground text-xs">
 																{
 																	providerInitials
 																}
@@ -623,7 +623,7 @@ export const LoginPage = () => {
 																	loginType ===
 																		"native"
 																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary hover:bg-muted",
+																		: "bg-background text-primary-text hover:bg-muted",
 																)}
 																data-testid="loginPage-button-native"
 															>
@@ -651,7 +651,7 @@ export const LoginPage = () => {
 																	loginType ===
 																		"ldap"
 																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary hover:bg-muted",
+																		: "bg-background text-primary-text hover:bg-muted",
 																)}
 																data-testid="loginPage-button-ldap"
 															>
@@ -679,7 +679,7 @@ export const LoginPage = () => {
 																	loginType ===
 																		"linotp"
 																		? "bg-primary text-primary-foreground"
-																		: "bg-background text-primary hover:bg-muted",
+																		: "bg-background text-primary-text hover:bg-muted",
 																)}
 																data-testid="loginPage-button-linotp"
 															>

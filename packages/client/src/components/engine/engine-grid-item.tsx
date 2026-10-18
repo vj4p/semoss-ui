@@ -155,7 +155,7 @@ export const EngineGridItem: React.FC<EngineGridItemProps> = ({
 							}}
 						>
 							{isFavorited ? (
-								<BookmarkCheck className="size-4 text-primary" />
+								<BookmarkCheck className="size-4 text-primary-text" />
 							) : (
 								<Bookmark className="size-4" />
 							)}

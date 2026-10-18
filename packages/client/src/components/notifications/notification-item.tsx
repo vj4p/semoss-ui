@@ -127,7 +127,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
 													size="icon-sm"
 													className="h-[18px] w-[18px] p-0"
 												>
-													<ExternalLinkIcon className="w-[18px] h-[18px] text-primary" />
+													<ExternalLinkIcon className="w-[18px] h-[18px] text-primary-text" />
 												</Button>
 											</a>
 										)}

@@ -234,13 +234,13 @@ export const PromptCard = (props: PromptCardProps) => {
 										<Badge
 											key={`${prompt.id}-${tag}`}
 											variant="secondary"
-											className="text-[10px] uppercase"
+											className="text-xs uppercase"
 										>
 											{tag}
 										</Badge>
 									))}
 									{displayTags.length > 2 ? (
-										<span className="text-[10px] text-muted-foreground">
+										<span className="text-muted-foreground text-xs">
 											+{displayTags.length - 2}
 										</span>
 									) : null}
@@ -522,11 +522,11 @@ export const PromptCard = (props: PromptCardProps) => {
 					}}
 				>
 					<CardContent className="flex flex-1 flex-col gap-1.5 px-3 pt-2.5 pb-3">
-						<h3 className="line-clamp-2 font-medium text-[13px] leading-snug">
+						<h3 className="line-clamp-2 font-medium text-sm leading-snug">
 							{prompt.title}
 						</h3>
 						<div
-							className="text-[11px]"
+							className="text-xs"
 							style={{
 								color: "var(--color-text-tertiary)",
 							}}
@@ -544,13 +544,13 @@ export const PromptCard = (props: PromptCardProps) => {
 									<Badge
 										key={`${prompt.id}-${tag}`}
 										variant="secondary"
-										className="text-[10px] uppercase"
+										className="text-xs uppercase"
 									>
 										{tag}
 									</Badge>
 								))}
 								{displayTags.length > 4 ? (
-									<span className="text-[10px] text-muted-foreground">
+									<span className="text-muted-foreground text-xs">
 										+{displayTags.length - 4}
 									</span>
 								) : null}

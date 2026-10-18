@@ -85,7 +85,7 @@ export const LandingPage: React.FC = () => {
 									asChild
 									variant="ghost"
 									size="default"
-									className="shrink-0 text-primary hover:bg-transparent hover:text-primary"
+									className="shrink-0 text-primary-text hover:bg-transparent hover:text-primary-text"
 								>
 									<Link to="/templates">
 										Browse Templates

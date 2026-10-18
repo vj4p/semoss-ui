@@ -138,7 +138,7 @@ const FormLayoutSettings = observer(({ id }: { id: string }) => {
 									<SelectItem key={db.id} value={db.id}>
 										<span className="flex flex-col text-left">
 											<span>{db.name}</span>
-											<span className="text-[11px] text-muted-foreground">
+											<span className="text-muted-foreground text-xs">
 												id: {db.id}
 											</span>
 										</span>

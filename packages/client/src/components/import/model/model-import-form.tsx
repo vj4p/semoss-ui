@@ -1206,7 +1206,7 @@ export const ModelImportForm = (props: ModelImportFormProps) => {
 									</div>
 									{optionWarning !== "" && (
 										<p
-											className="flex items-start gap-1.5 text-amber-600 text-xs dark:text-amber-400"
+											className="flex items-start gap-1.5 text-warning text-xs"
 											data-testid={getModelFieldTestId(
 												f.key,
 												"warning",

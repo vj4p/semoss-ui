@@ -9,7 +9,7 @@ export function LoadedRecordingPanel({
 	playback: PlaybackController;
 }) {
 	return (
-		<section className="border-line border-b">
+		<section className="border-border border-b">
 			<div className="flex items-center gap-2 px-2 py-1.5">
 				<Button
 					size="icon-sm"
@@ -49,7 +49,7 @@ export function LoadedRecordingPanel({
 				)}
 			</div>
 			{playback.loadedRecordingOpen && (
-				<div className="border-line border-t">
+				<div className="border-border border-t">
 					{playback.flattenedSteps.length === 0 ? (
 						<p className="p-4 text-muted-foreground text-sm">
 							Load a recording to see its steps here.

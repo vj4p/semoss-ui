@@ -116,7 +116,7 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 						variant={isActive ? "default" : "outline"}
 						className={
 							isActive
-								? "rounded-r-none bg-accent text-canvas hover:bg-accent/90"
+								? "rounded-r-none bg-primary text-primary-foreground hover:bg-primary/90"
 								: "rounded-r-none"
 						}
 						disabled={
@@ -156,7 +156,7 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 						variant={isActive ? "default" : "outline"}
 						className={
 							isActive
-								? "-ml-px rounded-l-none bg-accent hover:bg-accent/90"
+								? "-ml-px rounded-l-none bg-primary hover:bg-primary/90"
 								: "-ml-px rounded-l-none"
 						}
 						aria-label="Configure automation model"
@@ -189,23 +189,23 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 								type="button"
 								className={`flex items-start gap-2 rounded p-2 text-left transition-colors ${
 									subMode === value
-										? "bg-accent/10"
-										: "hover:bg-surface-hover"
+										? "bg-primary/10"
+										: "hover:bg-muted"
 								}`}
 								onClick={() => onSubModeChange(value)}
 							>
 								<span
 									className={`mt-0.5 h-3.5 w-3.5 shrink-0 rounded-full border-2 ${
 										subMode === value
-											? "border-accent bg-accent"
-											: "border-ink-muted"
+											? "border-primary bg-primary"
+											: "border-muted-foreground"
 									}`}
 								/>
 								<span>
 									<span className="block font-medium text-xs">
 										{label}
 									</span>
-									<span className="block text-ink-muted text-xs">
+									<span className="block text-muted-foreground text-xs">
 										{desc}
 									</span>
 								</span>
@@ -240,7 +240,7 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 									className={`text-xs ${
 										goalGenerationError
 											? "text-destructive"
-											: "text-ink-muted"
+											: "text-muted-foreground"
 									}`}
 								>
 									{goalGenerationError ||
@@ -295,12 +295,12 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 					)}
 					<p className="mb-2 font-medium text-sm">Model</p>
 					{isLoadingModels ? (
-						<div className="flex items-center gap-2 text-ink-muted text-sm">
+						<div className="flex items-center gap-2 text-muted-foreground text-sm">
 							<Spinner className="h-4 w-4" />
 							Loading models…
 						</div>
 					) : models.length === 0 ? (
-						<p className="text-ink-muted text-xs">
+						<p className="text-muted-foreground text-xs">
 							No text-generation models found.
 						</p>
 					) : (

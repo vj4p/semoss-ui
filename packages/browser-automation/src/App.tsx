@@ -115,6 +115,7 @@ type PendingTextSelection = {
 	clientY: number;
 };
 
+// biome-ignore lint/style/noDefaultExport: App is the package entry, imported as a default by main.tsx
 export default function App() {
 	const { insightId } = useInsight();
 	const {
@@ -322,6 +323,7 @@ export default function App() {
 		});
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: existing dependency list, unchanged by the color-token migration
 	useEffect(() => {
 		setBrowserCursor("default");
 	}, [session?.sessionId]);
@@ -699,6 +701,7 @@ export default function App() {
 		playback.source,
 	]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: existing dependency list, unchanged by the color-token migration
 	useEffect(() => {
 		// Deliberately not gated on playback.projects. A room recording is fetched
 		// straight out of the room's asset folder, so waiting on the MCP project
@@ -2325,9 +2328,9 @@ export default function App() {
 	const pendingSelectionContext = pendingTextSelection?.context ?? null;
 
 	return (
-		<div className="flex h-screen flex-col overflow-hidden bg-canvas text-ink">
+		<div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
 			{/* Toolbar row */}
-			<div className="flex min-h-[38px] flex-wrap items-center gap-1 border-line border-b bg-surface px-1 py-0.5">
+			<div className="flex min-h-[38px] flex-wrap items-center gap-1 border-border border-b bg-card px-1 py-0.5">
 				<BrowserToolbar
 					currentUrl={currentUrl}
 					connectionState={connectionState}
@@ -2451,7 +2454,9 @@ export default function App() {
 						>
 							<Circle
 								className={
-									isRecording ? "fill-danger text-danger" : ""
+									isRecording
+										? "fill-destructive text-destructive"
+										: ""
 								}
 							/>
 							Recorded ({recordedSteps.length})
@@ -2510,7 +2515,7 @@ export default function App() {
 				)}
 				{pendingTextSelection && (
 					<div
-						className="fixed z-50 w-72 rounded-lg border border-line bg-surface p-3 text-ink shadow-xl"
+						className="fixed z-50 w-72 rounded-lg border border-border bg-card p-3 text-foreground shadow-xl"
 						style={{
 							left: Math.max(
 								8,
@@ -2543,7 +2548,7 @@ export default function App() {
 						</div>
 						{pendingSelectionContext ? (
 							<>
-								<p className="mb-3 line-clamp-3 text-ink-muted text-xs leading-5">
+								<p className="mb-3 line-clamp-3 text-muted-foreground text-xs leading-5">
 									{pendingSelectionContext.content}
 								</p>
 								<div className="flex justify-end gap-2">
@@ -2576,7 +2581,7 @@ export default function App() {
 								</div>
 							</>
 						) : (
-							<div className="flex items-center gap-2 text-ink-muted text-sm">
+							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<Spinner />
 								Reading selected text…
 							</div>

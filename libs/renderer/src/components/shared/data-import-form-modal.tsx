@@ -1377,7 +1377,7 @@ export const DataImportFormModal = observer(
 																			database.engine_name
 																		}
 																	</span>
-																	<span className="break-all text-[11px] text-muted-foreground">
+																	<span className="break-all text-muted-foreground text-xs">
 																		{
 																			database.engine_id
 																		}

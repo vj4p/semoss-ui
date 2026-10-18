@@ -99,7 +99,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
 						<CardTitle className="flex items-center gap-2">
 							{card.title}
 							{card.type === "automation" && (
-								<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-[9px] leading-none">
+								<span className="ms-1 self-center rounded border px-1 py-0.5 font-semibold text-xs leading-none">
 									BETA
 								</span>
 							)}
@@ -117,7 +117,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
 
 								onCreate(card.type);
 							}}
-							className="p-0 text-primary hover:bg-transparent hover:text-primary"
+							className="p-0 text-primary-text hover:bg-transparent hover:text-primary-text"
 						>
 							<span className="flex items-center gap-1">
 								Get Started
