@@ -4,7 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { useInsight, usePixel } from "@semoss/sdk/react";
-import { Badge, Button, cn, Skeleton, toast } from "@semoss/ui/next";
+import {
+	Badge,
+	Button,
+	Skeleton,
+	StatusBadge,
+	statusKindFromBackend,
+	toast,
+} from "@semoss/ui/next";
 import type { RoomItem } from "@/components";
 import { useGlobalBreadcrumbs } from "@/hooks";
 import { type CostOutput, formatCost } from "@/utility";
@@ -36,29 +43,16 @@ const PENDING_PIXEL = "GetPendingAgentActions(limit=[50]);";
 // trip rather than growing with the user's total room count.
 const RECENT_ROOMS_LIMIT = 12;
 
-const STATUS_LABEL: Record<string, string> = {
-	SUBMITTED: "Queued",
-	RUNNING: "Running",
-	INPUT_REQUIRED: "Waiting on you",
-	COMPLETED: "Done",
-	FAILED: "Failed",
-	CANCELLED: "Cancelled",
-};
-
-const statusClass = (status?: string) => {
-	switch (status) {
-		case "RUNNING":
-		case "SUBMITTED":
-			return "border-primary/40 text-primary-text";
-		case "FAILED":
-			return "border-destructive/40 text-destructive";
-		case "INPUT_REQUIRED":
-			return "border-warning/40 text-warning";
-		case "COMPLETED":
-			return "border-success/40 text-success";
-		default:
-			return "text-muted-foreground";
-	}
+/** A run's status as the shared chip; a state the platform does not know is shown as itself. */
+const RunStatus = ({ status }: { status: string }) => {
+	const kind = statusKindFromBackend(status);
+	return kind ? (
+		<StatusBadge status={kind} />
+	) : (
+		<Badge variant="outline" className="shrink-0 text-muted-foreground">
+			{status}
+		</Badge>
+	);
 };
 
 const formatWhen = (value?: string | number | null) => {
@@ -343,16 +337,9 @@ export const InboxPage = observer(() => {
 												{room.ROOM_NAME || "Untitled"}
 											</span>
 											{run?.status ? (
-												<Badge
-													variant="outline"
-													className={cn(
-														"shrink-0",
-														statusClass(run.status),
-													)}
-												>
-													{STATUS_LABEL[run.status] ??
-														run.status}
-												</Badge>
+												<RunStatus
+													status={run.status}
+												/>
 											) : null}
 										</div>
 										{run?.input ? (
