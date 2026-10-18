@@ -20,8 +20,8 @@
 /* Default is the platform accent — declared so switching back is explicit. */
 .theme-default,
 .dark.theme-default {
-	--primary: rgba(5, 112, 240, 1);
-	--ring: rgba(5, 112, 240, 0.6);
+	--primary: rgba(5, 96, 216, 1);
+	--ring: rgba(5, 96, 216, 0.6);
 }
 
 .theme-violet,

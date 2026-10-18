@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
  * applied to <html> (prefixed), so the two must stay in sync.
  */
 export const COLOR_THEMES = [
-	{ id: "default", label: "SEMOSS Blue", swatch: "rgb(5, 112, 240)" },
+	{ id: "default", label: "SEMOSS Blue", swatch: "rgb(5, 96, 216)" },
 	{ id: "violet", label: "Violet", swatch: "rgb(124, 58, 237)" },
 	{ id: "emerald", label: "Emerald", swatch: "rgb(4, 120, 87)" },
 	{ id: "amber", label: "Amber", swatch: "rgb(180, 83, 9)" },
