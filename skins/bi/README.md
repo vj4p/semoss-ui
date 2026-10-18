@@ -54,6 +54,10 @@ these to BI's `index.html`, after the `core.*.css` link:
 ## Limits
 
 - ag-grid tables and charts use fixed colors, so they stay light in the dark theme.
+- Dashboard panels style their own headers inline (a white tab with blue text by default, which is
+  BI's own 2.73:1) and are user-configurable, so the skin leaves them alone. A panel stays light in
+  the dark theme unless its author themed it. The top bar, the welcome cards and banner, and grids are kept on
+  the light palette on purpose ("light islands" in `bi-skin.css`).
 - BI's signed-in screens (home, catalog, dashboard builder) have only been reasoned about from its
   stylesheet, not viewed. Report anything unreadable in dark mode; the off switch above is the fast
   way out.

@@ -149,6 +149,62 @@ html[data-theme="dark"] .login__logo img {
 	filter: invert(1) hue-rotate(180deg);
 }
 
+/*
+ * Light islands. BI draws some areas as a dark bar or as light-tinted cards with
+ * fixed backgrounds, so the dark theme's swap would leave them with unreadable
+ * text. These areas keep the light palette in the dark theme, so they look as BI
+ * built them. bi-skin test checks this block matches the light one.
+ */
+html[data-theme="dark"] .home__topbar,
+html[data-theme="dark"] .home-intro__content__cards__card,
+html[data-theme="dark"] .home-intro .smss-overlay__wrapper__header,
+html[data-theme="dark"] .ag-theme-balham {
+	--color-primary-100: #0560d8;
+	--color-primary-70: #044bb0;
+	--color-primary-50: #8db6f2;
+	--color-primary-30: #bbd5f7;
+	--color-primary-10: #edf3ff;
+	--color-warn-100: #b45309;
+	--color-warn-70: #d97706;
+	--color-warn-30: #fcd9a8;
+	--color-warn-10: #fdf3e3;
+	--color-error-100: #c81e1e;
+	--color-error-70: #e05252;
+	--color-error-30: #f5b8b8;
+	--color-error-10: #fcecec;
+	--color-success-100: #15803d;
+	--color-success-70: #3fa56a;
+	--color-success-30: #b7dfc6;
+	--color-success-10: #eef7f1;
+	--color-grey-1: #0c111d;
+	--color-grey-2: #4a5365;
+	--color-grey-3: #5b6475;
+	--color-grey-4: #c9cfd9;
+	--color-grey-5: #e3e6ec;
+	--color-grey-6: #f5f6f8;
+	--color-white: #ffffff;
+	--color-shadow: rgba(12, 17, 29, 0.12);
+	--color-backdrop: rgba(12, 17, 29, 0.6);
+	color: var(--color-grey-1);
+	color-scheme: light;
+}
+
+/* BI's welcome banner is white text on light blue, about 3:1. Darker stops reach AA in both themes. */
+html .home-intro .smss-overlay__wrapper__header {
+	background: linear-gradient(317.97deg, #6d3fc4 11.36%, #0560d8 97.6%);
+}
+
+/* Black icon images (the Import Data list and similar) disappear on dark surfaces. */
+html[data-theme="dark"] .smss-block__image img {
+	filter: invert(1) hue-rotate(180deg);
+}
+
+html[data-theme="dark"] .home__topbar .smss-block__image img,
+html[data-theme="dark"] .home-intro__content__cards__card .smss-block__image img,
+html[data-theme="dark"] .ag-theme-balham .smss-block__image img {
+	filter: none;
+}
+
 /* Theme switch on the sign-in screen, added by bi-skin.js. */
 .bi-skin-theme {
 	position: fixed;

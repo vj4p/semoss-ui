@@ -128,6 +128,27 @@ for (const [name, tokens] of [
 	}
 }
 
+test("light islands keep exactly the light palette", () => {
+	const island = readBlock(
+		[
+			'html[data-theme="dark"] .home__topbar,',
+			'html[data-theme="dark"] .home-intro__content__cards__card,',
+			'html[data-theme="dark"] .home-intro .smss-overlay__wrapper__header,',
+			'html[data-theme="dark"] .ag-theme-balham',
+		].join("\n"),
+	);
+	for (const variable of BI_VARIABLES.filter((v) => v !== "--font-family")) {
+		assert.equal(island[variable], light[variable], `island ${variable}`);
+	}
+});
+
+test("the welcome banner text reaches AA on both gradient stops", () => {
+	for (const stop of ["#6d3fc4", "#0560d8"]) {
+		const ratio = contrast("#ffffff", stop);
+		assert.ok(ratio >= 4.5, `white on ${stop} is ${ratio.toFixed(2)}:1`);
+	}
+});
+
 test("loads Geist from the skin's own files, not a CDN", () => {
 	assert.ok(css.includes("fonts/geist-latin-wght-normal.woff2"));
 	assert.ok(!css.includes("fonts.googleapis.com"));
