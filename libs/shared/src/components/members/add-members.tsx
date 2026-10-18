@@ -515,7 +515,7 @@ export const AddMembersOverlay = ({
 													</span>
 												) : null}
 												{isAdded && (
-													<span className="flex shrink-0 items-center gap-1 font-medium text-primary text-xs">
+													<span className="flex shrink-0 items-center gap-1 font-medium text-primary-text text-xs">
 														{t("search.added")}
 														<Check
 															className="size-3"

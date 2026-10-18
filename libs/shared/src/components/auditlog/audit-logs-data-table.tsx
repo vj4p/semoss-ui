@@ -223,12 +223,12 @@ export const AuditLogsDataTable: React.FC<AuditLogsDataTableProps> = ({
 						})}
 					</Badge>
 				) : (
-					<span className="text-gray-400 text-sm">—</span>
+					<span className="text-muted-foreground text-sm">—</span>
 				)}
 			</TableCell>
 			<TableCell className="text-center">
 				{isSuccess(event.status) ? (
-					<CircleCheckIcon className="inline-block h-4 w-4 text-emerald-600" />
+					<CircleCheckIcon className="inline-block h-4 w-4 text-success" />
 				) : (
 					<Cancel className="inline-block h-4 w-4 text-destructive" />
 				)}
@@ -292,84 +292,84 @@ export const AuditLogsDataTable: React.FC<AuditLogsDataTableProps> = ({
 						<TableHeader>
 							<TableRow className="bg-accent/50">
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.user")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.sessionId")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.request")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.response")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.method")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.engineType")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.engineName")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.latency")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.tokens")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.promptTokens")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.responseTokens")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.cacheRead")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.cacheWrite")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.timestamp")}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.guardrailAction", {
 											defaultValue: "Guardrail",
 										})}
 									</span>
 								</TableHead>
 								<TableHead>
-									<span className="font-medium font-semibold text-primary text-sm leading-6 tracking-normal">
+									<span className="font-medium font-semibold text-primary-text text-sm leading-6 tracking-normal">
 										{t("table.columns.status")}
 									</span>
 								</TableHead>
@@ -398,7 +398,7 @@ export const AuditLogsDataTable: React.FC<AuditLogsDataTableProps> = ({
 														) : (
 															<ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
 														)}
-														<span className="font-semibold text-primary text-sm">
+														<span className="font-semibold text-primary-text text-sm">
 															{groupMode ===
 															"request"
 																? t(
@@ -436,7 +436,7 @@ export const AuditLogsDataTable: React.FC<AuditLogsDataTableProps> = ({
 														{group.hasFailure ? (
 															<Cancel className="h-4 w-4 shrink-0 text-destructive" />
 														) : (
-															<CircleCheckIcon className="h-4 w-4 shrink-0 text-emerald-600" />
+															<CircleCheckIcon className="h-4 w-4 shrink-0 text-success" />
 														)}
 													</div>
 												</TableCell>

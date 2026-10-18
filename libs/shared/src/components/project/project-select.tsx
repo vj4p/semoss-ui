@@ -221,7 +221,7 @@ export const ProjectSelect = ({
 										</div>
 										{value === project.project_id ? (
 											<CheckIcon
-												className="ms-2 size-4 shrink-0 text-primary"
+												className="ms-2 size-4 shrink-0 text-primary-text"
 												strokeWidth={3}
 											/>
 										) : null}

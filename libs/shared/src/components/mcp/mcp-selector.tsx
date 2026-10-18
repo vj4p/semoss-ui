@@ -574,7 +574,7 @@ export const MCPSelector: React.FC<MCPSelectorProps> = ({
 							<TooltipTrigger asChild>
 								<div
 									key="__workspace_summary"
-									className="inline-flex h-7 items-center gap-1.5 rounded-md border border-primary/60 bg-card px-2 text-primary text-xs"
+									className="inline-flex h-7 items-center gap-1.5 rounded-md border border-primary/60 bg-card px-2 text-primary-text text-xs"
 								>
 									<Bot className="size-4 shrink-0" />
 									<span>{workspaceCount} from agent</span>

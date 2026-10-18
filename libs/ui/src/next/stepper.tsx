@@ -123,7 +123,9 @@ function StepperStepLabel({
 					"flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 font-medium text-sm transition-colors",
 					isCompleted &&
 						"border-primary bg-primary text-primary-foreground",
-					isActive && !isCompleted && "border-primary text-primary",
+					isActive &&
+						!isCompleted &&
+						"border-primary text-primary-text",
 					!isActive &&
 						!isCompleted &&
 						"border-muted-foreground/30 text-muted-foreground",

@@ -175,7 +175,7 @@ export const MCPCard = ({
 											"size-4 cursor-help",
 											accessMissing
 												? "text-destructive"
-												: "text-amber-500",
+												: "text-warning",
 										)}
 									/>
 								</TooltipTrigger>
@@ -200,7 +200,7 @@ export const MCPCard = ({
 							// text glyphs sit below their box's geometric
 							// center (baseline metrics), so a small offset
 							// is needed to match visual centerlines.
-							<span className="-translate-y-px text-[10px] text-muted-foreground capitalize">
+							<span className="-translate-y-px text-muted-foreground text-xs capitalize">
 								{permissionLabel}
 							</span>
 						) : null}
@@ -215,7 +215,7 @@ export const MCPCard = ({
 						{fromWorkspace ? (
 							<Badge
 								variant="outline"
-								className="h-5 border-primary px-1.5 text-[10px] text-primary"
+								className="h-5 border-primary px-1.5 text-primary-text text-xs"
 							>
 								{t("common:badges.fromAgent")}
 							</Badge>

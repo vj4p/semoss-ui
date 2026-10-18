@@ -103,7 +103,7 @@ export const ConnectorCalendarTimeline = <T,>({
 							className={cn(
 								"h-12 min-w-0 flex-col gap-0 rounded-none border-border border-s px-1 text-xs",
 								isSameLocalDay(day, new Date()) &&
-									"text-primary",
+									"text-primary-text",
 							)}
 							aria-label={formatDayHeading(day, i18n.language)}
 							aria-pressed={isSameLocalDay(

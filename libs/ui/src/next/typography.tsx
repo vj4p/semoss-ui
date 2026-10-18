@@ -80,7 +80,7 @@ export const InlineCode = createComponent<HTMLSpanElement>(
 
 export const MultilineCode = createComponent<HTMLPreElement>(
 	"pre",
-	"flex flex-col items-center justify-center rounded-lg border-border bg-zinc-900 p-4 font-mono font-normal text-base text-white leading-6",
+	"flex flex-col items-center justify-center rounded-lg border-border bg-muted-foreground p-4 font-mono font-normal text-base text-white leading-6",
 	"MultilineCode",
 );
 

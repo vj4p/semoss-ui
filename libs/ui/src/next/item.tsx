@@ -6,6 +6,7 @@ import { Separator } from "@/next/separator";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: items are polymorphic divs and links, so a ul would need li wrappers they do not render
 		<div
 			role="list"
 			data-slot="item-group"
@@ -133,7 +134,7 @@ function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
 			data-slot="item-description"
 			className={cn(
 				"line-clamp-2 text-balance font-normal text-muted-foreground text-sm leading-normal",
-				"[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
+				"[&>a:hover]:text-primary-text [&>a]:underline [&>a]:underline-offset-4",
 				className,
 			)}
 			{...props}

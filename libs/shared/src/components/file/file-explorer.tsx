@@ -146,7 +146,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 						"rounded-md ring-2 ring-primary ring-inset",
 				)}
 			>
-				<div className="flex select-none items-center border-b px-2 text-[11px] text-muted-foreground">
+				<div className="flex select-none items-center border-b px-2 text-muted-foreground text-xs">
 					<div className="flex min-w-[80px] flex-1 items-center gap-1 overflow-hidden">
 						<span className="overflow-hidden truncate font-medium">
 							{t("fileExplorer.name")}

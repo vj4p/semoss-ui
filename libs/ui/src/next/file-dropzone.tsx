@@ -101,7 +101,7 @@ const FileDropzone = React.forwardRef<HTMLDivElement, FileDropzoneProps>(
 					className={cn(
 						"flex w-full flex-col items-center justify-center gap-1 rounded-md border border-dashed px-4 py-5 text-sm transition-colors",
 						dragging
-							? "border-primary bg-primary/5 text-primary"
+							? "border-primary bg-primary/5 text-primary-text"
 							: "border-border text-muted-foreground hover:border-primary hover:text-foreground",
 						disabled && "pointer-events-none opacity-50",
 					)}

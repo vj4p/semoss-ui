@@ -307,7 +307,7 @@ export const EngineSelect = ({
 										{value === engineId && (
 											<CheckIcon
 												strokeWidth={3}
-												className="ms-2 size-4 shrink-0 text-primary"
+												className="ms-2 size-4 shrink-0 text-primary-text"
 											/>
 										)}
 									</CommandItem>

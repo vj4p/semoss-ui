@@ -156,7 +156,7 @@ export const MCPToolList = ({
 									)}
 								</span>
 
-								<code className="truncate font-mono text-[11px] text-muted-foreground">
+								<code className="truncate font-mono text-muted-foreground text-xs">
 									{tool.name || "unnamed"}
 								</code>
 
@@ -164,7 +164,7 @@ export const MCPToolList = ({
 									{isNew && (
 										<Badge
 											variant="secondary"
-											className="text-[10px]"
+											className="text-xs"
 										>
 											New
 										</Badge>
@@ -172,14 +172,14 @@ export const MCPToolList = ({
 									{isDeleted && (
 										<Badge
 											variant="destructive"
-											className="text-[10px]"
+											className="text-xs"
 										>
 											Deleting
 										</Badge>
 									)}
 									<Badge
 										variant="outline"
-										className="text-[10px]"
+										className="text-xs"
 									>
 										{paramCount}{" "}
 										{paramCount === 1 ? "param" : "params"}
@@ -187,14 +187,14 @@ export const MCPToolList = ({
 									{requiredCount > 0 && (
 										<Badge
 											variant="outline"
-											className="text-[10px]"
+											className="text-xs"
 										>
 											{requiredCount} req
 										</Badge>
 									)}
 									<Badge
 										variant="outline"
-										className="text-[10px]"
+										className="text-xs"
 									>
 										{EXECUTION_LABELS[execution] ??
 											execution}

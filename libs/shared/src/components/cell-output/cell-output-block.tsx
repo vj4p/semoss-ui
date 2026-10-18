@@ -581,7 +581,7 @@ const ACCENT_STYLES = {
 	blue: {
 		wrapper:
 			"mt-2 ms-3 me-3 overflow-hidden rounded-md border border-s-4 border-border border-s-primary bg-background",
-		header: "border-border bg-primary/10 text-primary",
+		header: "border-border bg-primary/10 text-primary-text",
 	},
 	red: {
 		wrapper:
@@ -639,11 +639,11 @@ const Panel = ({
 					disabled={!collapsible}
 					className={`flex items-center gap-2 ${collapsible ? "cursor-pointer" : "cursor-default"}`}
 				>
-					<span className="font-semibold text-[10px] uppercase tracking-wider">
+					<span className="font-semibold text-xs uppercase tracking-wider">
 						{label}
 					</span>
 					{meta && (
-						<span className="font-normal text-[10px] opacity-70">
+						<span className="font-normal text-xs opacity-70">
 							{meta}
 						</span>
 					)}
@@ -727,7 +727,7 @@ const RawToggle = ({
 }) => {
 	const { t } = useTranslation("common");
 	return (
-		<div className="inline-flex overflow-hidden rounded border border-current/30 font-medium text-[10px]">
+		<div className="inline-flex overflow-hidden rounded border border-current/30 font-medium text-xs">
 			<button
 				type="button"
 				className={

@@ -20,6 +20,6 @@ export const CurrentLoginStar = ({ className }: CurrentLoginStarProps) => (
 			className,
 		)}
 	>
-		<Star className="size-2.5 fill-primary text-primary" />
+		<Star className="size-2.5 fill-primary text-primary-text" />
 	</span>
 );

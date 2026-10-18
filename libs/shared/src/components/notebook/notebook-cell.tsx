@@ -523,7 +523,7 @@ export const NotebookCell: React.FC<NotebookCellProps> = ({
 										autoFocus
 										defaultValue={cellName}
 										placeholder={cellTypeLabel}
-										className="h-4 min-w-0 rounded-sm border-0 bg-transparent p-0 px-1 text-[10px] text-muted-foreground leading-4 outline-none [field-sizing:content] focus-visible:ring-2 focus-visible:ring-ring/50"
+										className="h-4 min-w-0 rounded-sm border-0 bg-transparent p-0 px-1 text-muted-foreground text-xs leading-4 outline-none [field-sizing:content] focus-visible:ring-2 focus-visible:ring-ring/50"
 										onClick={(e) => e.stopPropagation()}
 										onFocus={(e) =>
 											e.currentTarget.select()
@@ -543,7 +543,7 @@ export const NotebookCell: React.FC<NotebookCellProps> = ({
 									// biome-ignore lint/a11y/noStaticElementInteractions: double-click enters edit mode
 									// biome-ignore lint/a11y/useKeyWithClickEvents: double-click enters edit mode
 									<span
-										className="h-4 cursor-text truncate px-1 text-[10px] text-muted-foreground leading-4"
+										className="h-4 cursor-text truncate px-1 text-muted-foreground text-xs leading-4"
 										title="Double-click to rename"
 										onClick={(e) => e.stopPropagation()}
 										onDoubleClick={(e) => {

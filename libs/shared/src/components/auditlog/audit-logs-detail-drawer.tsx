@@ -49,15 +49,18 @@ const JSONTreeView = ({
 	 * @returns {React.ReactElement | null} - A JSX element representing the value, or null if the value is unknown.
 	 */
 	const renderValue = (value: unknown) => {
-		if (value === null) return <span className="text-primary">null</span>;
+		if (value === null)
+			return <span className="text-primary-text">null</span>;
 		if (typeof value === "string")
 			return (
 				<span className="text-destructive">&quot;{value}&quot;</span>
 			);
 		if (typeof value === "number")
-			return <span className="text-emerald-600">{value}</span>;
+			return <span className="text-success">{value}</span>;
 		if (typeof value === "boolean")
-			return <span className="text-primary">{value.toString()}</span>;
+			return (
+				<span className="text-primary-text">{value.toString()}</span>
+			);
 		return null;
 	};
 
@@ -85,9 +88,9 @@ const JSONTreeView = ({
 						)}
 					</div>
 				)}
-				<span className="text-primary">{isArray ? "[" : "{"}</span>
+				<span className="text-primary-text">{isArray ? "[" : "{"}</span>
 				{!isExpanded && (
-					<span className="text-primary">
+					<span className="text-primary-text">
 						{isEmpty
 							? isArray
 								? "]"
@@ -104,7 +107,7 @@ const JSONTreeView = ({
 						<div key={key} className="ms-4">
 							{!isArray && (
 								<>
-									<span className="text-primary">
+									<span className="text-primary-text">
 										"{key}"
 									</span>
 									:{" "}
@@ -120,7 +123,7 @@ const JSONTreeView = ({
 				</div>
 			)}
 			{isExpanded && (
-				<span className="text-primary">{isArray ? "]" : "}"}</span>
+				<span className="text-primary-text">{isArray ? "]" : "}"}</span>
 			)}
 		</div>
 	);
@@ -294,7 +297,7 @@ export const AuditLogsDetailDrawer = (props) => {
 			className="end-0 top-20 flex h-full min-w-[500px] flex-col bg-card"
 		>
 			<div className="flex items-center justify-between gap-2 border-b bg-muted/60 py-2 ps-3 pe-12">
-				<span className="font-normal text-base text-primary leading-normal">
+				<span className="font-normal text-base text-primary-text leading-normal">
 					{t("detail.title")}
 				</span>
 				<Tooltip disableHoverableContent={false}>
@@ -338,7 +341,7 @@ export const AuditLogsDetailDrawer = (props) => {
 						<span
 							className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-medium text-xs ${
 								isSuccessStatus(logDetails.status)
-									? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+									? "bg-success/10 text-success"
 									: "bg-destructive/10 text-destructive"
 							}`}
 						>

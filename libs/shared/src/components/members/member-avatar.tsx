@@ -45,7 +45,7 @@ export const MemberAvatar = ({
 					className={cn(
 						"text-sm",
 						isCurrentLogin
-							? "bg-primary/10 text-primary"
+							? "bg-primary/10 text-primary-text"
 							: "text-muted-foreground",
 					)}
 				>

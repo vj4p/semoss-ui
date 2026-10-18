@@ -102,7 +102,7 @@ public Map<String, String> getMcpToolMetadata() {
 }`;
 
 const InlineCode: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-	<code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-foreground">
+	<code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground text-xs">
 		{children}
 	</code>
 );
@@ -113,7 +113,7 @@ const MetaKeyList: React.FC<{ keys: MetaKeyDoc[] }> = ({ keys }) => (
 			<div key={item.key} className="flex flex-col gap-0.5">
 				<div className="flex flex-wrap items-baseline gap-1.5">
 					<InlineCode>{item.key}</InlineCode>
-					<span className="font-mono text-[11px] text-primary">
+					<span className="font-mono text-primary-text text-xs">
 						{item.type}
 					</span>
 				</div>
@@ -138,7 +138,7 @@ const CodeBlock: React.FC<{ code: string }> = ({ code }) => {
 
 	return (
 		<div className="relative mt-1.5">
-			<pre className="overflow-x-auto rounded bg-muted/60 p-2 pr-9 font-mono text-[11px] text-foreground leading-relaxed">
+			<pre className="overflow-x-auto rounded bg-muted/60 p-2 pr-9 font-mono text-foreground text-xs leading-relaxed">
 				{code}
 			</pre>
 			<Tooltip>
@@ -227,7 +227,7 @@ export const MetadataHelpDialog = ({
 		<DialogContent className="flex max-h-[85vh] w-[95vw] max-w-4xl flex-col overflow-hidden sm:max-w-4xl">
 			<DialogHeader>
 				<DialogTitle className="flex items-center gap-2">
-					<Info size={16} className="text-primary" />
+					<Info size={16} className="text-primary-text" />
 					Tool Metadata Guide
 				</DialogTitle>
 				<DialogDescription>
