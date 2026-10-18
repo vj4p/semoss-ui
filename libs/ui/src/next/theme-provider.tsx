@@ -18,6 +18,29 @@ import {
 export type Theme = "dark" | "light" | "system";
 
 /**
+ * The one key every SEMOSS app stores the theme under, so a choice made in one
+ * app (or tab, or frame) applies in all of them. Apps share an origin, so they
+ * share this localStorage entry.
+ */
+export const PLATFORM_THEME_STORAGE_KEY = "smss-ui-theme";
+
+/**
+ * The keys apps used before they shared one. A value found under one of these
+ * is adopted, so a choice a user already made is kept. The client comes first
+ * because it is the platform's home. Browser Automation's key is left out: it
+ * starts dark by design and should not force dark everywhere.
+ */
+export const PLATFORM_LEGACY_THEME_KEYS: readonly string[] = [
+	"smss-ui-theme-client",
+	"smss-ui-theme-harness",
+	"smss-ui-theme-playground",
+	"smss-ui-theme-code",
+	"smss-ui-theme-terminal",
+	"smss-ui-theme-collaboration",
+	"automation-theme",
+];
+
+/**
  * Props for the ThemeProvider component
  */
 type ThemeProviderProps = {
@@ -27,6 +50,11 @@ type ThemeProviderProps = {
 	defaultTheme?: Theme;
 	/** LocalStorage key for persisting theme preference */
 	storageKey?: string;
+	/**
+	 * Older keys to adopt a stored choice from when `storageKey` holds none.
+	 * The adopted value is saved under `storageKey`.
+	 */
+	legacyStorageKeys?: readonly string[];
 };
 
 /**
@@ -75,13 +103,29 @@ const getSystemTheme = (): Exclude<Theme, "system"> => {
 		: "light";
 };
 
-const getStoredTheme = (storageKey: string, defaultTheme: Theme): Theme => {
+const getStoredTheme = (
+	storageKey: string,
+	defaultTheme: Theme,
+	legacyStorageKeys: readonly string[] = [],
+): Theme => {
 	if (typeof window === "undefined") {
 		return defaultTheme;
 	}
 
 	const storedTheme = localStorage.getItem(storageKey);
-	return isTheme(storedTheme) ? storedTheme : defaultTheme;
+	if (isTheme(storedTheme)) {
+		return storedTheme;
+	}
+
+	for (const legacyKey of legacyStorageKeys) {
+		const legacyTheme = localStorage.getItem(legacyKey);
+		if (isTheme(legacyTheme)) {
+			localStorage.setItem(storageKey, legacyTheme);
+			return legacyTheme;
+		}
+	}
+
+	return defaultTheme;
 };
 
 const resolveTheme = (theme: Theme): Exclude<Theme, "system"> =>
@@ -154,18 +198,20 @@ const applyDocumentTheme = (theme: Exclude<Theme, "system">) => {
  * @param children - React nodes to wrap with theme context
  * @param defaultTheme - Initial theme when no stored preference exists (default: "system")
  * @param storageKey - LocalStorage key for theme persistence (default: "vite-ui-theme")
+ * @param legacyStorageKeys - Older keys to adopt a stored choice from (see PLATFORM_LEGACY_THEME_KEYS)
  */
 export function ThemeProvider({
 	children,
 	defaultTheme = "system",
 	storageKey = "vite-ui-theme",
+	legacyStorageKeys,
 }: ThemeProviderProps) {
 	/**
 	 * Initialize theme from localStorage or fall back to defaultTheme
 	 * Uses lazy initialization to avoid hydration mismatches in SSR
 	 */
 	const [theme, setThemeState] = useState<Theme>(() =>
-		getStoredTheme(storageKey, defaultTheme),
+		getStoredTheme(storageKey, defaultTheme, legacyStorageKeys),
 	);
 	const [systemTheme, setSystemTheme] =
 		useState<Exclude<Theme, "system">>(getSystemTheme);
@@ -178,6 +224,24 @@ export function ThemeProvider({
 	useLayoutEffect(() => {
 		applyDocumentTheme(resolvedTheme);
 	}, [resolvedTheme]);
+
+	/**
+	 * Follow a change another tab or frame made to the stored theme, so the
+	 * toggle in one app updates every app that is open.
+	 */
+	useEffect(() => {
+		const onStorage = (event: StorageEvent) => {
+			if (event.key === storageKey && isTheme(event.newValue)) {
+				const nextTheme = event.newValue;
+				setThemeState((currentTheme) =>
+					currentTheme === nextTheme ? currentTheme : nextTheme,
+				);
+			}
+		};
+
+		window.addEventListener("storage", onStorage);
+		return () => window.removeEventListener("storage", onStorage);
+	}, [storageKey]);
 
 	useEffect(() => {
 		if (theme !== "system") {
