@@ -886,11 +886,12 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 							    clipping from the left. */}
 								<div className="flex min-w-0 flex-1 items-center gap-2">
 									{/* Chips region — grows to push middle right, shrinks
-								    first when squeezed. Chips inside are shrink-0 and
-								    clip past the region's right edge. */}
+								    first when squeezed. The chip group shrinks with it
+								    and each label ends in an ellipsis, so a chip never
+								    shows a half-cut word. */}
 									<div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
 										{chipSections.length > 0 && (
-											<div className="inline-flex h-7 shrink-0 items-center overflow-hidden rounded-full border border-border bg-background text-xs">
+											<div className="inline-flex h-7 min-w-0 max-w-full items-center overflow-hidden rounded-full border border-border bg-background text-xs">
 												{chipSections.map(
 													(section, idx) => {
 														const Icon =
@@ -907,7 +908,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 																) : (
 																	<Icon className="size-3.5 shrink-0" />
 																)}
-																<span className="max-w-32 truncate">
+																<span className="min-w-0 max-w-32 truncate">
 																	{
 																		section.label
 																	}
@@ -927,7 +928,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 																	section.title
 																}
 																className={cn(
-																	"group flex h-full items-center gap-1.5 px-2.5 transition-colors hover:bg-muted/50",
+																	"group flex h-full min-w-0 items-center gap-1.5 px-2.5 transition-colors hover:bg-muted/50",
 																	idx > 0 &&
 																		"border-border border-s",
 																)}
@@ -943,7 +944,7 @@ export const RoomInput: React.FC<RoomInputProps> = observer(
 																	section.title
 																}
 																className={cn(
-																	"flex h-full items-center gap-1.5 px-2.5",
+																	"flex h-full min-w-0 items-center gap-1.5 px-2.5",
 																	idx > 0 &&
 																		"border-border border-s",
 																)}
