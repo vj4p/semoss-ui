@@ -23,6 +23,7 @@ import type {
 	PixelMessageToolCallPart,
 	ResponsePixelMessage,
 } from "@/types";
+import { isHarnessNativeAction } from "@/utility/mcp-utils";
 import type { RoomStore } from "../room/room.store";
 import type { ToolStore } from "../tool/tool.store";
 import { InputMessageStore } from "./input-message.store";
@@ -307,7 +308,7 @@ const applyAgentRunItem = (
  * toolCallId; a tool not in `pendingActions` is cleared (its decision has
  * been made, or it was never a pending call).
  */
-const syncPendingActions = (
+export const syncPendingActions = (
 	responseMessage: ResponseMessageStore,
 	pendingActions: readonly PendingAgentAction[] | undefined,
 ) => {
@@ -330,6 +331,22 @@ const syncPendingActions = (
 		responseMessage.parts.push(part);
 		room.syncTool(toolCallId as string, responseMessage, part);
 	});
+
+	// A decided call that a harness runs itself (Claude Code) is not completed under its own id: the agent issues it
+	// again with a new id and that call streams normally. So the approval row has nothing left to show once it is no
+	// longer pending, unless the user rejected it (the rejection updates its status). Leaving it behind shows a
+	// second "Needs approval" row and blocks the turn with "complete the tools to proceed".
+	for (let i = responseMessage.parts.length - 1; i >= 0; i--) {
+		const part = responseMessage.parts[i];
+		if (
+			part.type === "TOOL_CALL" &&
+			isHarnessNativeAction({ toolMeta: part.toolCall._meta }) &&
+			!byToolCallId.has(part.toolCall.id) &&
+			room.getTool(part.toolCall.id)?.status === "INITIAL"
+		) {
+			responseMessage.parts.splice(i, 1);
+		}
+	}
 
 	responseMessage.parts.forEach((part) => {
 		if (part.type !== "TOOL_CALL") {

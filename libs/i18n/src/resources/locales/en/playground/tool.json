@@ -115,5 +115,22 @@
 		"showMore": "Show more ({{remaining}} remaining)",
 		"showLess": "Show less",
 		"showFullValue": "Show full value"
+	},
+	"harnessApproval": {
+		"title": "Approval needed",
+		"intro": "This agent paused before running the action below.",
+		"command": "Command",
+		"target": "File",
+		"arguments": "Arguments",
+		"editArguments": "Edit arguments",
+		"doneEditing": "Use original arguments",
+		"approve": "Approve",
+		"approving": "Approving...",
+		"reject": "Reject",
+		"invalidJson": "These arguments are not valid JSON.",
+		"notAnObject": "The arguments must be a JSON object.",
+		"once": "Approving lets it run once. A different call will ask again.",
+		"failed": "Unable to send your decision.",
+		"decided": "Your decision was sent. The agent is continuing."
 	}
 }

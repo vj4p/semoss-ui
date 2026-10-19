@@ -6,9 +6,14 @@ import { Env, type MCPToolRequest, usePixel } from "@semoss/sdk/react";
 import { AgentUserInputCard, Skeleton, toast } from "@semoss/ui/next";
 import type { RoomStore } from "@/stores";
 import { decideAgentToolAction } from "@/stores/message/agent-harness";
-import { isAskExecutionMode } from "@/utility/mcp-utils";
+import {
+	isAgentOwnedTool,
+	isAskExecutionMode,
+	isHarnessNativeAction,
+} from "@/utility/mcp-utils";
 import { PlanView } from "./plan-view";
 import { ToolsDefaultView } from "./tools-default-view";
+import { ToolsHarnessApprovalView } from "./tools-harness-approval-view";
 import { ToolsServerView } from "./tools-server-view";
 
 /** Todo tools get a checklist instead of the generic inputs/output form. */
@@ -291,6 +296,16 @@ export const ToolsView = observer(
 		// Server tools (e.g. provider-side web_search) have no MCP project to
 		// fetch a schema from — render the generic read-only result view.
 		if (tool.server_tool && liveTool) {
+			return <ToolsServerView tool={liveTool} />;
+		}
+
+		// A call the agent harness will run itself (Claude Code) has no toolbox schema to build a form from.
+		if (liveTool && isHarnessNativeAction(liveTool.pendingAction)) {
+			return <ToolsHarnessApprovalView tool={liveTool} />;
+		}
+
+		// A tool the agent ran itself has no toolbox behind it, so there is no schema to build a form from.
+		if (liveTool && isAgentOwnedTool(liveTool.json._meta)) {
 			return <ToolsServerView tool={liveTool} />;
 		}
 

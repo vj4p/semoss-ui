@@ -50,3 +50,23 @@ const PLATFORM_URL = import.meta.env.VITE_PLATFORM_URL ?? "";
 
 export const mcpToPlatformUrl = createMcpPlatformUrl(PLATFORM_URL);
 export const promptToPlatformUrl = createPromptPlatformUrl(PLATFORM_URL);
+
+/**
+ * Whether a paused call belongs to a harness that runs its own tools (Claude Code). Those tools are not toolbox
+ * tools, so there is no schema to render a form from and the decision never executes anything here: approving
+ * lets the agent run the call itself once.
+ */
+export const isHarnessNativeAction = (
+	action: { toolMeta?: Record<string, unknown> | null } | null | undefined,
+): boolean => Boolean(action?.toolMeta?.SMSS_HARNESS_NATIVE);
+
+/**
+ * A tool an agent ran itself: it has an agent execution mode but no toolbox or engine behind it (Claude Code's Bash,
+ * Read, Edit, and the platform's own file tools). There is no schema to fetch for it, so it gets the read-only view.
+ */
+export const isAgentOwnedTool = (
+	meta: (ToolOwnerMeta & { SMSS_MCP_EXECUTION?: string }) | undefined,
+): boolean =>
+	typeof meta?.SMSS_MCP_EXECUTION === "string" &&
+	meta.SMSS_MCP_EXECUTION.startsWith("agent-") &&
+	!getToolEngineId(meta);
