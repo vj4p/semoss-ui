@@ -57,6 +57,12 @@
 		"waiting": "في انتظارك",
 		"stopping": "جارٍ الإيقاف"
 	},
+	"theme": {
+		"mode": "المظهر",
+		"light": "فاتح",
+		"dark": "داكن",
+		"system": "النظام"
+	},
 	"input": {
 		"label": "موجه أو أمر",
 		"placeholder": "اكتب موجهًا، أو ⁦:help⁩",

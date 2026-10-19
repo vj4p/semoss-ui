@@ -53,6 +53,12 @@
 		"waiting": "wacht op u",
 		"stopping": "bezig met stoppen"
 	},
+	"theme": {
+		"mode": "Weergave",
+		"light": "Licht",
+		"dark": "Donker",
+		"system": "Systeem"
+	},
 	"input": {
 		"label": "Prompt of opdracht",
 		"placeholder": "Typ een prompt, of :help",

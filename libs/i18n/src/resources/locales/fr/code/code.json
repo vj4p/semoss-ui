@@ -54,6 +54,12 @@
 		"waiting": "en attente de votre réponse",
 		"stopping": "arrêt en cours"
 	},
+	"theme": {
+		"mode": "Apparence",
+		"light": "Clair",
+		"dark": "Sombre",
+		"system": "Système"
+	},
 	"input": {
 		"label": "Invite ou commande",
 		"placeholder": "Tapez une invite, ou :help",

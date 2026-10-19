@@ -54,6 +54,12 @@
 		"waiting": "esperando tu respuesta",
 		"stopping": "deteniendo"
 	},
+	"theme": {
+		"mode": "Apariencia",
+		"light": "Claro",
+		"dark": "Oscuro",
+		"system": "Sistema"
+	},
 	"input": {
 		"label": "Indicación o comando",
 		"placeholder": "Escribe una indicación, o :help",

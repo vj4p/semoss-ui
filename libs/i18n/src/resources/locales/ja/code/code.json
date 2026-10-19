@@ -52,6 +52,12 @@
 		"waiting": "入力待ち",
 		"stopping": "停止中"
 	},
+	"theme": {
+		"mode": "外観",
+		"light": "ライト",
+		"dark": "ダーク",
+		"system": "システム"
+	},
 	"input": {
 		"label": "プロンプトまたはコマンド",
 		"placeholder": "プロンプトを入力、または :help",
