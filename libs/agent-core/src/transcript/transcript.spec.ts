@@ -222,6 +222,20 @@ describe("lineForItem", () => {
 	const label = (item: AgentRunItem) =>
 		(lineForItem(item) as { label?: string }).label;
 
+	it("draws a tool item that arrives without arguments instead of throwing", () => {
+		const bare = {
+			id: "call-1",
+			kind: "tool",
+			name: "Bash",
+			status: "COMPLETED",
+			output: "hello",
+		} as unknown as AgentRunItem;
+		expect(() => lineForItem(bare)).not.toThrow();
+		const line = lineForItem(bare) as { label?: string; args?: unknown[] };
+		expect(line.label).toBe("Bash");
+		expect(line.args).toEqual([]);
+	});
+
 	it("names a room MCP tool by its own name, not the routing alias", () => {
 		expect(
 			label(tool({ metadata: { SMSS_ORIGINAL_TOOL_NAME: "WebSearch" } })),

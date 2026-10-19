@@ -229,7 +229,8 @@ export const lineForItem = (
 				kind: "tool",
 				label: toolLabel(item),
 				status: item.status satisfies ItemStatus,
-				detail: digestArguments(item.arguments),
+				// A completion that arrives without the call's arguments must not take the console down.
+				detail: digestArguments(item.arguments ?? {}),
 				args: describeArguments(item.arguments),
 				durationMs: item.durationMs,
 				runningSince:
