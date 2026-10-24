@@ -10,7 +10,9 @@
 set -euo pipefail
 
 CONTAINER="${SEMOSS_CONTAINER:-semoss}"
-LEGACY="/opt/apache-tomcat-11.0.26/webapps/SemossWeb/packages/legacy"
+# The image's Tomcat directory carries its version, which moves with the image: ask the container.
+TOMCAT_DIR="${TOMCAT_DIR:-$(docker exec "$CONTAINER" sh -c 'ls -d /opt/apache-tomcat-* | head -1')}"
+LEGACY="$TOMCAT_DIR/webapps/SemossWeb/packages/legacy"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 case "${1:-}" in
