@@ -36,13 +36,13 @@ export function getWorkflowNodeDisplay(
 		return { icon: Braces, color: "text-chart-2" };
 	}
 	if (category === "database") {
-		return { icon: Database, color: "text-primary" };
+		return { icon: Database, color: "text-primary-text" };
 	}
 	if (category === "model") {
 		return { icon: Sparkles, color: "text-chart-4" };
 	}
 	if (category === "agent") {
-		return { icon: Bot, color: "text-primary" };
+		return { icon: Bot, color: "text-primary-text" };
 	}
 	if (category === "storage") {
 		return { icon: FolderOpen, color: "text-chart-2" };
@@ -60,7 +60,7 @@ export function getWorkflowNodeDisplay(
 		return { icon: Variable, color: "text-muted-foreground" };
 	}
 	if (type === "control.wait") {
-		return { icon: SlidersHorizontal, color: "text-primary" };
+		return { icon: SlidersHorizontal, color: "text-primary-text" };
 	}
 	if (type === "control.if") {
 		return { icon: GitBranch, color: "text-chart-1" };
@@ -69,7 +69,7 @@ export function getWorkflowNodeDisplay(
 		return { icon: BrainCircuit, color: "text-chart-4" };
 	}
 	if (type === "control.loop") {
-		return { icon: Repeat2, color: "text-primary" };
+		return { icon: Repeat2, color: "text-primary-text" };
 	}
-	return { icon: Braces, color: "text-primary" };
+	return { icon: Braces, color: "text-primary-text" };
 }

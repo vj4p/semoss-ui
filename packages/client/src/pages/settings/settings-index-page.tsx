@@ -63,7 +63,7 @@ const CardMapper: Record<string, CardConfig> = {
 	},
 	"Model Settings": {
 		icon: <Cpu className={ICON_CLASS} />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 	"Storage Settings": {
 		icon: <Archive className={ICON_CLASS} />,
@@ -84,7 +84,7 @@ const CardMapper: Record<string, CardConfig> = {
 	},
 	"Guardrail Settings": {
 		icon: <ShieldCheck className={ICON_CLASS} />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 	"Member Settings": {
 		icon: <Users2 className={ICON_CLASS} />,
@@ -100,11 +100,11 @@ const CardMapper: Record<string, CardConfig> = {
 	},
 	"Enterprise Usage & Activity": {
 		icon: <ChartBar className={ICON_CLASS} aria-hidden="true" />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 	"Audit Trail": {
 		icon: <ScrollText className={ICON_CLASS} />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 	"Admin Query": {
 		icon: <DatabaseZap className={ICON_CLASS} />,
@@ -140,7 +140,7 @@ const CardMapper: Record<string, CardConfig> = {
 	},
 	Jobs: {
 		icon: <Briefcase className={ICON_CLASS} />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 	"View RDF Map": {
 		icon: <FileText className={ICON_CLASS} />,
@@ -148,7 +148,7 @@ const CardMapper: Record<string, CardConfig> = {
 	},
 	"LLM Feedback": {
 		icon: <ChartBar className={ICON_CLASS} />,
-		className: "bg-primary/10 text-primary",
+		className: "bg-primary/10 text-primary-text",
 	},
 };
 

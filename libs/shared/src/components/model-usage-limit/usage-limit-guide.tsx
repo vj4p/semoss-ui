@@ -100,7 +100,7 @@ const RULE_TERM_ICONS: readonly LucideIcon[] = [
 
 /** An icon in a tinted square, beside a title */
 const ICON_TILE_CLASS =
-	"flex shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary";
+	"flex shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-text";
 
 /** A framed group inside a section */
 const GROUP_CLASS = "rounded-lg border border-border";
@@ -190,7 +190,10 @@ const renderSource = (
 	return (
 		<div className="flex flex-col gap-1">
 			<div className="flex flex-wrap items-center gap-2">
-				<Icon className="size-4 shrink-0 text-primary" aria-hidden />
+				<Icon
+					className="size-4 shrink-0 text-primary-text"
+					aria-hidden
+				/>
 				<span className="font-medium">{source.label}</span>
 				<Badge variant="outline" className="font-normal">
 					{USAGE_LIMIT_SETTER_LABELS[source.setBy]}
@@ -228,7 +231,10 @@ const renderSource = (
  */
 const renderGroupHeader = (Icon: LucideIcon, title: string, intro: string) => (
 	<div className={GROUP_HEADER_CLASS}>
-		<Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+		<Icon
+			className="mt-0.5 size-4 shrink-0 text-primary-text"
+			aria-hidden
+		/>
 		<div className="flex flex-col gap-0.5">
 			<p className="font-medium">{title}</p>
 			<p className="text-muted-foreground text-xs">{intro}</p>
@@ -349,7 +355,7 @@ const renderSetups = () => (
 				<span className="font-medium">{entry.term}</span>
 				<span className="flex items-start gap-1.5 text-muted-foreground">
 					<ArrowRight
-						className="mt-0.5 size-4 shrink-0 text-primary"
+						className="mt-0.5 size-4 shrink-0 text-primary-text"
 						aria-hidden
 					/>
 					{entry.text}

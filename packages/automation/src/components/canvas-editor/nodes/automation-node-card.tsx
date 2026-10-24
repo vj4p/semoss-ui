@@ -59,7 +59,7 @@ export function AutomationNodeCard({
 					<div className="flex items-center gap-3">
 						<span
 							className={cn(
-								"relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-primary",
+								"relative flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-primary-text",
 								iconClassName,
 							)}
 						>

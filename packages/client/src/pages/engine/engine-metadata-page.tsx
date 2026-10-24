@@ -1311,7 +1311,7 @@ Error ${getErrorMessage(e, "Unknown error")}
 							<div className="w-full max-w-2xl px-4">
 								<div className="flex flex-col items-center gap-5 rounded-md border border-border bg-card p-6 shadow-md">
 									<Spinner
-										className="size-8 text-primary"
+										className="size-8 text-primary-text"
 										aria-label={
 											LOADING_COPY[loadingKind].title
 										}

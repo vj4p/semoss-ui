@@ -27,7 +27,7 @@ const FADED_STATES: readonly UsageLimitStepState[] = [
 
 /** The color of each state's badge */
 const STATE_CLASSES: Partial<Record<UsageLimitStepState, string>> = {
-	BILLED: "border-primary text-primary",
+	BILLED: "border-primary text-primary-text",
 	REACHED: "border-destructive text-destructive",
 	CHECKED: "text-success",
 	NEXT: "text-warning",
