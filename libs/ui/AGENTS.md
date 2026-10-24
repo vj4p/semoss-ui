@@ -36,6 +36,7 @@ Tokens are raw values on `:root` (light) and `.dark` (dark), mapped to Tailwind 
 | `popover` / `popover-foreground` | `bg-popover` | Popovers, dropdowns, menus |
 | `primary` / `primary-foreground` | `bg-primary`, `ring-primary` | Brand blue **fills** (buttons, selection); white text on it is 5.7:1 |
 | `primary-text` | `text-primary-text` | Links and text-only primary accents. Same blue in light; a lighter blue in dark so text stays AA |
+| `assistant` / `assistant-foreground` | `Button variant="assistant"` | Purple assistant actions, such as Ask Assistant |
 | `canvas` | `bg-canvas` | App background behind panels (`bg-card`) |
 | `muted` / `muted-foreground` | `bg-muted`, `text-muted-foreground` | De-emphasized text/surfaces |
 | `accent` / `accent-foreground` | `hover:bg-accent` | Hover/active tints |
@@ -107,6 +108,10 @@ app stored under its old key (the client's first), so nobody loses a setting. De
 
 Colors that depend on the theme but cannot be a class (a per-tag color computed from data) use CSS
 `light-dark(<light>, <dark>)`, which follows the `color-scheme` the provider sets on `<html>`.
+
+`Progress` reports its value as the bar's `aria-valuenow`, kept between 0 and `max` (100 by
+default); with no value it is indeterminate. Give it an `aria-label`, and an `aria-valuetext`
+when a bare percentage does not say what it measures.
 
 ### Typography map
 

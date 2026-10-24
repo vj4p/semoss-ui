@@ -14,8 +14,10 @@ import {
 	Sparkles,
 	Variable,
 } from "lucide-react";
-import { getAutomationNodeDefinition } from "./automation-node-catalog";
-import type { AutomationWorkflowNodeType } from "./automation-workflow.types";
+import {
+	getAutomationNodeDefinition,
+	hasAutomationNodeDefinitions,
+} from "./automation-node-catalog";
 
 /** Visual metadata shared by workflow-node pickers and canvas cards. */
 export interface AutomationWorkflowNodeDisplay {
@@ -24,47 +26,50 @@ export interface AutomationWorkflowNodeDisplay {
 }
 
 export function getWorkflowNodeDisplay(
-	type: AutomationWorkflowNodeType,
+	type: string,
 ): AutomationWorkflowNodeDisplay {
-	const category = getAutomationNodeDefinition(type)?.category;
+	const category =
+		(hasAutomationNodeDefinitions()
+			? getAutomationNodeDefinition(type)?.category
+			: undefined) ?? type.split(".")[0];
 	if (type === "trigger.start") {
-		return { icon: Braces, color: "text-success" };
+		return { icon: Braces, color: "text-chart-2" };
 	}
 	if (category === "database") {
-		return { icon: Database, color: "text-info" };
+		return { icon: Database, color: "text-primary" };
 	}
 	if (category === "model") {
 		return { icon: Sparkles, color: "text-chart-4" };
 	}
 	if (category === "agent") {
-		return { icon: Bot, color: "text-chart-4" };
+		return { icon: Bot, color: "text-primary" };
 	}
 	if (category === "storage") {
-		return { icon: FolderOpen, color: "text-success" };
+		return { icon: FolderOpen, color: "text-chart-2" };
 	}
 	if (category === "data") {
 		return { icon: ListTree, color: "text-chart-2" };
 	}
 	if (category === "vector") {
-		return { icon: Network, color: "text-warning" };
+		return { icon: Network, color: "text-chart-5" };
 	}
 	if (category === "function") {
-		return { icon: FunctionSquare, color: "text-info" };
+		return { icon: FunctionSquare, color: "text-chart-3" };
 	}
 	if (category === "app") {
 		return { icon: Variable, color: "text-muted-foreground" };
 	}
 	if (type === "control.wait") {
-		return { icon: SlidersHorizontal, color: "text-info" };
+		return { icon: SlidersHorizontal, color: "text-primary" };
 	}
 	if (type === "control.if") {
-		return { icon: GitBranch, color: "text-warning" };
+		return { icon: GitBranch, color: "text-chart-1" };
 	}
 	if (type === "control.jev") {
 		return { icon: BrainCircuit, color: "text-chart-4" };
 	}
 	if (type === "control.loop") {
-		return { icon: Repeat2, color: "text-primary-text" };
+		return { icon: Repeat2, color: "text-primary" };
 	}
-	return { icon: Braces, color: "text-primary-text" };
+	return { icon: Braces, color: "text-primary" };
 }

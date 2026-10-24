@@ -92,6 +92,8 @@
   --popover-foreground: #0C111D;
   --primary: #0560D8;
   --primary-foreground: #FFFFFF;
+  --assistant: rgba(109, 40, 217, 1);
+  --assistant-foreground: rgba(255, 255, 255, 1);
   --primary-text: #0560D8;
   --secondary: #F2F4F7;
   --secondary-foreground: #0C111D;
@@ -128,6 +130,10 @@
   --sidebar-accent-foreground: #0C111D;
   --sidebar-border: #E3E6EC;
   --sidebar-ring: #0560D8;
+  --login-background: var(--background);
+  --login-input: var(--background);
+  --login-input-border: var(--input);
+  --login-input-placeholder: var(--muted-foreground);
 }
 
 .dark {
@@ -141,6 +147,8 @@
   --popover-foreground: #F3F5F8;
   --primary: #0570F0;
   --primary-foreground: #FFFFFF;
+  --assistant: rgba(196, 181, 253, 1);
+  --assistant-foreground: rgba(46, 16, 101, 1);
   --primary-text: #5CA0FF;
   --secondary: #1B202B;
   --secondary-foreground: #F3F5F8;
@@ -177,6 +185,16 @@
   --sidebar-accent-foreground: #F3F5F8;
   --sidebar-border: #232834;
   --sidebar-ring: #5CA0FF;
+  --login-background:
+    linear-gradient(
+      48deg,
+      rgba(32, 39, 54, 0.5) 7.37%,
+      rgba(30, 41, 75, 0.49) 39.18%,
+      rgba(120, 133, 213, 0) 84.89%
+    );
+  --login-input: #171d2b;
+  --login-input-border: #3b4254;
+  --login-input-placeholder: #a0a7b7;
 }
 
 /* Custom */
@@ -227,6 +245,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-assistant: var(--assistant);
+  --color-assistant-foreground: var(--assistant-foreground);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);

@@ -432,6 +432,15 @@ function sourcePortFor(n8nNode: N8nNode, outputIndex: number): string {
 	return "out";
 }
 
+/** Routing and trigger nodes direct execution but do not publish a scoped value. */
+function declaresOutputVariable(type: AutomationWorkflowNodeType): boolean {
+	return (
+		type !== "trigger.start" &&
+		type !== "control.if" &&
+		type !== "control.jev"
+	);
+}
+
 export function n8nWorkflowToAutomationDocument(
 	workflow: N8nWorkflow,
 ): N8nImportResult {
@@ -478,9 +487,9 @@ export function n8nWorkflowToAutomationDocument(
 			id: n8nNode.id,
 			type: mapped.type,
 			label: mapped.label ?? n8nNode.name,
-			...(mapped.type === "trigger.start"
-				? {}
-				: { outputVar: sanitizeVarName(n8nNode.name) }),
+			...(declaresOutputVariable(mapped.type)
+				? { outputVar: sanitizeVarName(n8nNode.name) }
+				: {}),
 			position: {
 				x: n8nNode.position?.[0] ?? 0,
 				y: n8nNode.position?.[1] ?? 0,
@@ -644,14 +653,14 @@ export async function n8nWorkflowToAutomationDocumentWithModel(
 		const isPythonFallback = converted.type === "developer.python";
 		const pythonSource = isPythonFallback
 			? pythonFallbackSource(node, converted.pythonSource)
-			: converted.pythonSource;
+			: undefined;
 		result.warnings = result.warnings.filter(
 			(warning) => warning !== placeholderWarning,
 		);
 		Object.assign(importedNode, {
 			type: converted.type,
 			config: isPythonFallback ? { pythonSource } : converted.config,
-			codeMode: isPythonFallback ? "custom" : converted.codeMode,
+			codeMode: isPythonFallback ? "custom" : "generated",
 			label: isPythonFallback
 				? `\u26a0\ufe0f ${converted.label ?? node.name}`.replace(
 						"\u26a0\ufe0f \u26a0\ufe0f ",
@@ -659,6 +668,9 @@ export async function n8nWorkflowToAutomationDocumentWithModel(
 					)
 				: (converted.label ?? node.name),
 		});
+		if (!declaresOutputVariable(converted.type)) {
+			delete importedNode.outputVar;
+		}
 		if (pythonSource) {
 			result.nodeSources[node.id] = pythonSource;
 		} else {
