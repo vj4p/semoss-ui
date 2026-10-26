@@ -4,7 +4,6 @@ import { runPixel, useIteratorPixel, usePixel } from "@semoss/sdk/react";
 import type { Engine } from "@semoss/shared";
 import {
 	Button,
-	Muted,
 	P,
 	Spinner,
 	toast,
@@ -14,6 +13,7 @@ import {
 import { formatToDataTestId } from "@semoss/utility/text";
 import { setEngineFavorite, setEngineGlobal } from "@/api";
 import {
+	CatalogEmptyState,
 	CatalogFilterBox,
 	CatalogGrid,
 	CatalogLayout,
@@ -83,6 +83,17 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 	const [access, setAccess] = useState<CatalogAccessFilter[]>([]);
 	const [filterKey, setFilterKey] = useState<number>(0);
 	const [tab, setTab] = useState<string>("Mine");
+
+	/** A search or a filter is narrowing what the catalog lists */
+	const isFiltered =
+		search.trim() !== "" ||
+		Object.keys(metaFilters).length > 0 ||
+		(tab === "Mine" && access.length > 0);
+	const clearFilters = () => {
+		setSearch("");
+		setMetaFilters({});
+		setAccess([]);
+	};
 	// the access filters apply to what the user can already use
 	const accessParams = tab === "Mine" ? buildAccessFilterParams(access) : "";
 
@@ -446,9 +457,15 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 							getFavoritedEngines.status !== "LOADING" &&
 							nonBookmarked.length === 0 &&
 							getFavoritedEngines.data.length === 0 && (
-								<div className="w-full px-2 py-4 text-center">
-									<Muted>No results found</Muted>
-								</div>
+								<CatalogEmptyState
+									noun={`${route.name.toLowerCase()}s`}
+									filtered={isFiltered}
+									view="mine"
+									onClear={clearFilters}
+									onBrowseDiscoverable={() =>
+										setTab("Discoverable")
+									}
+								/>
 							)}
 					</>
 				)}
@@ -499,9 +516,12 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 						{/* Empty State */}
 						{!getEngines.isLoading &&
 							getEngines.data.length === 0 && (
-								<div className="w-full px-2 py-4 text-center">
-									<Muted>No results found</Muted>
-								</div>
+								<CatalogEmptyState
+									noun={`${route.name.toLowerCase()}s`}
+									filtered={isFiltered}
+									view="discoverable"
+									onClear={clearFilters}
+								/>
 							)}
 					</>
 				)}

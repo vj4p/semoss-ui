@@ -14,6 +14,7 @@ import {
 import { setProjectFavorite, setProjectGlobal } from "@/api";
 import { SystemAppGridItem } from "@/components/app";
 import {
+	CatalogEmptyState,
 	CatalogGrid,
 	CatalogLayout,
 	CatalogSearchBar,
@@ -193,6 +194,17 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 	const [access, setAccess] = useState<CatalogAccessFilter[]>([]);
 	const [filterKey, setFilterKey] = useState<number>(0);
 	const [tab, setTab] = useState<string>("Mine");
+
+	/** A search or a filter is narrowing what the catalog lists */
+	const isFiltered =
+		search.trim() !== "" ||
+		Object.keys(metaFilters).length > 0 ||
+		(tab === "Mine" && access.length > 0);
+	const clearFilters = () => {
+		setSearch("");
+		setMetaFilters({});
+		setAccess([]);
+	};
 	// the access filters apply to what the user can already use
 	const accessParams = tab === "Mine" ? buildAccessFilterParams(access) : "";
 
@@ -492,7 +504,7 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 						tabs={[
 							{
 								value: "Mine",
-								label: `My ${config.name}`,
+								label: `My ${config.name}s`,
 								dataTestId: "ProjectPage-myApps-tab",
 							},
 							{
@@ -629,9 +641,15 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 							getFavoriteProjects.status !== "LOADING" &&
 							nonBookmarked.length === 0 &&
 							getFavoriteProjects.data.length === 0 && (
-								<div className="w-full px-2 py-4 text-center">
-									<Muted>No results found</Muted>
-								</div>
+								<CatalogEmptyState
+									noun={`${config.name.toLowerCase()}s`}
+									filtered={isFiltered}
+									view="mine"
+									onClear={clearFilters}
+									onBrowseDiscoverable={() =>
+										setTab("Discoverable")
+									}
+								/>
 							)}
 					</>
 				) : null}
@@ -684,9 +702,12 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 						{/* Empty State */}
 						{!getProjects.isLoading &&
 							getProjects.data.length === 0 && (
-								<div className="w-full px-2 py-4 text-center">
-									<Muted>No results found</Muted>
-								</div>
+								<CatalogEmptyState
+									noun={`${config.name.toLowerCase()}s`}
+									filtered={isFiltered}
+									view="discoverable"
+									onClear={clearFilters}
+								/>
 							)}
 					</>
 				) : null}

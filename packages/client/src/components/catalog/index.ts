@@ -6,6 +6,7 @@ export {
 	CatalogDescriptionSettings,
 	type CatalogDescriptionSettingsProps,
 } from "./catalog-description-settings";
+export { CatalogEmptyState } from "./catalog-empty-state";
 export { CatalogFilterBox } from "./catalog-filter-box";
 export { CatalogGrid } from "./catalog-grid";
 export { CatalogGridItem } from "./catalog-grid-item";

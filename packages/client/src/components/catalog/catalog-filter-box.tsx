@@ -240,16 +240,29 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 
 		fieldKeysWithOptions.forEach((filter) => {
 			if (filter.display_values) {
+				// a fixed list of values keeps its order, but each value
+				// shows the count the backend returned for it
+				const counts = new Map(
+					(updated[filter.metakey] ?? []).map((o) => [
+						o.value,
+						o.count,
+					]),
+				);
 				const split = filter.display_values.split(",");
 				const formatted = split.map((val) => ({
 					value: val,
-					count: 0,
+					count: counts.get(val) ?? counts.get(val.trim()) ?? 0,
 				}));
 				updated[filter.metakey] = formatted;
 			}
+			// open a section that has something to filter by; the user's
+			// own choice wins on later updates
+			const hasMatches = (updated[filter.metakey] ?? []).some(
+				(o) => o.count > 0,
+			);
 			setShowCollapsible((set) => ({
 				...set,
-				[filter.metakey]: true,
+				[filter.metakey]: set[filter.metakey] ?? hasMatches,
 			}));
 		});
 
