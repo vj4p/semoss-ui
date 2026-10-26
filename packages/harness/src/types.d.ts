@@ -44,6 +44,8 @@ export interface App {
 	project_date_created: string;
 	project_type: string;
 	user_permission: number;
+	/** The effective permission: the better of the user's own grant and their group's. */
+	permission?: number | null;
 }
 
 export interface Workspace {
