@@ -143,7 +143,7 @@ test("light islands keep exactly the light palette", () => {
 });
 
 test("the welcome banner text reaches AA on both gradient stops", () => {
-	for (const stop of ["#6d3fc4", "#0560d8"]) {
+	for (const stop of ["#6d3fc4", "#1f4fd8"]) {
 		const ratio = contrast("#ffffff", stop);
 		assert.ok(ratio >= 4.5, `white on ${stop} is ${ratio.toFixed(2)}:1`);
 	}

@@ -38,11 +38,11 @@
 
 /* Light. Same values as the platform's tokens in libs/ui globals.css. */
 html:root {
-	--color-primary-100: #0560d8;
+	--color-primary-100: #1f4fd8;
 	--color-primary-70: #044bb0;
 	--color-primary-50: #8db6f2;
 	--color-primary-30: #bbd5f7;
-	--color-primary-10: #edf3ff;
+	--color-primary-10: #edf2ff;
 	--color-warn-100: #b45309;
 	--color-warn-70: #d97706;
 	--color-warn-30: #fcd9a8;
@@ -72,11 +72,11 @@ html:root {
  * dark theme swaps their roles: surfaces become dark, text becomes light.
  */
 html[data-theme="dark"]:root {
-	--color-primary-100: #5ca0ff;
+	--color-primary-100: #9db6f8;
 	--color-primary-70: #8dbdff;
 	--color-primary-50: #2f5fa8;
 	--color-primary-30: #1f3f73;
-	--color-primary-10: #13233f;
+	--color-primary-10: #14213f;
 	--color-warn-100: #fbbf24;
 	--color-warn-70: #d9a21a;
 	--color-warn-30: #5c4512;
@@ -159,11 +159,11 @@ html[data-theme="dark"] .home__topbar,
 html[data-theme="dark"] .home-intro__content__cards__card,
 html[data-theme="dark"] .home-intro .smss-overlay__wrapper__header,
 html[data-theme="dark"] .ag-theme-balham {
-	--color-primary-100: #0560d8;
+	--color-primary-100: #1f4fd8;
 	--color-primary-70: #044bb0;
 	--color-primary-50: #8db6f2;
 	--color-primary-30: #bbd5f7;
-	--color-primary-10: #edf3ff;
+	--color-primary-10: #edf2ff;
 	--color-warn-100: #b45309;
 	--color-warn-70: #d97706;
 	--color-warn-30: #fcd9a8;
@@ -191,7 +191,7 @@ html[data-theme="dark"] .ag-theme-balham {
 
 /* BI's welcome banner is white text on light blue, about 3:1. Darker stops reach AA in both themes. */
 html .home-intro .smss-overlay__wrapper__header {
-	background: linear-gradient(317.97deg, #6d3fc4 11.36%, #0560d8 97.6%);
+	background: linear-gradient(317.97deg, #6d3fc4 11.36%, #1f4fd8 97.6%);
 }
 
 /* Black icon images (the Import Data list and similar) disappear on dark surfaces. */

@@ -19,7 +19,7 @@ Routes, backend payload shapes, feature flags, permission guards, room-owned wor
 | `--accent` | `#F5F5F5` → `#F0F6FF` | `#404040` → `#243247` |
 | `--sidebar-accent` | `#F5F5F5` → `#F0F6FF` | `#262626` → `#243247` |
 
-These tokens tint shared hover, focus/selection, and sidebar interaction surfaces in every consuming application, including client and terminal. Primary blue `#0570F0`, Geist fonts, base radius, foregrounds, and status colors are unchanged.
+These tokens tint shared hover, focus/selection, and sidebar interaction surfaces in every consuming application, including client and terminal. Primary (now cobalt, see below), Geist fonts, base radius, foregrounds, and status colors are unchanged.
 
 Additive shared APIs:
 
@@ -62,3 +62,5 @@ During follow-up verification of the render fixes, the previous local preview se
 Token values in this note were replaced by the UI refresh. See `DESIGN.md` and
 `docs/superpowers/specs/2026-10-17-ui-refresh-design.md`. Primary is now `#0560D8` (light),
 `--accent` is `#EDF3FF` / `#13233F`, and the radius scale is 6/8/12/16px.
+
+**2026-10-26 accent change:** primary is now cobalt `#1F4FD8` (light) / `#3F6BEA` (dark); `--primary-text` is `#1F4FD8` / `#9DB6F8`, `--accent` is `#EDF2FF` / `#14213F`, and `--ring` and `--chart-1` follow. `skins/bi/` carries the same literals. Still one primary accent; the violet agent accent from the redesign was not adopted.

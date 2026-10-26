@@ -132,7 +132,7 @@ export const RDFMapPage = () => {
 											"--primary",
 											"rgba(5, 112, 240, 1)",
 										),
-										"#0570f0",
+										"#3f6bea",
 									);
 									const background = toHex(
 										getCssVar(

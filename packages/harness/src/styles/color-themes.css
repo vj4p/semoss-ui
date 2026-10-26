@@ -18,12 +18,10 @@
  * `.dark` sets `--primary` too, hence the `.dark.theme-*` pairs at 2 classes.
  */
 
-/* Default is the platform accent — declared so switching back is explicit. */
-.theme-default,
-.dark.theme-default {
-	--primary: rgba(5, 96, 216, 1);
-	--ring: rgba(5, 96, 216, 1);
-}
+/*
+ * Default is the platform accent. It sets nothing, so the platform's own
+ * light and dark values in globals.css apply and follow any change to them.
+ */
 
 .theme-violet,
 .dark.theme-violet {
