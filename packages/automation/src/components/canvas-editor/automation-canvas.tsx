@@ -124,6 +124,7 @@ import { TriggerNode } from "./nodes/trigger-node";
 import { RunInputDialog } from "./run-input-dialog";
 import type { AutomationTraceSnapshot } from "./tabs/runs-tab";
 import { UndoBanner } from "./undo-banner";
+import { useAssistantUndo } from "./use-assistant-undo";
 
 const nodeTypes = {
 	trigger: TriggerNode,
@@ -136,6 +137,9 @@ const nodeTypes = {
 const CHANGE_HIGHLIGHT_DURATION_MS = 2500;
 
 type ChangeHighlight = { all: true } | { all: false; stepIds: Set<string> };
+
+/** Everything a save writes, as the canvas holds it. */
+type UndoCanvas = Parameters<typeof canvasDocumentToWorkflow>[0];
 
 function isStepHighlighted(
 	highlight: ChangeHighlight | null,
@@ -744,9 +748,45 @@ export const AutomationCanvasContent = forwardRef<
 	// concurrency token synchronous so that follow-up saves use the new revision.
 	const definitionRevisionRef = useRef<string | null>(null);
 	const [mcpDone, setMcpDone] = useState(false);
-	const [undoSnapshot, setUndoSnapshot] = useState<AutomationNode[] | null>(
-		null,
-	);
+	const latestCanvasRef = useRef<UndoCanvas | null>(null);
+	const refreshRef = useRef<
+		| ((
+				change?: { toolName: string; changedStepIds: string[] },
+				discardDraft?: boolean,
+		  ) => void)
+		| null
+	>(null);
+	const assistantUndo = useAssistantUndo<UndoCanvas>({
+		appId,
+		isDirty,
+		getCanvas: () => latestCanvasRef.current,
+		restore: async (canvas, baseRevision) => {
+			const definitionPayload = encodeTextToBase64(
+				JSON.stringify(canvasDocumentToWorkflow(canvas)),
+			);
+			const nodeSourcesPayload = encodeTextToBase64(
+				JSON.stringify(getCanvasNodeSources(canvas.steps)),
+			);
+			const response = await runPixel(
+				`SaveAutomation(project=${JSON.stringify([appId])}, json=${JSON.stringify([definitionPayload])}, nodeSources=${JSON.stringify([nodeSourcesPayload])}, expectedRevision=${JSON.stringify([baseRevision])});`,
+			);
+			if (response.errors.length > 0) {
+				throw new Error(response.errors.join("\n"));
+			}
+		},
+		reload: () =>
+			refreshRef.current?.(
+				{ toolName: "undo", changedStepIds: [] },
+				true,
+			),
+	});
+	// stable members only: the object itself changes on every render
+	const {
+		noteAssistantEdit,
+		noteLoaded: noteUndoLoaded,
+		clear: clearUndoPoint,
+		undo: runUndo,
+	} = assistantUndo;
 	const [addingToLoopId, setAddingToLoopId] = useState<string | null>(null);
 	const [loopBodyInsertionPoint, setLoopBodyInsertionPoint] =
 		useState<LoopBodyInsertionPoint | null>(null);
@@ -1012,6 +1052,14 @@ export const AutomationCanvasContent = forwardRef<
 	} | null>(null);
 	const restoredActiveRunForProjectRef = useRef<string | null>(null);
 
+	latestCanvasRef.current = {
+		description,
+		triggerBindings,
+		steps,
+		edges: graphEdges,
+		nodeGroups,
+	};
+
 	const refresh = useCallback(
 		(
 			change?: { toolName: string; changedStepIds: string[] },
@@ -1027,6 +1075,15 @@ export const AutomationCanvasContent = forwardRef<
 				return;
 			}
 
+			// An assistant edit is about to replace the canvas. A canvas that is not
+			// dirty equals the saved automation, so keep it to undo to.
+			if (
+				change &&
+				change.toolName !== "reload" &&
+				change.toolName !== "undo"
+			) {
+				noteAssistantEdit();
+			}
 			localStorage.removeItem(`automation-draft-${appId}`);
 			setEditingStepId(null);
 			setWorkflowRefreshToken((value) => value + 1);
@@ -1049,8 +1106,9 @@ export const AutomationCanvasContent = forwardRef<
 				}, CHANGE_HIGHLIGHT_DURATION_MS);
 			}
 		},
-		[appId, isDirty],
+		[appId, isDirty, noteAssistantEdit],
 	);
+	refreshRef.current = refresh;
 
 	/**
 	 * Re-reads the saved automation from the server, for when a person or an agent
@@ -1554,6 +1612,7 @@ export const AutomationCanvasContent = forwardRef<
 					  })
 					| undefined;
 				definitionRevisionRef.current = output?.revision ?? null;
+				noteUndoLoaded(output?.revision);
 				setScopeVariablesByNode(output?.scopeVariables ?? {});
 				const saved = isWorkflowDocument(output)
 					? canvasDocumentFromWorkflow(output, output.nodeSources)
@@ -1633,7 +1692,14 @@ export const AutomationCanvasContent = forwardRef<
 		return () => {
 			cancelled = true;
 		};
-	}, [appId, layoutNodes, mcpMode, readOnly, workflowRefreshToken]);
+	}, [
+		appId,
+		layoutNodes,
+		mcpMode,
+		noteUndoLoaded,
+		readOnly,
+		workflowRefreshToken,
+	]);
 
 	useEffect(() => {
 		if (
@@ -2525,6 +2591,8 @@ export const AutomationCanvasContent = forwardRef<
 			}
 			localStorage.removeItem(`automation-draft-${appId}`);
 			setIsDirty(false);
+			// the saved revision moved on, so the copy from before the edit is stale
+			clearUndoPoint();
 			toast.success("Automation saved");
 			return true;
 		} catch (error) {
@@ -2543,6 +2611,7 @@ export const AutomationCanvasContent = forwardRef<
 		}
 	}, [
 		appId,
+		clearUndoPoint,
 		description,
 		graphEdges,
 		nodeGroups,
@@ -2556,6 +2625,24 @@ export const AutomationCanvasContent = forwardRef<
 		async (): Promise<boolean> => !isDirty || save(),
 		[isDirty, save],
 	);
+
+	const undoAssistantEdit = useCallback(async () => {
+		if (readOnly) return;
+		const result = await runUndo();
+		if (result.ok) {
+			toast.success("Put the automation back as it was");
+			return;
+		}
+		const message =
+			result.error instanceof Error
+				? normalizeAutomationErrorMessage(result.error.message)
+				: "Unknown error";
+		toast.error(
+			message.includes("Automation changed since it was loaded")
+				? "Cannot undo: the automation was saved again after the assistant changed it."
+				: `Undo failed: ${message}`,
+		);
+	}, [readOnly, runUndo]);
 
 	const syncPythonSource = useCallback(
 		(stepId: string, source: string) => {
@@ -4294,16 +4381,14 @@ export const AutomationCanvasContent = forwardRef<
 										</div>
 									)}
 									{/* Undo banner above the canvas */}
-									{undoSnapshot && (
+									{assistantUndo.available && !readOnly && (
 										<div className="absolute inset-x-0 top-0 z-20 px-4 pt-3">
 											<UndoBanner
+												busy={assistantUndo.undoing}
 												onUndo={() => {
-													setSteps(undoSnapshot);
-													setUndoSnapshot(null);
+													void undoAssistantEdit();
 												}}
-												onDismiss={() =>
-													setUndoSnapshot(null)
-												}
+												onDismiss={clearUndoPoint}
 											/>
 										</div>
 									)}
