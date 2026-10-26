@@ -120,6 +120,25 @@ describe("run node viewer states and invariants", () => {
 		expect(getVisibleRunNodeContentView("output", true)).toBe("output");
 	});
 
+	it("shows the input and variables views only for a step that has them", () => {
+		const none = { input: false, variables: false };
+		const both = { input: true, variables: true };
+		expect(getVisibleRunNodeContentView("input", true, none)).toBe(
+			"output",
+		);
+		expect(getVisibleRunNodeContentView("variables", true)).toBe("output");
+		expect(getVisibleRunNodeContentView("input", false, both)).toBe(
+			"input",
+		);
+		expect(getVisibleRunNodeContentView("variables", false, both)).toBe(
+			"variables",
+		);
+		// the implementation view stays a developer-mode view whatever data exists
+		expect(getVisibleRunNodeContentView("source", false, both)).toBe(
+			"output",
+		);
+	});
+
 	it("provides explicit accessible names for detail and recovery controls", () => {
 		expect(RUN_NODE_VIEW_LABELS).toMatchObject({
 			navigation: "Run nodes",

@@ -327,6 +327,24 @@ export interface AutomationNodeIteration {
 	nodeResults: AutomationNodeResult[];
 }
 
+/** One variable a step could read when it started, as run history keeps it. */
+export interface AutomationStepVariable {
+	name: string;
+	kind:
+		| "string"
+		| "number"
+		| "boolean"
+		| "object"
+		| "array"
+		| "table"
+		| "null";
+	/** Display text, cut to a fixed length; null for an unset or dropped value. */
+	value: string | null;
+	/** The name marks it as a secret, so the value is not kept. */
+	redacted: boolean;
+	truncated: boolean;
+}
+
 export interface AutomationNodeResult {
 	NODE_ID: string;
 	NODE_LABEL: string;
@@ -344,6 +362,18 @@ export interface AutomationNodeResult {
 		};
 	};
 	ERROR_MESSAGE: string | null;
+	/** Name of the variable the step's output was stored under. */
+	outputVariable?: string;
+	/** Whether the step's table output was retained. */
+	outputDataAvailable?: boolean;
+	outputDataRowCount?: number;
+	/**
+	 * What the step could read when it started. Sent only to someone who can edit
+	 * the automation, and only while the run is within its retention period.
+	 */
+	inputVariables?: AutomationStepVariable[];
+	/** How many variables were left out of {@link inputVariables}. */
+	inputVariablesOmitted?: number;
 	trace?: AutomationNodeTrace;
 	iterations?: AutomationNodeIteration[];
 }
@@ -381,6 +411,11 @@ export interface AutomationSavedResultPage
 
 export interface AutomationRunDetail extends AutomationRunSummary {
 	DEFINITION_SNAPSHOT?: string;
+	/**
+	 * JSON of the inputs the run was started with, secret-named entries replaced.
+	 * Sent only to someone who can edit the automation.
+	 */
+	INPUT_SNAPSHOT?: string;
 	/** Temporary workspace for an active or recently completed run on this server. */
 	executionInsightId?: string;
 	nodeResults: AutomationNodeResult[];

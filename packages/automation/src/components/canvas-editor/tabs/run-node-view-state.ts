@@ -23,12 +23,14 @@ export type RunNodeDataSource =
 	| { kind: "preview" };
 
 export type AsyncViewerState = "loading" | "error" | "empty" | "ready";
-export type RunNodeContentView = "output" | "source";
+export type RunNodeContentView = "output" | "input" | "variables" | "source";
 
 export const RUN_NODE_VIEW_LABELS = {
 	navigation: "Run nodes",
 	detailView: "Run node detail view",
 	output: "Output",
+	input: "Input",
+	variables: "Variables",
 	source: "Implementation",
 	outputData: "Automation node output data",
 	executedSource: "Executed Automation implementation",
@@ -116,10 +118,30 @@ export function getAsyncViewerState(
 	return "ready";
 }
 
-/** Restricts implementation details to the workbench's explicit developer mode. */
+/** Which of the optional detail views a step has data for. */
+export interface RunNodeAvailableViews {
+	input: boolean;
+	variables: boolean;
+}
+
+/**
+ * Restricts implementation details to the workbench's explicit developer mode,
+ * and the input and variables views to a step that has them: the backend sends
+ * those only to someone who can edit the automation.
+ */
 export function getVisibleRunNodeContentView(
 	requestedView: RunNodeContentView,
 	devMode: boolean,
+	available: RunNodeAvailableViews = { input: false, variables: false },
 ): RunNodeContentView {
-	return devMode ? requestedView : "output";
+	switch (requestedView) {
+		case "source":
+			return devMode ? "source" : "output";
+		case "input":
+			return available.input ? "input" : "output";
+		case "variables":
+			return available.variables ? "variables" : "output";
+		default:
+			return "output";
+	}
 }

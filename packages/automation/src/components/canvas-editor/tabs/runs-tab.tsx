@@ -13,6 +13,9 @@ import {
 	AlertDescription,
 	AlertTitle,
 	Button,
+	Tabs,
+	TabsList,
+	TabsTrigger,
 	toast,
 } from "@semoss/ui/next";
 import { formatDurationMs } from "@semoss/utility/date";
@@ -43,6 +46,10 @@ import { TraceDetail } from "../../form-editor/trace-detail";
 import { StatusBadge } from "../../status-badge";
 import { RunBanner } from "../run-banner";
 import { RunNodeDataViewer } from "./run-node-data-viewer";
+import {
+	RunInputViewer,
+	RunStepVariablesViewer,
+} from "./run-node-input-viewers";
 import { RunNodeSourceViewer } from "./run-node-source-viewer";
 import {
 	findSavedResultForOccurrence,
@@ -708,6 +715,7 @@ function HistoryRunView({
 					executionInsightId={run.executionInsightId ?? null}
 					savedResults={run.savedResults ?? []}
 					results={results}
+					runInput={run.INPUT_SNAPSHOT}
 					onOutputPopout={onOutputPopout}
 					selectedResult={selectedResult}
 					stepMap={stepMap}
@@ -732,12 +740,15 @@ function ResultsPanel({
 	onOutputPopout,
 	onSelectNode,
 	onViewAgentRun,
+	runInput,
 }: {
 	appId: string;
 	devMode: boolean;
 	runId: string | null;
 	executionInsightId: string | null;
 	savedResults: AutomationSavedResultReference[];
+	/** What the run was started with; present only for someone who can edit */
+	runInput?: string;
 	results: AutomationNodeResult[];
 	selectedResult: AutomationNodeResult | null;
 	stepMap: Map<string, AutomationNode>;
@@ -755,10 +766,6 @@ function ResultsPanel({
 	>(() => new Set());
 	const [contentView, setContentView] =
 		useState<RunNodeContentView>("output");
-	const visibleContentView = getVisibleRunNodeContentView(
-		contentView,
-		devMode,
-	);
 
 	const [selectedBodyKey, setSelectedBodyKey] = useState<{
 		loopNodeId: string;
@@ -812,6 +819,16 @@ function ResultsPanel({
 	}, [stepMap]);
 
 	const displayResult = selectedBodyResult ?? selectedResult;
+	// the backend sends a run's inputs and a step's variables only to an editor
+	const availableViews = {
+		input: Boolean(runInput) && !selectedBodyKey,
+		variables: Boolean(displayResult?.inputVariables),
+	};
+	const visibleContentView = getVisibleRunNodeContentView(
+		contentView,
+		devMode,
+		availableViews,
+	);
 	const outputSelectionKey = JSON.stringify([
 		displayResult?.NODE_ID,
 		selectedBodyKey?.loopNodeId,
@@ -1203,38 +1220,42 @@ function ResultsPanel({
 										"Loop step"}
 								</p>
 							)}
-							{runId && devMode && (
-								<fieldset className="flex w-fit max-w-full flex-wrap rounded-md border bg-muted/40 p-0.5">
-									<legend className="sr-only">
-										{RUN_NODE_VIEW_LABELS.detailView}
-									</legend>
-									<Button
-										type="button"
-										size="sm"
-										variant={
-											contentView === "output"
-												? "secondary"
-												: "ghost"
+							{(availableViews.input ||
+								availableViews.variables ||
+								(runId && devMode)) && (
+								<Tabs
+									value={visibleContentView}
+									onValueChange={(value) =>
+										setContentView(
+											value as RunNodeContentView,
+										)
+									}
+								>
+									<TabsList
+										aria-label={
+											RUN_NODE_VIEW_LABELS.detailView
 										}
-										aria-pressed={contentView === "output"}
-										onClick={() => setContentView("output")}
 									>
-										{RUN_NODE_VIEW_LABELS.output}
-									</Button>
-									<Button
-										type="button"
-										size="sm"
-										variant={
-											contentView === "source"
-												? "secondary"
-												: "ghost"
-										}
-										aria-pressed={contentView === "source"}
-										onClick={() => setContentView("source")}
-									>
-										{RUN_NODE_VIEW_LABELS.source}
-									</Button>
-								</fieldset>
+										<TabsTrigger value="output">
+											{RUN_NODE_VIEW_LABELS.output}
+										</TabsTrigger>
+										{availableViews.input && (
+											<TabsTrigger value="input">
+												{RUN_NODE_VIEW_LABELS.input}
+											</TabsTrigger>
+										)}
+										{availableViews.variables && (
+											<TabsTrigger value="variables">
+												{RUN_NODE_VIEW_LABELS.variables}
+											</TabsTrigger>
+										)}
+										{runId && devMode && (
+											<TabsTrigger value="source">
+												{RUN_NODE_VIEW_LABELS.source}
+											</TabsTrigger>
+										)}
+									</TabsList>
+								</Tabs>
 							)}
 							{visibleContentView === "source" && runId ? (
 								<RunNodeSourceViewer
@@ -1242,6 +1263,16 @@ function ResultsPanel({
 									appId={appId}
 									runId={runId}
 									nodeId={displayResult.NODE_ID}
+								/>
+							) : visibleContentView === "input" && runInput ? (
+								<RunInputViewer runInput={runInput} />
+							) : visibleContentView === "variables" &&
+								displayResult.inputVariables ? (
+								<RunStepVariablesViewer
+									variables={displayResult.inputVariables}
+									omitted={
+										displayResult.inputVariablesOmitted
+									}
 								/>
 							) : (
 								<>
