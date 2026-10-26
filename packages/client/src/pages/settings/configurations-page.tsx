@@ -6,6 +6,7 @@ import { Suspense, useEffect, useReducer, useRef, useState } from "react";
 import { MonacoEditor } from "@semoss/shared";
 import {
 	Button,
+	H4,
 	Input,
 	Label,
 	Spinner,
@@ -23,6 +24,16 @@ import ms from "@/assets/img/ms.png";
 import other from "@/assets/img/other.png";
 import { useAPI, useSettings } from "@/hooks";
 import { useNavigate } from "@/hooks/useNavigate";
+
+/**
+ * The server never returns a secret's value. A secret that has one comes back
+ * as this marker and sending it back means "unchanged"; one without comes back
+ * empty. Keep in sync with `SocialPropertySecrets.MARKER` in the backend.
+ */
+const SECRET_SET = "__SECRET_SET__";
+
+const SECRET_LABEL =
+	/secret|password|passwd|credential|private_?key|api_?key|maps_api/i;
 
 const SOCIAL = {
 	google: {
@@ -95,9 +106,10 @@ export const ConfigurationsPage = () => {
 			if (pr[0] === "cac") return;
 			const fields = [];
 			Object.entries(pr[1]).forEach((prop) => {
-				const fieldMap = {
+				const fieldMap: FieldProps = {
 					label: prop[0],
-					value: prop[1],
+					value: prop[1] as string,
+					wasSet: prop[1] === SECRET_SET,
 				};
 				fields.push(fieldMap);
 			});
@@ -312,6 +324,8 @@ const mapDefaultValues = (vals: FieldProps[]) => {
 interface FieldProps {
 	label: string;
 	value: string;
+	/** the secret held a value when the page loaded */
+	wasSet?: boolean;
 }
 
 const SocialProperty = (props) => {
@@ -326,16 +340,15 @@ const SocialProperty = (props) => {
 	};
 
 	return (
-		<form className="ml-8 w-full">
-			<div className="mb-2 flex justify-between">
-				<h2 className="font-semibold text-xl">
+		<form className="w-full min-w-0 md:ml-8">
+			<div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+				<H4>
 					{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
-				</h2>
+				</H4>
 				<div className="flex justify-center gap-2">
 					<Button
 						type="button"
 						variant="outline"
-						className="font-bold"
 						onClick={() => resetLoginProperties(fieldName)}
 						data-testid="configurationPage-reset-btn"
 					>
@@ -343,7 +356,6 @@ const SocialProperty = (props) => {
 					</Button>
 					<Button
 						type="button"
-						className="font-bold"
 						onClick={() => onSubmit()}
 						data-testid="configurationPage-save-btn"
 					>
@@ -351,33 +363,57 @@ const SocialProperty = (props) => {
 					</Button>
 				</div>
 			</div>
-			{fields.map((f, i) => (
-				<div
-					key={`${fieldName}-${f.label}`}
-					className="mb-4 flex flex-col rounded-[15px] border border-border bg-card p-6 text-card-foreground shadow-sm"
-				>
-					<div className="flex gap-3">
-						<div className="flex flex-1 flex-col gap-1">
-							<Label className="text-xs">Key</Label>
-							<Input className="mr-3" value={f.label} disabled />
-						</div>
-						<div className="flex flex-1 flex-col gap-1">
-							<Label className="text-xs">Value</Label>
+			<div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-card text-card-foreground">
+				{fields.map((f, i) => {
+					const inputId = `${fieldName}-${f.label}-value`;
+					return (
+						<div
+							key={`${fieldName}-${f.label}`}
+							className="grid gap-2 px-4 py-3 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center md:gap-4"
+						>
+							<Label
+								htmlFor={inputId}
+								className="break-all font-mono text-sm"
+							>
+								{f.label}
+							</Label>
 							<Input
-								value={f.value}
+								id={inputId}
+								type={
+									f.value === SECRET_SET ||
+									SECRET_LABEL.test(f.label)
+										? "password"
+										: "text"
+								}
+								autoComplete="off"
+								value={f.value === SECRET_SET ? "" : f.value}
+								placeholder={
+									f.value === SECRET_SET
+										? "Set. Type a new value to replace it."
+										: undefined
+								}
 								onChange={(e) => {
+									// emptying a secret that is set keeps it,
+									// the marker tells the server it is unchanged
+									const next =
+										e.target.value === "" &&
+										f.value !== "" &&
+										f.value !== SECRET_SET &&
+										f.wasSet
+											? SECRET_SET
+											: e.target.value;
 									updateSocialProps(
 										fieldName,
-										e.target.value,
+										next,
 										f.label,
 										i,
 									);
 								}}
 							/>
 						</div>
-					</div>
-				</div>
-			))}
+					);
+				})}
+			</div>
 		</form>
 	);
 };
