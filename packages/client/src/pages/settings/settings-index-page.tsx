@@ -30,6 +30,7 @@ import {
 	Card,
 	CardContent,
 	cn,
+	H4,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
@@ -45,6 +46,47 @@ const DEFAULT_CARDS = SETTINGS_ROUTES.filter(
 );
 
 const ICON_CLASS = "size-4";
+
+/** Where each settings page is listed; a page missing here lands in the last group. */
+const SECTIONS: { title: string; pages: string[] }[] = [
+	{ title: "Account", pages: ["My Profile", "My Files", "My Teams"] },
+	{
+		title: "Apps and engines",
+		pages: [
+			"App, Agent, & Skill Settings",
+			"Model Settings",
+			"Database Settings",
+			"Vector Settings",
+			"Storage Settings",
+			"Function Settings",
+			"Guardrail Settings",
+		],
+	},
+	{
+		title: "Platform",
+		pages: [
+			"Jobs",
+			"Member Settings",
+			"Team Permissions",
+			"Service Accounts",
+			"Configuration",
+			"GitHub App",
+			"Admin Theme",
+		],
+	},
+	{
+		title: "Monitoring and data",
+		pages: [
+			"Enterprise Usage & Activity",
+			"Audit Trail",
+			"LLM Feedback",
+			"Admin Query",
+			"View RDF Map",
+		],
+	},
+];
+
+const OTHER_SECTION = "More";
 
 type CardConfig = { icon: ReactNode; className: string; label?: string };
 
@@ -178,6 +220,21 @@ export const SettingsIndexPage = () => {
 		});
 	}, [adminMode, search]);
 
+	const sections = useMemo(() => {
+		const known = new Set(SECTIONS.flatMap((section) => section.pages));
+		const grouped = SECTIONS.map((section) => ({
+			title: section.title,
+			cards: section.pages.flatMap((page) =>
+				cards.filter((card) => card.title === page),
+			),
+		}));
+		grouped.push({
+			title: OTHER_SECTION,
+			cards: cards.filter((card) => !known.has(card.title)),
+		});
+		return grouped.filter((section) => section.cards.length > 0);
+	}, [cards]);
+
 	return (
 		<div className="flex w-full flex-col gap-6">
 			<div className="flex w-full min-w-0 flex-wrap items-end gap-2 md:flex-nowrap">
@@ -210,46 +267,74 @@ export const SettingsIndexPage = () => {
 				</InputGroup>
 			</div>
 
-			<div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-				{cards.map((card) => (
-					<Link
-						key={card.path}
-						to={`/settings/${card.path}`}
-						data-testid={formatToDataTestId(
-							`settingsIndexPage-${card.title}-card`,
+			{sections.length === 0 ? (
+				<P className="text-muted-foreground">
+					No settings match "{search.trim()}".
+				</P>
+			) : null}
+
+			{sections.map((section) => (
+				<section
+					key={section.title}
+					aria-labelledby={formatToDataTestId(
+						`settingsIndexPage-${section.title}-heading`,
+					)}
+					className="flex flex-col gap-3"
+				>
+					<H4
+						id={formatToDataTestId(
+							`settingsIndexPage-${section.title}-heading`,
 						)}
-						className="min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
 					>
-						<Card className="h-full w-full gap-4 py-4 hover:bg-accent/50">
-							<CardContent>
-								<div className="flex flex-col items-start gap-3">
-									<div className="flex items-center gap-2">
-										{CardMapper[card.title] ? (
-											<div
-												aria-hidden="true"
-												className={cn(
-													"flex size-8 shrink-0 items-center justify-center rounded-md p-1",
-													CardMapper[card.title]
-														.className,
-												)}
-											>
-												{CardMapper[card.title].icon}
+						{section.title}
+					</H4>
+					<div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+						{section.cards.map((card) => (
+							<Link
+								key={card.path}
+								to={`/settings/${card.path}`}
+								data-testid={formatToDataTestId(
+									`settingsIndexPage-${card.title}-card`,
+								)}
+								className="min-w-0 rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
+							>
+								<Card className="h-full w-full gap-4 py-4 hover:bg-accent/50">
+									<CardContent>
+										<div className="flex flex-col items-start gap-3">
+											<div className="flex items-center gap-2">
+												{CardMapper[card.title] ? (
+													<div
+														aria-hidden="true"
+														className={cn(
+															"flex size-8 shrink-0 items-center justify-center rounded-md p-1",
+															CardMapper[
+																card.title
+															].className,
+														)}
+													>
+														{
+															CardMapper[
+																card.title
+															].icon
+														}
+													</div>
+												) : null}
+												<span className="font-medium">
+													{CardMapper[card.title]
+														?.label ?? card.title}
+												</span>
 											</div>
-										) : null}
-										<span>
-											{CardMapper[card.title]?.label ??
-												card.title}
-										</span>
-									</div>
-									<P className="text-muted-foreground text-sm leading-5">
-										{card.description}
-									</P>
-								</div>
-							</CardContent>
-						</Card>
-					</Link>
-				))}
-			</div>
+											<P className="text-muted-foreground text-sm leading-5">
+												{card.description}
+											</P>
+										</div>
+									</CardContent>
+								</Card>
+							</Link>
+						))}
+					</div>
+				</section>
+			))}
 		</div>
 	);
 };
