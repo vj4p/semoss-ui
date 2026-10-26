@@ -17,7 +17,7 @@ export const getAppCatalogAvatarStyle = (label: string) => {
 	const base = hashString(label || "App") % 360;
 	return {
 		backgroundColor: `hsl(${base}, 22%, 72%)`,
-		color: `hsl(${base}, 28%, 28%)`,
+		color: `hsl(${base}, 28%, 22%)`,
 	};
 };
 
