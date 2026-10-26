@@ -227,7 +227,6 @@ export interface SaveRecordingResponse {
 	saved: boolean;
 	project: string;
 	fileName: string;
-	filePath: string;
 }
 
 export interface RecordingMeta {
