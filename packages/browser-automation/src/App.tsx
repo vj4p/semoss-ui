@@ -620,10 +620,11 @@ export default function App() {
 			768,
 			!isPlaygroundMode,
 		).then((info) => {
-			if (!info) {
-				autoStartedRef.current = false;
-				return;
-			}
+			// A failed start stays spent. Clearing the guard here would let this effect
+			// run again as soon as isCreating clears, so a browser that cannot start
+			// would be retried endlessly. The error banner stays up and the toolbar's
+			// start button tries again on request.
+			if (!info) return;
 			setCurrentUrl(
 				info.currentUrl || startupUrl || "https://example.com",
 			);
