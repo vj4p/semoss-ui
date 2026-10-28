@@ -27,10 +27,11 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
+	Button,
 	Card,
 	CardContent,
 	cn,
-	H4,
+	H3,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
@@ -268,9 +269,21 @@ export const SettingsIndexPage = () => {
 			</div>
 
 			{sections.length === 0 ? (
-				<P className="text-muted-foreground">
-					No settings match "{search.trim()}".
-				</P>
+				<output className="flex w-full flex-col items-center gap-2 px-2 py-12 text-center">
+					<H3 className="text-xl">No settings match</H3>
+					<P className="max-w-prose text-muted-foreground text-sm">
+						Nothing matches "{search.trim()}". Try a different
+						search.
+					</P>
+					<Button
+						variant="outline"
+						size="sm"
+						className="mt-2"
+						onClick={() => setSearch("")}
+					>
+						Clear search
+					</Button>
+				</output>
 			) : null}
 
 			{sections.map((section) => (
@@ -281,13 +294,13 @@ export const SettingsIndexPage = () => {
 					)}
 					className="flex flex-col gap-3"
 				>
-					<H4
+					<H3
 						id={formatToDataTestId(
 							`settingsIndexPage-${section.title}-heading`,
 						)}
 					>
 						{section.title}
-					</H4>
+					</H3>
 					<div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{section.cards.map((card) => (
 							<Link

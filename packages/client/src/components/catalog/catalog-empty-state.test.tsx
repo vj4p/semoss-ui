@@ -15,7 +15,9 @@ describe("CatalogEmptyState", () => {
 				onClear={onClear}
 			/>,
 		);
-		expect(screen.getByText("No agents match")).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", { level: 3, name: "No agents match" }),
+		).toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole("button", { name: "Clear search and filters" }),
 		);
@@ -34,7 +36,9 @@ describe("CatalogEmptyState", () => {
 				onBrowseDiscoverable={onBrowse}
 			/>,
 		);
-		expect(screen.getByText("No models yet")).toBeInTheDocument();
+		expect(
+			screen.getByRole("heading", { level: 3, name: "No models yet" }),
+		).toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole("button", { name: "Browse discoverable models" }),
 		);
@@ -51,7 +55,10 @@ describe("CatalogEmptyState", () => {
 			/>,
 		);
 		expect(
-			screen.getByText("Nothing discoverable yet"),
+			screen.getByRole("heading", {
+				level: 3,
+				name: "Nothing discoverable yet",
+			}),
 		).toBeInTheDocument();
 		expect(screen.queryByRole("button")).toBeNull();
 	});

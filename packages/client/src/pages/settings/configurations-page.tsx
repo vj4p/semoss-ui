@@ -6,7 +6,7 @@ import { Suspense, useEffect, useReducer, useRef, useState } from "react";
 import { MonacoEditor } from "@semoss/shared";
 import {
 	Button,
-	H4,
+	H3,
 	Input,
 	Label,
 	Spinner,
@@ -24,16 +24,15 @@ import ms from "@/assets/img/ms.png";
 import other from "@/assets/img/other.png";
 import { useAPI, useSettings } from "@/hooks";
 import { useNavigate } from "@/hooks/useNavigate";
-
-/**
- * The server never returns a secret's value. A secret that has one comes back
- * as this marker and sending it back means "unchanged"; one without comes back
- * empty. Keep in sync with `SocialPropertySecrets.MARKER` in the backend.
- */
-const SECRET_SET = "__SECRET_SET__";
-
-const SECRET_LABEL =
-	/secret|password|passwd|credential|private_?key|api_?key|maps_api/i;
+import {
+	type FieldProps,
+	getInputValue,
+	isMasked,
+	isSecretField,
+	nextFieldValue,
+	toField,
+	toPropertyValues,
+} from "./configuration-secrets";
 
 const SOCIAL = {
 	google: {
@@ -104,14 +103,9 @@ export const ConfigurationsPage = () => {
 		const formattedProperties = {};
 		Object.entries(loginProperties.data).forEach((pr) => {
 			if (pr[0] === "cac") return;
-			const fields = [];
+			const fields: FieldProps[] = [];
 			Object.entries(pr[1]).forEach((prop) => {
-				const fieldMap: FieldProps = {
-					label: prop[0],
-					value: prop[1] as string,
-					wasSet: prop[1] === SECRET_SET,
-				};
-				fields.push(fieldMap);
+				fields.push(toField(prop[0], prop[1]));
 			});
 
 			if (!formattedProperties[pr[0]]) {
@@ -311,29 +305,12 @@ export const ConfigurationsPage = () => {
 	);
 };
 
-const mapDefaultValues = (vals: FieldProps[]) => {
-	const value = {};
-
-	vals.forEach((f: FieldProps) => {
-		value[f.label] = f.value || "";
-	});
-
-	return value;
-};
-
-interface FieldProps {
-	label: string;
-	value: string;
-	/** the secret held a value when the page loaded */
-	wasSet?: boolean;
-}
-
 const SocialProperty = (props) => {
 	const { fieldName, fields, resetLoginProperties, updateSocialProps } =
 		props;
 
 	const onSubmit = () => {
-		const values = mapDefaultValues(fields);
+		const values = toPropertyValues(fields);
 		modifyLoginProperties(fieldName, values).then(() => {
 			toast.success(`Successfully modified ${fieldName} properties`);
 		});
@@ -342,9 +319,9 @@ const SocialProperty = (props) => {
 	return (
 		<form className="w-full min-w-0 md:ml-8">
 			<div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-				<H4>
+				<H3 className="text-xl">
 					{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
-				</H4>
+				</H3>
 				<div className="flex justify-center gap-2">
 					<Button
 						type="button"
@@ -369,42 +346,31 @@ const SocialProperty = (props) => {
 					return (
 						<div
 							key={`${fieldName}-${f.label}`}
-							className="grid gap-2 px-4 py-3 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center md:gap-4"
+							className="grid gap-2 px-4 py-3 md:grid-cols-5 md:items-center md:gap-4"
 						>
 							<Label
 								htmlFor={inputId}
-								className="break-all font-mono text-sm"
+								className="break-all font-mono text-sm md:col-span-2"
 							>
 								{f.label}
 							</Label>
 							<Input
+								className="md:col-span-3"
 								id={inputId}
-								type={
-									f.value === SECRET_SET ||
-									SECRET_LABEL.test(f.label)
-										? "password"
-										: "text"
-								}
+								type={isSecretField(f) ? "password" : "text"}
 								autoComplete="off"
-								value={f.value === SECRET_SET ? "" : f.value}
+								value={getInputValue(f)}
 								placeholder={
-									f.value === SECRET_SET
+									isMasked(f)
 										? "Set. Type a new value to replace it."
 										: undefined
 								}
 								onChange={(e) => {
 									// emptying a secret that is set keeps it,
 									// the marker tells the server it is unchanged
-									const next =
-										e.target.value === "" &&
-										f.value !== "" &&
-										f.value !== SECRET_SET &&
-										f.wasSet
-											? SECRET_SET
-											: e.target.value;
 									updateSocialProps(
 										fieldName,
-										next,
+										nextFieldValue(f, e.target.value),
 										f.label,
 										i,
 									);

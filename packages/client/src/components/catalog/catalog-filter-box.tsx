@@ -522,7 +522,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 												toggleFilter(key, opt.value)
 											}
 											aria-pressed={true}
-											aria-label={`Remove ${opt.value} filter`}
+											aria-label={`Remove ${opt.value}${opt.count != null ? ` ${opt.count}` : ""} filter`}
 											className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-medium text-primary-text text-xs transition-all duration-200 hover:bg-primary/20 active:scale-95"
 											style={getValuePillStyle(
 												opt.value,
@@ -550,7 +550,7 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 												toggleFilter(key, opt.value)
 											}
 											aria-pressed={false}
-											aria-label={`Filter by ${opt.value}`}
+											aria-label={`Filter by ${opt.value}${opt.count != null ? ` ${opt.count}` : ""}`}
 											className="inline-flex items-center gap-1.5 rounded-full border border-border bg-transparent px-2.5 py-1 text-foreground text-xs transition-all duration-200 hover:border-foreground/30 hover:bg-accent active:scale-95"
 											style={getValuePillStyle(
 												opt.value,

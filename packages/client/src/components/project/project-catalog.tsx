@@ -13,20 +13,19 @@ import {
 } from "@semoss/ui/next";
 import { setProjectFavorite, setProjectGlobal } from "@/api";
 import { SystemAppGridItem } from "@/components/app";
-import {
-	CatalogEmptyState,
-	CatalogGrid,
-	CatalogLayout,
-	CatalogSearchBar,
-	CatalogTabs,
-} from "@/components/catalog";
+import { CatalogEmptyState } from "@/components/catalog/catalog-empty-state";
 import { CatalogFilterBox } from "@/components/catalog/catalog-filter-box";
+import { CatalogGrid } from "@/components/catalog/catalog-grid";
+import { CatalogLayout } from "@/components/catalog/catalog-layout";
+import { CatalogLoadError } from "@/components/catalog/catalog-load-error";
+import { CatalogSearchBar } from "@/components/catalog/catalog-search-bar";
+import { CatalogTabs } from "@/components/catalog/catalog-tabs";
+import { useCatalogFilters } from "@/components/catalog/use-catalog-filters";
 import { Help } from "@/components/help";
 import { DeleteEntityDialog } from "@/components/shared/delete-entity-dialog";
 import { useConfig, useSession } from "@/hooks";
 import {
 	buildAccessFilterParams,
-	type CatalogAccessFilter,
 	getProjectLabel,
 	isOwnerPermission,
 } from "@/utility/catalog";
@@ -184,27 +183,24 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 			return k.metakey;
 		});
 
-	const [search, setSearch] = useState("");
+	const [tab, setTab] = useState<string>("Mine");
+	const {
+		search,
+		setSearch,
+		metaFilters,
+		setMetaFilters,
+		access,
+		setAccess,
+		isFiltered,
+		clearFilters,
+	} = useCatalogFilters(tab);
 	const debouncedSearch = useDebouncedValue(search);
 	const [sortValue, setSortValue] = useState("PROJECTNAME");
 	const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 	const [gridStyle, setGridStyle] = useState<"LIST" | "CARD">("LIST");
 
-	const [metaFilters, setMetaFilters] = useState<Record<string, unknown>>({});
-	const [access, setAccess] = useState<CatalogAccessFilter[]>([]);
 	const [filterKey, setFilterKey] = useState<number>(0);
-	const [tab, setTab] = useState<string>("Mine");
 
-	/** A search or a filter is narrowing what the catalog lists */
-	const isFiltered =
-		search.trim() !== "" ||
-		Object.keys(metaFilters).length > 0 ||
-		(tab === "Mine" && access.length > 0);
-	const clearFilters = () => {
-		setSearch("");
-		setMetaFilters({});
-		setAccess([]);
-	};
 	// the access filters apply to what the user can already use
 	const accessParams = tab === "Mine" ? buildAccessFilterParams(access) : "";
 
@@ -313,14 +309,12 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 			return;
 		}
 
-		setSearch("");
-		setMetaFilters({});
-		setAccess([]);
+		clearFilters();
 		setSortValue("PROJECTNAME");
 		setSortOrder("ASC");
 		setGridStyle("LIST");
 		resetScroll();
-	}, [type, resetScroll]);
+	}, [type, resetScroll, clearFilters]);
 
 	/**
 	 * @name setGlobal
@@ -549,6 +543,18 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 			>
 				{tab === "Mine" ? (
 					<>
+						{/* Error State */}
+						{getProjects.isError ||
+						getFavoriteProjects.status === "ERROR" ? (
+							<CatalogLoadError
+								noun={`${config.name.toLowerCase()}s`}
+								onRetry={() => {
+									getProjects.reset();
+									getFavoriteProjects.refresh();
+								}}
+							/>
+						) : null}
+
 						{/* Loading State */}
 						{getFavoriteProjects.status === "LOADING" &&
 						getProjects.isLoading ? (
@@ -638,7 +644,9 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 
 						{/* Empty State */}
 						{!getProjects.isLoading &&
+							!getProjects.isError &&
 							getFavoriteProjects.status !== "LOADING" &&
+							getFavoriteProjects.status !== "ERROR" &&
 							nonBookmarked.length === 0 &&
 							getFavoriteProjects.data.length === 0 && (
 								<CatalogEmptyState
@@ -655,6 +663,14 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 				) : null}
 				{tab === "Discoverable" ? (
 					<>
+						{/* Error State */}
+						{getProjects.isError ? (
+							<CatalogLoadError
+								noun={`${config.name.toLowerCase()}s`}
+								onRetry={() => getProjects.reset()}
+							/>
+						) : null}
+
 						{/* Loading State */}
 						{getProjects.isLoading ? (
 							<div className="flex flex-col items-center justify-center py-6">
@@ -701,6 +717,7 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 
 						{/* Empty State */}
 						{!getProjects.isLoading &&
+							!getProjects.isError &&
 							getProjects.data.length === 0 && (
 								<CatalogEmptyState
 									noun={`${config.name.toLowerCase()}s`}

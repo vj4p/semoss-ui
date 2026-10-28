@@ -68,10 +68,12 @@ describe("CatalogFilterBox counts", () => {
 			},
 		];
 		renderBox();
-		const pill = screen.getByTestId("filterbox-Confidential-filterBtn");
+		const pill = screen.getByRole("button", {
+			name: "Filter by Confidential 4",
+		});
 		expect(pill).toHaveTextContent("Confidential4");
 		expect(
-			screen.getByTestId("filterbox-Public-filterBtn"),
+			screen.getByRole("button", { name: "Filter by Public 0" }),
 		).toHaveTextContent("Public0");
 	});
 
@@ -86,13 +88,42 @@ describe("CatalogFilterBox counts", () => {
 		];
 		renderBox();
 		expect(
-			screen.getByTestId("filterbox-text-generation-filterBtn"),
+			screen.getByRole("button", {
+				name: "Filter by text-generation 2",
+			}),
 		).toBeVisible();
 		expect(
-			screen.getByTestId("filterbox-Confidential-filterBtn"),
+			screen.getByRole("button", { name: "Filter by Confidential 4" }),
 		).toBeVisible();
 		expect(
-			screen.queryByTestId("filterbox-PHI Allowed-filterBtn"),
+			screen.queryByRole("button", { name: /PHI Allowed/ }),
 		).toBeNull();
+	});
+
+	it("names each pill with the text it shows, value and count (WCAG 2.5.3)", () => {
+		mocks.values = [
+			{
+				METAKEY: "data-classification",
+				METAVALUE: "Confidential",
+				count: 4,
+			},
+		];
+		render(
+			<CatalogFilterBox
+				type="MODEL"
+				filters={{ "data-classification": ["Confidential"] }}
+				onChange={() => undefined}
+			/>,
+		);
+		const selected = screen.getByRole("button", {
+			name: "Remove Confidential 4 filter",
+		});
+		expect(selected).toHaveAttribute("aria-pressed", "true");
+		// the unselected pill shows "Public" then "0", so its name holds "Public 0"
+		const unselected = screen.getByRole("button", {
+			name: "Filter by Public 0",
+		});
+		expect(unselected).toHaveAttribute("aria-pressed", "false");
+		expect(unselected).toHaveTextContent("Public0");
 	});
 });

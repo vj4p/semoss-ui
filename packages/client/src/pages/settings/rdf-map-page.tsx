@@ -130,8 +130,10 @@ export const RDFMapPage = () => {
 									const valueColor = toHex(
 										getCssVar(
 											"--primary",
-											"rgba(5, 112, 240, 1)",
+											// design-lint-disable-next-line arbitrary-hex -- Monaco needs a resolved color string, not a CSS variable; equals --primary in the dark theme
+											"rgba(63, 107, 234, 1)",
 										),
+										// design-lint-disable-next-line arbitrary-hex -- Monaco needs a resolved 6-digit hex; equals --primary in the dark theme (libs/ui globals.css)
 										"#3f6bea",
 									);
 									const background = toHex(

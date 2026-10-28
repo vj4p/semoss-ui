@@ -4,7 +4,6 @@ import { runPixel, useIteratorPixel, usePixel } from "@semoss/sdk/react";
 import type { Engine } from "@semoss/shared";
 import {
 	Button,
-	P,
 	Spinner,
 	toast,
 	useDebouncedValue,
@@ -12,14 +11,14 @@ import {
 } from "@semoss/ui/next";
 import { formatToDataTestId } from "@semoss/utility/text";
 import { setEngineFavorite, setEngineGlobal } from "@/api";
-import {
-	CatalogEmptyState,
-	CatalogFilterBox,
-	CatalogGrid,
-	CatalogLayout,
-	CatalogSearchBar,
-	CatalogTabs,
-} from "@/components/catalog";
+import { CatalogEmptyState } from "@/components/catalog/catalog-empty-state";
+import { CatalogFilterBox } from "@/components/catalog/catalog-filter-box";
+import { CatalogGrid } from "@/components/catalog/catalog-grid";
+import { CatalogLayout } from "@/components/catalog/catalog-layout";
+import { CatalogLoadError } from "@/components/catalog/catalog-load-error";
+import { CatalogSearchBar } from "@/components/catalog/catalog-search-bar";
+import { CatalogTabs } from "@/components/catalog/catalog-tabs";
+import { useCatalogFilters } from "@/components/catalog/use-catalog-filters";
 import { EngineGridItem } from "@/components/engine";
 import { NavbarHeader, NavbarLeft } from "@/components/shared";
 import { DeleteEntityDialog } from "@/components/shared/delete-entity-dialog";
@@ -27,7 +26,6 @@ import { useConfig } from "@/hooks";
 import { useNavigate } from "@/hooks/useNavigate";
 import {
 	buildAccessFilterParams,
-	type CatalogAccessFilter,
 	getEngineLabel,
 	isOwnerPermission,
 } from "@/utility/catalog";
@@ -73,27 +71,24 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 			return k.metakey;
 		});
 
-	const [search, setSearch] = useState("");
+	const [tab, setTab] = useState<string>("Mine");
+	const {
+		search,
+		setSearch,
+		metaFilters,
+		setMetaFilters,
+		access,
+		setAccess,
+		isFiltered,
+		clearFilters,
+	} = useCatalogFilters(tab);
 	const debouncedSearch = useDebouncedValue(search);
 	const [sortValue, setSortValue] = useState("ENGINENAME");
 	const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 	const [gridStyle, setGridStyle] = useState<"LIST" | "CARD">("LIST");
 
-	const [metaFilters, setMetaFilters] = useState<Record<string, unknown>>({});
-	const [access, setAccess] = useState<CatalogAccessFilter[]>([]);
 	const [filterKey, setFilterKey] = useState<number>(0);
-	const [tab, setTab] = useState<string>("Mine");
 
-	/** A search or a filter is narrowing what the catalog lists */
-	const isFiltered =
-		search.trim() !== "" ||
-		Object.keys(metaFilters).length > 0 ||
-		(tab === "Mine" && access.length > 0);
-	const clearFilters = () => {
-		setSearch("");
-		setMetaFilters({});
-		setAccess([]);
-	};
 	// the access filters apply to what the user can already use
 	const accessParams = tab === "Mine" ? buildAccessFilterParams(access) : "";
 
@@ -185,14 +180,12 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 			return;
 		}
 
-		setSearch("");
-		setMetaFilters({});
-		setAccess([]);
+		clearFilters();
 		setSortValue("ENGINENAME");
 		setSortOrder("ASC");
 		setGridStyle("LIST");
 		resetScroll();
-	}, [route.type, resetScroll]);
+	}, [route.type, resetScroll, clearFilters]);
 
 	/**
 	 * @name setGlobal
@@ -274,11 +267,6 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 			setEngineToDelete(null);
 		}
 	};
-
-	// if there is an error show this
-	if (getEngines.isError) {
-		return <P>ERROR</P>;
-	}
 
 	/**
 	 * Handle delete request
@@ -375,6 +363,18 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 			>
 				{tab === "Mine" && (
 					<>
+						{/* Error State */}
+						{getEngines.isError ||
+						getFavoritedEngines.status === "ERROR" ? (
+							<CatalogLoadError
+								noun={`${route.name.toLowerCase()}s`}
+								onRetry={() => {
+									getEngines.reset();
+									getFavoritedEngines.refresh();
+								}}
+							/>
+						) : null}
+
 						{/* Loading State */}
 						{getFavoritedEngines.status === "LOADING" &&
 						getEngines.isLoading ? (
@@ -454,7 +454,9 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 
 						{/* Empty State */}
 						{!getEngines.isLoading &&
+							!getEngines.isError &&
 							getFavoritedEngines.status !== "LOADING" &&
+							getFavoritedEngines.status !== "ERROR" &&
 							nonBookmarked.length === 0 &&
 							getFavoritedEngines.data.length === 0 && (
 								<CatalogEmptyState
@@ -471,6 +473,14 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 				)}
 				{tab === "Discoverable" && (
 					<>
+						{/* Error State */}
+						{getEngines.isError ? (
+							<CatalogLoadError
+								noun={`${route.name.toLowerCase()}s`}
+								onRetry={() => getEngines.reset()}
+							/>
+						) : null}
+
 						{/* Loading State */}
 						{getEngines.isLoading ? (
 							<div className="flex flex-col items-center justify-center py-6">
@@ -515,6 +525,7 @@ export const EngineIndexPage: React.FC<EngineIndexPageProps> = ({
 
 						{/* Empty State */}
 						{!getEngines.isLoading &&
+							!getEngines.isError &&
 							getEngines.data.length === 0 && (
 								<CatalogEmptyState
 									noun={`${route.name.toLowerCase()}s`}

@@ -1,4 +1,4 @@
-import { Button, H4, P } from "@semoss/ui/next";
+import { Button, H3, P } from "@semoss/ui/next";
 
 export interface CatalogEmptyStateProps {
 	/** What the catalog lists, plural and lower case, such as "agents" */
@@ -40,7 +40,7 @@ export const CatalogEmptyState = ({
 
 	return (
 		<output className="flex w-full flex-col items-center gap-2 px-2 py-12 text-center">
-			<H4>{title}</H4>
+			<H3 className="text-xl">{title}</H3>
 			<P className="max-w-prose text-muted-foreground text-sm">
 				{description}
 			</P>
