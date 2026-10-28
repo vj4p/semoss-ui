@@ -2,28 +2,13 @@ import { useEffect, useState } from "react";
 import type { Session } from "@semoss/agent-core";
 import { runPixel } from "@semoss/sdk";
 import { Spinner } from "@semoss/ui/next";
+import { type CostSummary, summarizeCost } from "./cost-summary";
 import { OverlayContainer } from "./overlay-container";
 
 export interface CostOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
 	session: Session | null;
-}
-
-interface CostBreakdown {
-	model: string;
-	inputTokens: number;
-	outputTokens: number;
-	totalTokens: number;
-	estimatedCost: number;
-	calls: number;
-}
-
-interface CostSummary {
-	totalCost: number;
-	totalTokens: number;
-	totalCalls: number;
-	byModel: CostBreakdown[];
 }
 
 /**
@@ -33,6 +18,7 @@ interface CostSummary {
 export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 	const [loading, setLoading] = useState(true);
 	const [summary, setSummary] = useState<CostSummary | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!open || !session) {
@@ -41,107 +27,28 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 
 		const fetchCostData = async () => {
 			setLoading(true);
-
 			try {
-				const state = session.getState();
-				const roomId = state.roomId;
-
+				const roomId = session.getState().roomId;
 				if (!roomId) {
-					// No room yet, show empty state
-					setSummary({
-						totalCost: 0,
-						totalTokens: 0,
-						totalCalls: 0,
-						byModel: [],
-					});
-					setLoading(false);
+					// No room yet, so nothing has been used.
+					setSummary(null);
 					return;
 				}
-
-				// Call GetModelCost Pixel
-				type CostResponse = {
-					models: Array<{
-						modelId: string;
-						modelName: string;
-						llmCalls: number;
-						inputTokens: number;
-						outputTokens: number;
-						thinkingTokens: number;
-						cacheReadTokens: number;
-						cacheWriteTokens: number;
-						cost: number | null;
-						priced: boolean;
-					}>;
-					totals: {
-						llmCalls: number;
-						inputTokens: number;
-						outputTokens: number;
-						thinkingTokens: number;
-						cacheReadTokens: number;
-						cacheWriteTokens: number;
-						cost: number | null;
-						currency: string;
-					};
-					coverage: {
-						pricedModels: number;
-						unpricedModels: number;
-						complete: boolean;
-					};
-				};
-
-				const response = await runPixel<[CostResponse]>(
-					`GetModelCost(roomId=["${roomId}"])`,
+				const response = await runPixel<[unknown]>(
+					`GetModelCost(roomId=[${JSON.stringify(roomId)}])`,
 				);
-
 				if (response.errors.length > 0) {
-					console.error("GetModelCost error:", response.errors);
-					setSummary({
-						totalCost: 0,
-						totalTokens: 0,
-						totalCalls: 0,
-						byModel: [],
-					});
-					setLoading(false);
-					return;
+					throw new Error(response.errors[0]);
 				}
-
-				const data = response.pixelReturn[0]?.output;
-				if (!data) {
-					setSummary({
-						totalCost: 0,
-						totalTokens: 0,
-						totalCalls: 0,
-						byModel: [],
-					});
-					setLoading(false);
-					return;
-				}
-
-				// Map backend response to CostSummary
-				const costSummary: CostSummary = {
-					totalCost: data.totals.cost ?? 0,
-					totalTokens:
-						data.totals.inputTokens + data.totals.outputTokens,
-					totalCalls: data.totals.llmCalls,
-					byModel: data.models.map((m) => ({
-						model: m.modelName || m.modelId,
-						inputTokens: m.inputTokens,
-						outputTokens: m.outputTokens,
-						totalTokens: m.inputTokens + m.outputTokens,
-						estimatedCost: m.cost ?? 0,
-						calls: m.llmCalls,
-					})),
-				};
-
-				setSummary(costSummary);
-			} catch (error) {
-				console.error("Failed to fetch cost data:", error);
-				setSummary({
-					totalCost: 0,
-					totalTokens: 0,
-					totalCalls: 0,
-					byModel: [],
-				});
+				setSummary(summarizeCost(response.pixelReturn[0]?.output));
+				setError(null);
+			} catch (err) {
+				setSummary(null);
+				setError(
+					err instanceof Error
+						? err.message
+						: "Could not load the usage",
+				);
 			} finally {
 				setLoading(false);
 			}
@@ -166,11 +73,28 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 		return tokens.toString();
 	};
 
+	/** A total from priced models alone is a minimum, so it says so; with none priced there is no total. */
+	const totalCostLabel = (s: CostSummary) =>
+		s.pricedCost === null
+			? "No price"
+			: s.complete
+				? formatCost(s.pricedCost)
+				: `${formatCost(s.pricedCost)}+`;
+
 	return (
 		<OverlayContainer open={open} onDismiss={onDismiss} title=":cost">
 			{loading ? (
 				<div className="flex items-center justify-center py-12">
 					<Spinner />
+				</div>
+			) : error ? (
+				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+					<p className="font-mono text-destructive text-sm">
+						{error}
+					</p>
+					<p className="text-muted-foreground text-xs">
+						Unable to load this room's usage
+					</p>
 				</div>
 			) : !summary || summary.totalCalls === 0 ? (
 				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
@@ -184,8 +108,7 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 				</div>
 			) : (
 				<div className="space-y-6">
-					{/* Summary card */}
-					<div className="rounded-lg border bg-accent/10 p-4">
+					<div className="rounded-lg border bg-accent p-4">
 						<h3 className="mb-3 font-mono font-semibold text-sm">
 							Session Summary
 						</h3>
@@ -195,7 +118,7 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 									Total Cost
 								</p>
 								<p className="font-mono font-semibold text-lg">
-									{formatCost(summary.totalCost)}
+									{totalCostLabel(summary)}
 								</p>
 							</div>
 							<div>
@@ -217,26 +140,25 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 						</div>
 					</div>
 
-					{/* Per-model breakdown */}
-					{summary.byModel.length > 0 && (
+					{summary.models.length > 0 && (
 						<div className="space-y-2">
 							<h3 className="font-mono font-semibold text-sm">
-								By Model ({summary.byModel.length})
+								By Model ({summary.models.length})
 							</h3>
 							<div className="space-y-2">
-								{summary.byModel.map((model) => (
+								{summary.models.map((model) => (
 									<div
-										key={model.model}
+										key={model.name}
 										className="flex flex-col gap-2 rounded border p-3"
 									>
 										<div className="flex items-center justify-between">
 											<span className="font-medium font-mono text-sm">
-												{model.model}
+												{model.name}
 											</span>
 											<span className="font-mono font-semibold">
-												{formatCost(
-													model.estimatedCost,
-												)}
+												{model.cost === null
+													? "No price"
+													: formatCost(model.cost)}
 											</span>
 										</div>
 										<div className="grid grid-cols-4 gap-2 font-mono text-muted-foreground text-xs">
@@ -285,11 +207,25 @@ export const CostOverlay = ({ open, onDismiss, session }: CostOverlayProps) => {
 						</div>
 					)}
 
-					{/* Info note */}
 					<div className="rounded border border-info bg-info-tint p-3">
 						<p className="font-mono text-info text-xs">
-							<strong>Note:</strong> Costs are estimates based on
-							published rates and may not reflect actual billing.
+							{summary.unpricedModels === 0 ? (
+								<>
+									<strong>Note:</strong> Costs are estimates
+									based on published rates and may not reflect
+									actual billing.
+								</>
+							) : (
+								<>
+									<strong>
+										No price for {summary.unpricedModels} of{" "}
+										{summary.models.length} models.
+									</strong>{" "}
+									{summary.pricedCost === null
+										? "There is no published rate for the model this room used, so its cost is unknown, not zero."
+										: "The total counts only the models that have one, so the room cost at least this much."}
+								</>
+							)}
 						</p>
 					</div>
 				</div>

@@ -1,364 +1,241 @@
-import type React from "react";
-import { useEffect, useState } from "react";
+import {
+	ChevronDownIcon,
+	ChevronRightIcon,
+	FileIcon,
+	FolderIcon,
+} from "lucide-react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { runPixel } from "@semoss/sdk";
 import { Spinner } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
+import {
+	browseRoomFolderPixel,
+	folderPathOf,
+	parseRoomFolderListing,
+	ROOM_FOLDER_ROOT,
+	type RoomFileEntry,
+} from "./room-files";
 
 export interface FilesOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
+	/** The insight the room is bound to. Absent until the session has a room. */
+	insightId?: string;
 }
 
-interface FileNode {
-	name: string;
-	path: string;
-	type: "file" | "directory";
-	size?: number;
-	children?: FileNode[];
-	expanded?: boolean;
-}
+type Listing =
+	| { status: "loading" }
+	| { status: "error"; message: string }
+	| { status: "ready"; entries: RoomFileEntry[] };
 
 /**
- * The `:files` overlay — browse files in the current workspace.
- * Loads real file tree from the file system via Bash commands.
+ * The `:files` overlay — the files in the room's workspace.
+ *
+ * Lists the room's folder, which is where its agent works, one folder at a time
+ * as each is opened. A room that does not exist yet has no folder to list.
  */
-export const FilesOverlay = ({ open, onDismiss }: FilesOverlayProps) => {
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [files, setFiles] = useState<FileNode[]>([]);
-	const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-	const [searchQuery, setSearchQuery] = useState("");
+export const FilesOverlay = ({
+	open,
+	onDismiss,
+	insightId,
+}: FilesOverlayProps) => {
+	const [listings, setListings] = useState<Record<string, Listing>>({});
+	const [expanded, setExpanded] = useState<Set<string>>(new Set());
+	const [query, setQuery] = useState("");
 
+	const load = useCallback(
+		async (folder: string) => {
+			if (!insightId) {
+				return;
+			}
+			setListings((prev) => ({
+				...prev,
+				[folder]: { status: "loading" },
+			}));
+			try {
+				const response = await runPixel<[unknown]>(
+					browseRoomFolderPixel(folder),
+					insightId,
+				);
+				if (response.errors.length > 0) {
+					throw new Error(response.errors[0]);
+				}
+				setListings((prev) => ({
+					...prev,
+					[folder]: {
+						status: "ready",
+						entries: parseRoomFolderListing(
+							response.pixelReturn[0]?.output,
+						),
+					},
+				}));
+			} catch (err) {
+				setListings((prev) => ({
+					...prev,
+					[folder]: {
+						status: "error",
+						message:
+							err instanceof Error
+								? err.message
+								: "Could not list this folder",
+					},
+				}));
+			}
+		},
+		[insightId],
+	);
+
+	// Each time the overlay opens, start from the room's top folder: files come
+	// and go while the agent works, so a listing from last time is stale.
 	useEffect(() => {
 		if (!open) {
 			return;
 		}
+		setListings({});
+		setExpanded(new Set());
+		setQuery("");
+		void load(ROOM_FOLDER_ROOT);
+	}, [open, load]);
 
-		const loadFiles = async () => {
-			setLoading(true);
-			setError(null);
-
-			try {
-				// Get current working directory first
-				const cwdResult = (await runPixel(
-					'Bash(command=["pwd"]);',
-				)) as unknown;
-				let cwd = ".";
-				if (typeof cwdResult === "string") {
-					const trimmed = cwdResult.trim();
-					if (trimmed) {
-						cwd = trimmed;
-					}
-				}
-
-				// Get file tree using find command
-				// Excludes common directories that shouldn't be browsed
-				const findCommand = `find "${cwd}" -maxdepth 4 \\
-					\\( -path "*/node_modules" -o \\
-					   -path "*/.git" -o \\
-					   -path "*/dist" -o \\
-					   -path "*/build" -o \\
-					   -path "*/target" -o \\
-					   -path "*/.next" -o \\
-					   -path "*/__pycache__" \\
-					\\) -prune -o -print`;
-
-				const result = (await runPixel(
-					`Bash(command=["${findCommand.replace(/"/g, '\\"')}"]);`,
-				)) as unknown;
-
-				const output =
-					typeof result === "string"
-						? result
-						: JSON.stringify(result);
-				const lines = output.split("\n").filter((line) => line.trim());
-
-				// Build tree structure
-				const tree = buildFileTree(lines, cwd);
-				setFiles(tree);
-			} catch (err) {
-				console.error("Failed to load files:", err);
-				setError(
-					err instanceof Error
-						? err.message
-						: "Failed to load file tree",
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		loadFiles();
-	}, [open]);
-
-	const toggleExpanded = (path: string) => {
-		setExpandedPaths((prev) => {
+	const toggle = (entry: RoomFileEntry) => {
+		const folder = folderPathOf(entry);
+		const isOpen = expanded.has(folder);
+		setExpanded((prev) => {
 			const next = new Set(prev);
-			if (next.has(path)) {
-				next.delete(path);
+			if (isOpen) {
+				next.delete(folder);
 			} else {
-				next.add(path);
+				next.add(folder);
 			}
 			return next;
 		});
+		if (!isOpen && !listings[folder]) {
+			void load(folder);
+		}
 	};
 
-	const copyPath = (path: string) => {
-		navigator.clipboard.writeText(path);
-	};
+	const needle = query.trim().toLowerCase();
 
-	// Filter tree by search query
-	const filterTree = (nodes: FileNode[], query: string): FileNode[] => {
-		if (!query) return nodes;
-
-		const lowerQuery = query.toLowerCase();
-		const filtered = nodes
-			.map((node) => {
-				const matchesName = node.name
-					.toLowerCase()
-					.includes(lowerQuery);
-				const children = node.children
-					? filterTree(node.children, query)
-					: undefined;
-				const hasMatchingChildren = children && children.length > 0;
-
-				if (matchesName || hasMatchingChildren) {
-					return { ...node, children };
-				}
-				return null;
-			})
-			.filter((node) => node !== null) as FileNode[];
-		return filtered;
-	};
-
-	const renderTree = (nodes: FileNode[], depth = 0): React.ReactElement[] => {
-		return nodes.map((node) => {
-			const isExpanded = expandedPaths.has(node.path);
-			const hasChildren = node.children && node.children.length > 0;
-
+	const renderFolder = (folder: string, depth: number): ReactNode => {
+		const listing = listings[folder];
+		if (!listing || listing.status === "loading") {
 			return (
-				<div key={node.path}>
+				<div
+					className="flex items-center gap-2 px-2 py-1"
+					style={{ paddingInlineStart: `${depth * 1.5 + 0.5}rem` }}
+				>
+					<Spinner />
+				</div>
+			);
+		}
+		if (listing.status === "error") {
+			return (
+				<p
+					className="px-2 py-1 font-mono text-destructive text-xs"
+					style={{ paddingInlineStart: `${depth * 1.5 + 0.5}rem` }}
+				>
+					{listing.message}
+				</p>
+			);
+		}
+		const entries = needle
+			? listing.entries.filter(
+					(entry) =>
+						entry.isDirectory ||
+						entry.name.toLowerCase().includes(needle),
+				)
+			: listing.entries;
+		if (entries.length === 0) {
+			return (
+				<p
+					className="px-2 py-1 font-mono text-muted-foreground text-xs"
+					style={{ paddingInlineStart: `${depth * 1.5 + 0.5}rem` }}
+				>
+					{depth === 0 ? "No files yet" : "Empty folder"}
+				</p>
+			);
+		}
+		return entries.map((entry) => {
+			const entryFolder = folderPathOf(entry);
+			const isOpen = expanded.has(entryFolder);
+			return (
+				<div key={entry.path}>
 					<button
 						type="button"
-						onClick={() => {
-							if (node.type === "directory") {
-								toggleExpanded(node.path);
-							} else {
-								copyPath(node.path);
-							}
+						onClick={() =>
+							entry.isDirectory
+								? toggle(entry)
+								: void navigator.clipboard?.writeText(
+										entry.path,
+									)
+						}
+						className="flex w-full items-center gap-2 rounded px-2 py-1 text-start font-mono text-sm hover:bg-accent"
+						style={{
+							paddingInlineStart: `${depth * 1.5 + 0.5}rem`,
 						}}
-						className="flex w-full items-center gap-2 rounded px-2 py-1 font-mono text-sm hover:bg-accent/50"
-						style={{ paddingLeft: `${depth * 1.5 + 0.5}rem` }}
+						aria-expanded={entry.isDirectory ? isOpen : undefined}
 						title={
-							node.type === "directory"
-								? "Click to expand/collapse"
-								: "Click to copy path"
+							entry.isDirectory
+								? "Open or close this folder"
+								: "Copy this file's path"
 						}
 					>
-						{node.type === "directory" && (
-							<span className="text-muted-foreground">
-								{isExpanded ? "▾" : "▸"}
-							</span>
+						{entry.isDirectory ? (
+							isOpen ? (
+								<ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
+							) : (
+								<ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
+							)
+						) : (
+							<span className="size-4 shrink-0" />
 						)}
-						<span className="text-muted-foreground">
-							{node.type === "directory"
-								? "📁"
-								: getFileIcon(node.name)}
-						</span>
-						<span className="flex-1 truncate">{node.name}</span>
-						{node.size !== undefined && (
-							<span className="text-muted-foreground text-xs">
-								{formatFileSize(node.size)}
-							</span>
+						{entry.isDirectory ? (
+							<FolderIcon className="size-4 shrink-0 text-muted-foreground" />
+						) : (
+							<FileIcon className="size-4 shrink-0 text-muted-foreground" />
 						)}
+						<span className="flex-1 truncate">{entry.name}</span>
 					</button>
-					{node.type === "directory" &&
-						isExpanded &&
-						hasChildren &&
-						node.children &&
-						renderTree(node.children, depth + 1)}
+					{entry.isDirectory &&
+						isOpen &&
+						renderFolder(entryFolder, depth + 1)}
 				</div>
 			);
 		});
 	};
 
-	const filteredFiles = filterTree(files, searchQuery);
-
 	return (
 		<OverlayContainer open={open} onDismiss={onDismiss} title=":files">
-			<div className="flex flex-col gap-4">
-				{/* Search input */}
-				<div className="sticky top-0 bg-background pb-2">
-					<input
-						type="text"
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						placeholder="Search files..."
-						className="w-full rounded border bg-background px-3 py-2 font-mono text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
-					/>
+			{!insightId ? (
+				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+					<p className="font-mono text-muted-foreground text-sm">
+						No room yet
+					</p>
+					<p className="text-muted-foreground text-xs">
+						The room's files appear here once you send a message.
+					</p>
 				</div>
-
-				{loading ? (
-					<div className="flex items-center justify-center py-12">
-						<Spinner />
+			) : (
+				<div className="flex flex-col gap-4">
+					<div className="sticky top-0 bg-background pb-2">
+						<input
+							type="text"
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							placeholder="Filter files in the folders you have opened"
+							aria-label="Filter files"
+							className="w-full rounded border bg-background px-3 py-2 font-mono text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
+						/>
 					</div>
-				) : error ? (
-					<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-						<p className="font-mono text-destructive text-sm">
-							{error}
-						</p>
-						<p className="text-muted-foreground text-xs">
-							Unable to load file tree
-						</p>
-					</div>
-				) : filteredFiles.length === 0 ? (
-					<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-						<p className="font-mono text-muted-foreground text-sm">
-							{searchQuery
-								? "No matching files"
-								: "No files found"}
-						</p>
-					</div>
-				) : (
+					<p className="font-mono text-muted-foreground text-xs">
+						Open a folder to list it. Select a file to copy its
+						path.
+					</p>
 					<div className="space-y-1 overflow-y-auto">
-						<p className="mb-2 font-mono text-muted-foreground text-xs">
-							Click directories to expand/collapse • Click files
-							to copy path
-						</p>
-						{renderTree(filteredFiles)}
+						{renderFolder(ROOM_FOLDER_ROOT, 0)}
 					</div>
-				)}
-			</div>
+				</div>
+			)}
 		</OverlayContainer>
 	);
-};
-
-/**
- * Build a hierarchical tree from flat file paths.
- */
-const buildFileTree = (paths: string[], rootPath: string): FileNode[] => {
-	const tree: FileNode[] = [];
-	const pathMap = new Map<string, FileNode>();
-
-	// Sort paths so directories come before their contents
-	const sortedPaths = [...paths].sort();
-
-	for (const fullPath of sortedPaths) {
-		if (!fullPath || fullPath === rootPath) continue;
-
-		// Get relative path from root
-		const relativePath = fullPath.startsWith(rootPath)
-			? fullPath.slice(rootPath.length).replace(/^\//, "")
-			: fullPath;
-
-		if (!relativePath) continue;
-
-		const parts = relativePath.split("/");
-		const name = parts[parts.length - 1];
-
-		// Determine if it's a directory (heuristic: ends with no extension or is a known directory)
-		const isDirectory =
-			fullPath.endsWith("/") ||
-			!name.includes(".") ||
-			[
-				"src",
-				"lib",
-				"components",
-				"hooks",
-				"pages",
-				"api",
-				"utils",
-			].includes(name);
-
-		const node: FileNode = {
-			name,
-			path: fullPath,
-			type: isDirectory ? "directory" : "file",
-			children: isDirectory ? [] : undefined,
-		};
-
-		pathMap.set(fullPath, node);
-
-		// Find parent
-		if (parts.length === 1) {
-			// Top-level node
-			tree.push(node);
-		} else {
-			// Child node - find parent directory
-			const parentPath = parts.slice(0, -1).join("/");
-			const fullParentPath = rootPath
-				? `${rootPath}/${parentPath}`
-				: parentPath;
-			let parent = pathMap.get(fullParentPath);
-
-			// Create parent if it doesn't exist
-			if (!parent) {
-				parent = {
-					name: parts[parts.length - 2],
-					path: fullParentPath,
-					type: "directory",
-					children: [],
-				};
-				pathMap.set(fullParentPath, parent);
-
-				// Add parent to tree or its parent
-				if (parts.length === 2) {
-					tree.push(parent);
-				}
-			}
-
-			if (parent.children) {
-				parent.children.push(node);
-			}
-		}
-	}
-
-	return tree;
-};
-
-/**
- * Get an appropriate icon for a file based on its extension.
- */
-const getFileIcon = (filename: string): string => {
-	const ext = filename.split(".").pop()?.toLowerCase();
-
-	switch (ext) {
-		case "ts":
-		case "tsx":
-		case "js":
-		case "jsx":
-			return "📄";
-		case "json":
-			return "📋";
-		case "md":
-			return "📝";
-		case "css":
-		case "scss":
-			return "🎨";
-		case "test.ts":
-		case "test.tsx":
-		case "spec.ts":
-			return "🧪";
-		case "py":
-			return "🐍";
-		case "java":
-			return "☕";
-		case "xml":
-		case "html":
-			return "📰";
-		case "yml":
-		case "yaml":
-			return "⚙️";
-		default:
-			return "📄";
-	}
-};
-
-/**
- * Format file size in human-readable format.
- */
-const formatFileSize = (bytes: number): string => {
-	if (bytes < 1024) return `${bytes}B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 };

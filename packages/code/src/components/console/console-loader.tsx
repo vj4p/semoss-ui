@@ -86,6 +86,7 @@ const RoomLoader = ({
 					<FilesOverlay
 						open={activeOverlay === "files"}
 						onDismiss={() => setActiveOverlay(null)}
+						insightId={room.openedRoom?.insightId}
 					/>
 					<DiffOverlay
 						open={activeOverlay === "diff"}

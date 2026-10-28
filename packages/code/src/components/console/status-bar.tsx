@@ -176,20 +176,24 @@ export const StatusBar = ({
 					</ul>
 				</div>
 			)}
-			{/* Phase 4c placeholders - full implementation pending cost tracking */}
+			{/*
+			 * Placeholders. They show a dash, not a zero: nothing feeds them yet, and
+			 * "$ 0.00" read as a measured cost (a room on an unpriced model is not
+			 * free). The real cost is in :cost.
+			 */}
 			<p
 				className="flex items-baseline gap-1.5 opacity-50"
-				title="Session cost (implementation pending)"
+				title="Session cost (not shown here yet, see :cost)"
 			>
 				<span>$</span>
-				<span className="text-foreground">0.00</span>
+				<span className="text-foreground">—</span>
 			</p>
 			<p
 				className="flex items-baseline gap-1.5 opacity-50"
-				title="Context usage (implementation pending)"
+				title="Context usage (not shown here yet)"
 			>
 				<span>ctx</span>
-				<span className="text-foreground">0%</span>
+				<span className="text-foreground">—</span>
 			</p>
 			<p
 				className="flex items-baseline gap-1.5 opacity-50"

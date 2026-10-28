@@ -29,13 +29,13 @@ export const PacksOverlay = ({ open, onDismiss }: PacksOverlayProps) => {
 			setError(null);
 
 			try {
-				// Create a minimal PixelRunner from the SDK's env
+				// runPixel already returns the response the reader wants, with
+				// the operations under pixelReturn. Wrapping it once more put the
+				// whole response where the pack list should be, so no pack was
+				// ever found.
 				const runner = {
 					actions: {
-						run: async (pixel: string) => {
-							const result = await runPixel(pixel);
-							return { pixelReturn: [{ output: result }] };
-						},
+						run: (pixel: string) => runPixel(pixel),
 					},
 				};
 
