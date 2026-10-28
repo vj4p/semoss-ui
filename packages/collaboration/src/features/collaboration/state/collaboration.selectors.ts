@@ -67,14 +67,26 @@ export function selectWorkItems(
 				return false;
 			// automated mail (by the classifier or sender typing) is not work
 			if (thread?.automated && item.status !== "done") return false;
-			if (options.view === "waiting") return item.status === "waiting";
+			// The server's two views, kept in step: Waiting is what is parked on someone
+			// else, which includes an open item whose ask is "waiting on" them.
+			if (options.view === "waiting")
+				return (
+					item.status === "waiting" ||
+					(item.status === "open" && item.askType === "waiting_on")
+				);
 			if (options.view === "done_today") return item.status === "done";
 			if (options.view === "snoozed") return item.status === "snoozed";
 			if (options.view === "suggested")
 				return item.status === "open" && item.suggested === true;
-			// For you: FYI updates stay on their topic pages, not in the queue
+			// For you: FYI updates stay on their topic pages, and what you are waiting
+			// on or the classifier is unsure of is in its own list, not in the queue
 			if (options.view === "needs_me")
-				return item.status === "open" && item.askType !== "fyi";
+				return (
+					item.status === "open" &&
+					item.askType !== "fyi" &&
+					item.askType !== "waiting_on" &&
+					item.suggested !== true
+				);
 			return item.status === "open";
 		})
 		.sort((a, b) =>

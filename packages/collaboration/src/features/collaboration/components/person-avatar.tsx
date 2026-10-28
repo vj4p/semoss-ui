@@ -13,11 +13,14 @@ export function PersonAvatar({
 	/** Replaces the color picked from the name. */
 	tone?: string;
 }) {
+	// The hue is the tint behind the letters, not the letters: the lighter chart
+	// colors read at 2.6 to 3.4 against their own tint, short of the 4.5 that
+	// text needs.
 	const tones = [
-		"bg-chart-1/10 text-chart-1",
-		"bg-chart-2/10 text-chart-2",
-		"bg-chart-3/10 text-chart-3",
-		"bg-primary/10 text-primary-text",
+		"bg-chart-1/10",
+		"bg-chart-2/10",
+		"bg-chart-3/10",
+		"bg-primary/10",
 	];
 	const nameTone =
 		tones[
@@ -32,9 +35,8 @@ export function PersonAvatar({
 			aria-hidden="true"
 		>
 			<AvatarFallback
-				// some chart colors are too deep to read as text on the dark theme
 				className={cn(
-					"font-medium text-xs dark:text-foreground",
+					"font-medium text-foreground text-xs",
 					tone ?? nameTone,
 				)}
 			>
