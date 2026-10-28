@@ -160,6 +160,11 @@ export interface WorkItem {
 	status: ItemStatus;
 	topicIds: string[];
 	suggested?: boolean;
+	/**
+	 * The person this item is handed to, when it is not the owner's own to do. The
+	 * server keeps such an item out of "needs you" and lists it under Waiting.
+	 */
+	assignee?: string;
 	completedAt?: string;
 	/** Why it closed; "no_response_needed" is the owner's correction for the classifier. */
 	closedReason?: string;

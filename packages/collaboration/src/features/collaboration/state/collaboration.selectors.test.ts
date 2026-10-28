@@ -43,17 +43,19 @@ describe("selectWorkItems views follow the server's", () => {
 		{ id: "waiting-on-open", askType: "waiting_on", status: "open" },
 		{ id: "waiting-status", askType: "reply", status: "waiting" },
 		{ id: "suggested", askType: "reply", suggested: true },
+		{ id: "handed-off", askType: "reply", assignee: "person-1" },
 		{ id: "done", askType: "reply", status: "done" },
 	]);
 
-	it("needs_me leaves out FYI, what you are waiting on, and what the classifier is unsure of", () => {
+	it("needs_me leaves out FYI, what you are waiting on, what is handed to someone, and what the classifier is unsure of", () => {
 		expect(ids(selectWorkItems(state, { view: "needs_me" }).items)).toEqual(
 			["approve", "reply"],
 		);
 	});
 
-	it("waiting holds a waiting item and an open item whose ask is waiting on someone", () => {
+	it("waiting holds a waiting item, an open item whose ask is waiting on someone, and one handed to a person", () => {
 		expect(ids(selectWorkItems(state, { view: "waiting" }).items)).toEqual([
+			"handed-off",
 			"waiting-on-open",
 			"waiting-status",
 		]);

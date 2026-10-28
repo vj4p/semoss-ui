@@ -367,6 +367,7 @@ export function mapItem(row: Row): WorkItem {
 		status: (row.status as WorkItem["status"]) ?? "open",
 		topicIds: list<string>(row.topicIds),
 		suggested: row.suggested === true ? true : undefined,
+		assignee: opt(row.assignee),
 		completedAt: row.status === "done" ? opt(row.closedAt) : undefined,
 		closedReason: opt(row.closedReason),
 		snoozeUntil: opt(row.snoozeUntil),
