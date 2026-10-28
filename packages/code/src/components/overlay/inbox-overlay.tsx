@@ -1,124 +1,110 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { runPixel } from "@semoss/sdk";
-import { Spinner } from "@semoss/ui/next";
+import { useCallback } from "react";
+import { Link } from "react-router";
+import { useTranslation } from "@semoss/i18n";
+import { Button, Muted, P } from "@semoss/ui/next";
+import { getPendingActions } from "@/api/room-data";
+import { useOverlayQuery } from "@/hooks/use-overlay-query";
+import { agoOf } from "@/utility/server-time";
 import { OverlayContainer } from "./overlay-container";
-import { type PendingAction, parsePendingActions } from "./pending-actions";
-import { formatAgo } from "./server-time";
+import { OverlayEmpty } from "./overlay-empty";
+import { OverlayError } from "./overlay-error";
+import { OverlayLoading } from "./overlay-loading";
 
 export interface InboxOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
+	/** The room's insight, when there is a room. The list itself is not about one room. */
+	insightId?: string;
 }
 
+/** How much of a room's id a row shows; enough to tell rooms apart. */
+const SHORT_ID = 8;
+
 /**
- * The `:inbox` overlay — the agent actions waiting on you, across all your rooms.
+ * The `:inbox` overlay: the agent actions waiting on you, across all your rooms.
  *
  * An agent that wants to do something a person must approve waits in its own
  * room, so a console on a different room would never hear of it. The list is
  * the platform's own, scoped to the signed-in user. Deciding an action happens
  * in its room, so each row opens that room.
+ *
+ * @name InboxOverlay
+ * @param props.open - Whether the overlay is showing.
+ * @param props.onDismiss - Called to close it.
+ * @param props.insightId - The room's insight, when there is one.
  */
-export const InboxOverlay = ({ open, onDismiss }: InboxOverlayProps) => {
-	const navigate = useNavigate();
-	const [loading, setLoading] = useState(true);
-	const [actions, setActions] = useState<PendingAction[]>([]);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!open) {
-			return;
-		}
-		let cancelled = false;
-		setLoading(true);
-		setError(null);
-		runPixel<[unknown]>("GetPendingAgentActions();")
-			.then((response) => {
-				if (cancelled) return;
-				if (response.errors.length > 0) {
-					throw new Error(response.errors[0]);
-				}
-				setActions(
-					parsePendingActions(response.pixelReturn[0]?.output),
-				);
-			})
-			.catch((err: unknown) => {
-				if (cancelled) return;
-				setActions([]);
-				setError(
-					err instanceof Error
-						? err.message
-						: "Could not load the inbox",
-				);
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [open]);
+export const InboxOverlay = ({
+	open,
+	onDismiss,
+	insightId,
+}: InboxOverlayProps) => {
+	const { t } = useTranslation("code");
+	const load = useCallback(() => getPendingActions(insightId), [insightId]);
+	const { state, reload } = useOverlayQuery(open, load);
 
 	return (
 		<OverlayContainer open={open} onDismiss={onDismiss} title=":inbox">
-			{loading ? (
-				<div className="flex items-center justify-center py-12">
-					<Spinner />
-				</div>
-			) : error ? (
-				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono text-destructive text-sm">
-						{error}
-					</p>
-					<p className="text-muted-foreground text-xs">
-						Unable to load the inbox
-					</p>
-				</div>
-			) : actions.length === 0 ? (
-				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono font-semibold text-sm">
-						Nothing waiting on you
-					</p>
-					<p className="text-muted-foreground text-xs">
-						Actions an agent needs you to approve will appear here.
-					</p>
-				</div>
+			{state.status === "loading" ? (
+				<OverlayLoading />
+			) : state.status === "error" ? (
+				<OverlayError error={state.error} onRetry={reload} />
+			) : state.data.length === 0 ? (
+				<OverlayEmpty
+					title={t("overlay.inbox.empty")}
+					description={t("overlay.inbox.emptyHint")}
+				/>
 			) : (
-				<div className="space-y-2">
-					<p className="mb-4 font-mono text-muted-foreground text-sm">
-						Waiting on you ({actions.length})
-					</p>
-					{actions.map((action) => (
-						<div
-							key={action.id}
-							className="flex items-center justify-between gap-3 rounded border p-3"
-						>
-							<div className="min-w-0">
-								<p className="truncate font-mono text-sm">
-									Approve {action.tool}
-								</p>
-								<p className="font-mono text-muted-foreground text-xs">
-									{action.createdAt
-										? formatAgo(action.createdAt)
-										: "unknown time"}
-									{" · room "}
-									{action.roomId.slice(0, 8)}
-								</p>
-							</div>
-							<button
-								type="button"
-								onClick={() => {
-									onDismiss();
-									navigate(
-										`/room/${encodeURIComponent(action.roomId)}`,
-									);
-								}}
-								className="shrink-0 rounded border px-3 py-1 font-mono text-sm hover:bg-accent"
-							>
-								Open room
-							</button>
-						</div>
-					))}
+				<div className="flex flex-col gap-4 font-mono">
+					<Muted>
+						{t("overlay.inbox.heading", {
+							count: state.data.length,
+						})}
+					</Muted>
+					<ul className="flex flex-col gap-2">
+						{state.data.map((action) => {
+							const ago = action.createdAt
+								? agoOf(action.createdAt)
+								: undefined;
+							return (
+								<li
+									key={action.id}
+									className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+								>
+									<div className="min-w-0">
+										<P className="break-words text-sm">
+											{t("overlay.inbox.approve", {
+												tool:
+													action.tool ||
+													t("overlay.inbox.anyTool"),
+											})}
+										</P>
+										<Muted className="text-xs">
+											{ago
+												? t(`overlay.ago.${ago.unit}`, {
+														count: ago.count,
+													})
+												: t("overlay.unknownTime")}
+											{" · "}
+											{t("overlay.inbox.room", {
+												id: action.roomId.slice(
+													0,
+													SHORT_ID,
+												),
+											})}
+										</Muted>
+									</div>
+									<Button variant="outline" size="sm" asChild>
+										<Link
+											to={`/room/${encodeURIComponent(action.roomId)}`}
+											onClick={onDismiss}
+										>
+											{t("overlay.inbox.openRoom")}
+										</Link>
+									</Button>
+								</li>
+							);
+						})}
+					</ul>
 				</div>
 			)}
 		</OverlayContainer>

@@ -51,7 +51,9 @@
 		"starting": "bezig met starten",
 		"running": "bezig",
 		"waiting": "wacht op u",
-		"stopping": "bezig met stoppen"
+		"stopping": "bezig met stoppen",
+		"cost": "Sessiekosten",
+		"openFiles": "Bestanden openen"
 	},
 	"theme": {
 		"mode": "Weergave",
@@ -246,6 +248,77 @@
 			"deny": "De wachtende toolaanroep weigeren (lege prompt)",
 			"edit": "De argumenten van de wachtende aanroep bewerken (lege prompt)",
 			"alwaysAllow": "Goedkeuren, en de tool voortaan zonder vragen toestaan (lege prompt)"
+		}
+	},
+	"overlay": {
+		"loading": "Laden",
+		"loadFailed": "Deze weergave kon niet worden geladen",
+		"retry": "Opnieuw proberen",
+		"unknownTime": "onbekende tijd",
+		"ago": {
+			"justNow": "zojuist",
+			"minutes": "{{count}} min geleden",
+			"hours": "{{count}} u geleden",
+			"days": "{{count}} d geleden"
+		},
+		"files": {
+			"noRoomTitle": "Nog geen ruimte",
+			"noRoomBody": "De bestanden van de ruimte verschijnen hier zodra je een bericht verstuurt.",
+			"filterLabel": "Bestanden filteren",
+			"filterPlaceholder": "Filter bestanden in de mappen die je hebt geopend",
+			"clearFilter": "Filter wissen",
+			"hint": "Open een map om de inhoud te tonen. Selecteer een bestand om het pad te kopieren.",
+			"empty": "Nog geen bestanden",
+			"emptyFolder": "Lege map",
+			"noMatch": "Geen bestand hier komt overeen met \"{{query}}\"",
+			"copied": "Gekopieerd: {{path}}",
+			"copyFailed": "Kopieren van {{path}} is mislukt"
+		},
+		"runs": {
+			"heading": "Uitvoergeschiedenis ({{count}} in totaal)",
+			"empty": "Nog geen uitvoeringen",
+			"emptyHint": "Stuur een prompt om je eerste uitvoering te starten",
+			"emptyPrompt": "(lege prompt)",
+			"seconds": "{{seconds}} s"
+		},
+		"cost": {
+			"summary": "Sessieoverzicht",
+			"totalCost": "Totale kosten",
+			"totalTokens": "Totaal aantal tokens",
+			"calls": "API-aanroepen",
+			"byModel": "Per model ({{count}})",
+			"input": "Invoer",
+			"output": "Uitvoer",
+			"total": "Totaal",
+			"callsShort": "Aanroepen",
+			"noPrice": "Geen prijs",
+			"unknownModel": "Onbekend model",
+			"empty": "Nog geen gebruiksgegevens",
+			"emptyHint": "Kostenregistratie verschijnt na je eerste interactie met een model",
+			"noteEstimate": "Kosten zijn schattingen op basis van gepubliceerde tarieven en komen mogelijk niet overeen met de werkelijke facturering.",
+			"noteUnpricedTitle": "Geen prijs voor {{count}} van de {{total}} modellen.",
+			"noteNoneRated": "Er is geen gepubliceerd tarief voor het model dat deze ruimte gebruikte, dus de kosten zijn onbekend, niet nul.",
+			"notePartial": "Het totaal telt alleen modellen met een prijs mee, dus de ruimte kostte minstens dit bedrag."
+		},
+		"inbox": {
+			"heading": "Wacht op jou ({{count}})",
+			"empty": "Niets wacht op jou",
+			"emptyHint": "Acties die een agent door jou wil laten goedkeuren verschijnen hier.",
+			"approve": "{{tool}} goedkeuren",
+			"anyTool": "een hulpmiddel",
+			"room": "ruimte {{id}}",
+			"openRoom": "Ruimte openen"
+		},
+		"packs": {
+			"heading": "Beschikbare vaardigheidspakketten ({{count}} in totaal)",
+			"empty": "Geen vaardigheidspakketten beschikbaar",
+			"emptyHint": "Pakketten zijn mogelijk uitgeschakeld of nog niet geconfigureerd",
+			"tools": "Hulpmiddelen: {{count}}",
+			"needApproval": "Goedkeuring vereist: {{count}}"
+		},
+		"diff": {
+			"title": "Geen wijzigingen om te vergelijken",
+			"body": "Voor een diff is een app met versiegeschiedenis nodig. Deze ruimte werkt in een eigen map, die er geen heeft. Gebruik :files om te zien wat de agent heeft geschreven."
 		}
 	}
 }

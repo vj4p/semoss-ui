@@ -19,6 +19,8 @@ import {
 	ThemeToggle,
 } from "@semoss/ui/next";
 import { useElapsedSeconds } from "@/hooks";
+import { useRoomCost } from "@/hooks/use-room-cost";
+import { costLabel } from "@/utility/cost-label";
 
 /**
  * What the console is doing, in the words of `status.*`. A call waiting for
@@ -56,7 +58,7 @@ const runState = (state: SessionState) => {
  * @name StatusBar
  * @param props.state - The session's state.
  * @param props.session - The session to switch.
- * @param props.openedRoom - The room the console opened, for its name.
+ * @param props.openedRoom - The room the console opened, for its name, and its insight, to read its cost.
  * @param props.onShowFiles - Called when file explorer button is clicked.
  */
 export const StatusBar = ({
@@ -67,7 +69,7 @@ export const StatusBar = ({
 }: {
 	state: SessionState;
 	session: Session;
-	openedRoom?: { roomId: string; name?: string };
+	openedRoom?: { roomId: string; insightId?: string; name?: string };
 	onShowFiles?: () => void;
 }) => {
 	const { t, i18n } = useTranslation("code");
@@ -78,6 +80,14 @@ export const StatusBar = ({
 	const running = state.activeEntryId !== undefined;
 	const elapsed = useElapsedSeconds(run?.startedAt);
 	const language = i18n.resolvedLanguage ?? i18n.language;
+	const cost = useRoomCost({
+		roomId:
+			openedRoom?.roomId === state.roomId
+				? openedRoom?.roomId
+				: undefined,
+		insightId: openedRoom?.insightId,
+		settled: runState(state) === "ready",
+	});
 
 	const clock = useMemo(() => {
 		const minutes = new Intl.NumberFormat(language);
@@ -176,32 +186,14 @@ export const StatusBar = ({
 					</ul>
 				</div>
 			)}
-			{/*
-			 * Placeholders. They show a dash, not a zero: nothing feeds them yet, and
-			 * "$ 0.00" read as a measured cost (a room on an unpriced model is not
-			 * free). The real cost is in :cost.
-			 */}
-			<p
-				className="flex items-baseline gap-1.5 opacity-50"
-				title="Session cost (not shown here yet, see :cost)"
-			>
-				<span>$</span>
-				<span className="text-foreground">—</span>
-			</p>
-			<p
-				className="flex items-baseline gap-1.5 opacity-50"
-				title="Context usage (not shown here yet)"
-			>
-				<span>ctx</span>
-				<span className="text-foreground">—</span>
-			</p>
-			<p
-				className="flex items-baseline gap-1.5 opacity-50"
-				title="Git branch (implementation pending)"
-			>
-				<span>⎇</span>
-				<span className="text-foreground">—</span>
-			</p>
+			{cost && cost.totalCalls > 0 ? (
+				<p className="flex items-baseline gap-1.5">
+					<span>{t("status.cost")}</span>
+					<span className="text-foreground">
+						{costLabel(cost, t("overlay.cost.noPrice"), language)}
+					</span>
+				</p>
+			) : null}
 			<div className="ms-auto flex items-center gap-2">
 				{/* File Explorer Button */}
 				{onShowFiles && (
@@ -209,10 +201,10 @@ export const StatusBar = ({
 						variant="ghost"
 						size="icon-sm"
 						onClick={onShowFiles}
-						title="Open file explorer"
+						aria-label={t("status.openFiles")}
 						data-testid="statusBar-files-button"
 					>
-						<FolderTreeIcon className="h-4 w-4" />
+						<FolderTreeIcon aria-hidden="true" />
 					</Button>
 				)}
 				<ThemeToggle

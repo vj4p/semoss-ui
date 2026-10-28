@@ -7,46 +7,6 @@ import {
 	parseRoomFolderListing,
 } from "./room-files";
 import { parseRoomRuns } from "./room-runs";
-import { formatAgo, parseServerTime } from "./server-time";
-
-describe("parseServerTime", () => {
-	it("reads a zone-less database time as UTC, keeping the milliseconds", () => {
-		expect(
-			parseServerTime("2026-09-12 03:47:56.368990")?.toISOString(),
-		).toBe("2026-09-12T03:47:56.368Z");
-	});
-
-	it("reads a time with no fraction", () => {
-		expect(parseServerTime("2026-09-12 03:47:56")?.toISOString()).toBe(
-			"2026-09-12T03:47:56.000Z",
-		);
-	});
-
-	it("keeps a zone the value states", () => {
-		expect(
-			parseServerTime("2026-09-12T03:47:56+02:00")?.toISOString(),
-		).toBe("2026-09-12T01:47:56.000Z");
-	});
-
-	it("returns nothing for what is not a time", () => {
-		expect(parseServerTime(undefined)).toBeUndefined();
-		expect(parseServerTime("yesterday")).toBeUndefined();
-		expect(parseServerTime(42)).toBeUndefined();
-	});
-});
-
-describe("formatAgo", () => {
-	const now = new Date("2026-09-12T12:00:00Z");
-	it.each([
-		["2026-09-12T11:59:40Z", "just now"],
-		["2026-09-12T11:55:00Z", "5m ago"],
-		["2026-09-12T09:00:00Z", "3h ago"],
-		["2026-09-10T12:00:00Z", "2d ago"],
-		["2026-09-12T12:00:30Z", "just now"],
-	])("%s reads as %s", (then, expected) => {
-		expect(formatAgo(new Date(then), now)).toBe(expected);
-	});
-});
 
 describe("room folder listing", () => {
 	it("quotes the folder so a file name cannot add Pixel", () => {
@@ -207,12 +167,12 @@ describe("parsePendingActions", () => {
 		]);
 	});
 
-	it("names an action with no tool and skips rows with no room", () => {
+	it("leaves a missing tool name empty for the UI to word, and skips rows with no room", () => {
 		const [action, ...rest] = parsePendingActions([
 			{ actionId: "a1", roomId: "r" },
 			{ actionId: "a2" },
 		]);
-		expect(action.tool).toBe("a tool");
+		expect(action.tool).toBe("");
 		expect(rest).toEqual([]);
 	});
 });

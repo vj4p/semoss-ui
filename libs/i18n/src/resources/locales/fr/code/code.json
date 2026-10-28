@@ -52,7 +52,9 @@
 		"starting": "démarrage",
 		"running": "en cours",
 		"waiting": "en attente de votre réponse",
-		"stopping": "arrêt en cours"
+		"stopping": "arrêt en cours",
+		"cost": "Coût de la session",
+		"openFiles": "Ouvrir les fichiers"
 	},
 	"theme": {
 		"mode": "Apparence",
@@ -247,6 +249,77 @@
 			"deny": "Refuser l'appel d'outil en attente (invite vide)",
 			"edit": "Modifier les arguments de l'appel en attente (invite vide)",
 			"alwaysAllow": "L'approuver, et ne plus demander d'approbation pour son outil (invite vide)"
+		}
+	},
+	"overlay": {
+		"loading": "Chargement",
+		"loadFailed": "Impossible de charger cette vue",
+		"retry": "Réessayer",
+		"unknownTime": "heure inconnue",
+		"ago": {
+			"justNow": "à l'instant",
+			"minutes": "il y a {{count}} min",
+			"hours": "il y a {{count}} h",
+			"days": "il y a {{count}} j"
+		},
+		"files": {
+			"noRoomTitle": "Pas encore de salon",
+			"noRoomBody": "Les fichiers du salon apparaissent ici dès que vous envoyez un message.",
+			"filterLabel": "Filtrer les fichiers",
+			"filterPlaceholder": "Filtrer les fichiers des dossiers ouverts",
+			"clearFilter": "Effacer le filtre",
+			"hint": "Ouvrez un dossier pour le lister. Sélectionnez un fichier pour copier son chemin.",
+			"empty": "Aucun fichier pour le moment",
+			"emptyFolder": "Dossier vide",
+			"noMatch": "Aucun fichier ici ne correspond à « {{query}} »",
+			"copied": "Copié : {{path}}",
+			"copyFailed": "Impossible de copier {{path}}"
+		},
+		"runs": {
+			"heading": "Historique des exécutions ({{count}} au total)",
+			"empty": "Aucune exécution pour le moment",
+			"emptyHint": "Envoyez une instruction pour lancer votre première exécution",
+			"emptyPrompt": "(instruction vide)",
+			"seconds": "{{seconds}} s"
+		},
+		"cost": {
+			"summary": "Résumé de la session",
+			"totalCost": "Coût total",
+			"totalTokens": "Total des jetons",
+			"calls": "Appels d'API",
+			"byModel": "Par modèle ({{count}})",
+			"input": "Entrée",
+			"output": "Sortie",
+			"total": "Total",
+			"callsShort": "Appels",
+			"noPrice": "Pas de tarif",
+			"unknownModel": "Modèle inconnu",
+			"empty": "Aucune donnée d'utilisation pour le moment",
+			"emptyHint": "Le suivi des coûts apparaîtra après votre première interaction avec un modèle",
+			"noteEstimate": "Les coûts sont des estimations fondées sur les tarifs publiés et peuvent différer de la facturation réelle.",
+			"noteUnpricedTitle": "Pas de tarif pour {{count}} modèle(s) sur {{total}}.",
+			"noteNoneRated": "Aucun tarif n'est publié pour le modèle utilisé dans ce salon : son coût est inconnu, pas nul.",
+			"notePartial": "Le total ne compte que les modèles qui ont un tarif ; le salon a donc coûté au moins ce montant."
+		},
+		"inbox": {
+			"heading": "En attente de votre décision ({{count}})",
+			"empty": "Rien n'attend votre décision",
+			"emptyHint": "Les actions qu'un agent vous demande d'approuver apparaîtront ici.",
+			"approve": "Approuver {{tool}}",
+			"anyTool": "un outil",
+			"room": "salon {{id}}",
+			"openRoom": "Ouvrir le salon"
+		},
+		"packs": {
+			"heading": "Packs de capacités disponibles ({{count}} au total)",
+			"empty": "Aucun pack de capacités disponible",
+			"emptyHint": "Les packs sont peut-être désactivés ou pas encore configurés",
+			"tools": "Outils : {{count}}",
+			"needApproval": "Approbation requise : {{count}}"
+		},
+		"diff": {
+			"title": "Aucune modification à comparer",
+			"body": "Une comparaison nécessite une application avec historique de versions. Ce salon travaille dans son propre dossier, qui n'en a pas. Utilisez :files pour voir ce que l'agent a écrit."
 		}
 	}
 }

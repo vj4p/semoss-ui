@@ -1,163 +1,123 @@
-import { useEffect, useState } from "react";
-import type { CapabilityPack } from "@semoss/agent-core";
-import { readCapabilityPacks } from "@semoss/agent-core";
-import { runPixel } from "@semoss/sdk";
-import { Spinner } from "@semoss/ui/next";
+import {
+	BotIcon,
+	DatabaseIcon,
+	HardDriveIcon,
+	type LucideIcon,
+	PackageIcon,
+	SearchIcon,
+} from "lucide-react";
+import { useCallback } from "react";
+import { useTranslation } from "@semoss/i18n";
+import { H4, Muted, P, Small } from "@semoss/ui/next";
+import { getCapabilityPacks } from "@/api/room-data";
+import { useOverlayQuery } from "@/hooks/use-overlay-query";
 import { OverlayContainer } from "./overlay-container";
+import { OverlayEmpty } from "./overlay-empty";
+import { OverlayError } from "./overlay-error";
+import { OverlayLoading } from "./overlay-loading";
 
 export interface PacksOverlayProps {
 	open: boolean;
 	onDismiss: () => void;
+	/** The room's insight, when there is a room. The packs are not about one room. */
+	insightId?: string;
 }
 
+/** The icon for an engine kind a pack needs. An unknown kind gets the generic one. */
+const ENGINE_ICONS: Readonly<Record<string, LucideIcon>> = {
+	DATABASE: DatabaseIcon,
+	VECTOR: SearchIcon,
+	MODEL: BotIcon,
+	STORAGE: HardDriveIcon,
+};
+
 /**
- * The `:packs` overlay — displays capability packs available in the platform.
- * Shows pack name, description, tool counts, and engine requirements. Phase 4b.
+ * The `:packs` overlay: the capability packs available on the platform, with
+ * how many tools each brings, how many of those ask before they run, and the
+ * kinds of engine each needs.
+ *
+ * @name PacksOverlay
+ * @param props.open - Whether the overlay is showing.
+ * @param props.onDismiss - Called to close it.
+ * @param props.insightId - The room's insight, when there is one.
  */
-export const PacksOverlay = ({ open, onDismiss }: PacksOverlayProps) => {
-	const [loading, setLoading] = useState(true);
-	const [packs, setPacks] = useState<CapabilityPack[]>([]);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!open) {
-			return;
-		}
-
-		const loadPacks = async () => {
-			setLoading(true);
-			setError(null);
-
-			try {
-				// runPixel already returns the response the reader wants, with
-				// the operations under pixelReturn. Wrapping it once more put the
-				// whole response where the pack list should be, so no pack was
-				// ever found.
-				const runner = {
-					actions: {
-						run: (pixel: string) => runPixel(pixel),
-					},
-				};
-
-				const loadedPacks = await readCapabilityPacks(
-					runner,
-					(message, err) => {
-						console.warn("Pack read error:", message, err);
-					},
-				);
-
-				setPacks(loadedPacks);
-			} catch (err) {
-				console.error("Failed to load packs:", err);
-				setError(
-					err instanceof Error
-						? err.message
-						: "Failed to load capability packs",
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		loadPacks();
-	}, [open]);
-
-	const getEngineIcon = (requirement: string) => {
-		switch (requirement) {
-			case "DATABASE":
-				return "🗄️";
-			case "VECTOR":
-				return "🔍";
-			case "MODEL":
-				return "🤖";
-			case "STORAGE":
-				return "💾";
-			default:
-				return "📦";
-		}
-	};
+export const PacksOverlay = ({
+	open,
+	onDismiss,
+	insightId,
+}: PacksOverlayProps) => {
+	const { t } = useTranslation("code");
+	const load = useCallback(() => getCapabilityPacks(insightId), [insightId]);
+	const { state, reload } = useOverlayQuery(open, load);
 
 	return (
 		<OverlayContainer open={open} onDismiss={onDismiss} title=":packs">
-			{loading ? (
-				<div className="flex items-center justify-center py-12">
-					<Spinner />
-				</div>
-			) : error ? (
-				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono text-destructive text-sm">
-						{error}
-					</p>
-					<p className="text-muted-foreground text-xs">
-						Unable to load capability packs
-					</p>
-				</div>
-			) : packs.length === 0 ? (
-				<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-					<p className="font-mono text-muted-foreground text-sm">
-						No capability packs available
-					</p>
-					<p className="text-muted-foreground text-xs">
-						Packs may be disabled or not yet configured
-					</p>
-				</div>
+			{state.status === "loading" ? (
+				<OverlayLoading />
+			) : state.status === "error" ? (
+				<OverlayError error={state.error} onRetry={reload} />
+			) : state.data.length === 0 ? (
+				<OverlayEmpty
+					title={t("overlay.packs.empty")}
+					description={t("overlay.packs.emptyHint")}
+				/>
 			) : (
-				<div className="space-y-1">
-					<p className="mb-4 font-mono text-muted-foreground text-sm">
-						Available capability packs ({packs.length} total)
-					</p>
-					<div className="space-y-3">
-						{packs.map((pack) => (
-							<div
+				<div className="flex flex-col gap-4 font-mono">
+					<Muted>
+						{t("overlay.packs.heading", {
+							count: state.data.length,
+						})}
+					</Muted>
+					<ul className="flex flex-col gap-3">
+						{state.data.map((pack) => (
+							<li
 								key={pack.id}
-								className="flex flex-col gap-2 rounded border p-4 hover:bg-accent/50"
+								className="flex flex-col gap-2 rounded-md border p-4"
 							>
-								<div className="flex items-start justify-between">
-									<div className="flex-1">
-										<div className="flex items-center gap-2">
-											<h3 className="font-mono font-semibold text-base">
-												{pack.label}
-											</h3>
-											{pack.requires &&
-												pack.requires.length > 0 && (
-													<div className="flex gap-1">
-														{pack.requires.map(
-															(req) => (
-																<span
-																	key={req}
-																	title={req}
-																	className="text-base"
-																>
-																	{getEngineIcon(
-																		req,
-																	)}
-																</span>
-															),
-														)}
-													</div>
-												)}
-										</div>
-										<p className="mt-1 text-muted-foreground text-sm">
-											{pack.description}
-										</p>
-									</div>
-								</div>
-								<div className="flex gap-4 font-mono text-muted-foreground text-xs">
-									<span>
-										{pack.toolCount} tool
-										{pack.toolCount !== 1 ? "s" : ""}
-									</span>
-									{pack.askCount > 0 && (
-										<span className="text-warning">
-											{pack.askCount} require
-											{pack.askCount !== 1 ? "" : "s"}{" "}
-											approval
-										</span>
+								<div className="flex items-center gap-2">
+									<H4 className="text-base">{pack.label}</H4>
+									{(pack.requires ?? []).map(
+										(requirement) => {
+											const Icon =
+												ENGINE_ICONS[requirement] ??
+												PackageIcon;
+											return (
+												<span
+													key={requirement}
+													className="inline-flex"
+												>
+													<Icon
+														aria-hidden="true"
+														className="size-4 text-muted-foreground"
+													/>
+													<span className="sr-only">
+														{requirement}
+													</span>
+												</span>
+											);
+										},
 									)}
 								</div>
-							</div>
+								<P className="text-muted-foreground text-sm">
+									{pack.description}
+								</P>
+								<div className="flex gap-4 text-xs">
+									<Muted className="text-xs">
+										{t("overlay.packs.tools", {
+											count: pack.toolCount,
+										})}
+									</Muted>
+									{pack.askCount > 0 ? (
+										<Small className="text-warning text-xs">
+											{t("overlay.packs.needApproval", {
+												count: pack.askCount,
+											})}
+										</Small>
+									) : null}
+								</div>
+							</li>
 						))}
-					</div>
+					</ul>
 				</div>
 			)}
 		</OverlayContainer>

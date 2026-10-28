@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type {
 	AllowedTool,
 	RunEntry,
@@ -9,7 +9,13 @@ import type {
 } from "@semoss/agent-core";
 import { codeResources, I18nBuilder } from "@semoss/i18n";
 import type { AgentRunItem, PendingAgentAction } from "@semoss/sdk/react";
+import { summarizeCost } from "@/api/cost-summary";
 import { StatusBar } from "./status-bar";
+
+const getRoomCost = vi.fn();
+vi.mock("@/api/room-data", () => ({
+	getRoomCost: (...args: unknown[]) => getRoomCost(...args),
+}));
 
 const builder = new I18nBuilder(codeResources, { lockToEnglish: true });
 
@@ -161,5 +167,76 @@ describe("StatusBar", () => {
 
 			expect(screen.getByText("stopping")).toBeVisible();
 		});
+	});
+});
+
+describe("StatusBar cost", () => {
+	const room = { roomId: "room-1", insightId: "insight-1" };
+	const inRoom = { ...state([]), roomId: "room-1" };
+	const usage = (priced: boolean) =>
+		summarizeCost({
+			models: [
+				{
+					modelName: "m",
+					llmCalls: 2,
+					inputTokens: 10,
+					outputTokens: 5,
+					priced,
+					cost: priced ? 0.5 : undefined,
+				},
+			],
+			totals: { currency: "USD" },
+		});
+
+	afterEach(() => {
+		getRoomCost.mockReset();
+	});
+
+	it("shows what the opened room has cost", async () => {
+		getRoomCost.mockResolvedValue(usage(true));
+		render(
+			<StatusBar state={inRoom} session={session} openedRoom={room} />,
+		);
+		expect(await screen.findByText("$0.50")).toBeTruthy();
+		expect(screen.getByText("Session cost")).toBeTruthy();
+		expect(getRoomCost).toHaveBeenCalledWith("room-1", "insight-1");
+	});
+
+	it("says No price for a room on an unpriced model, never $0.00", async () => {
+		getRoomCost.mockResolvedValue(usage(false));
+		render(
+			<StatusBar state={inRoom} session={session} openedRoom={room} />,
+		);
+		expect(await screen.findByText("No price")).toBeTruthy();
+		expect(screen.queryByText("$0.00")).toBeNull();
+	});
+
+	it("shows no cost before a room has any usage, and reads nothing without a room", async () => {
+		getRoomCost.mockResolvedValue(summarizeCost({ models: [] }));
+		const { rerender } = render(
+			<StatusBar state={inRoom} session={session} openedRoom={room} />,
+		);
+		await Promise.resolve();
+		expect(screen.queryByText("Session cost")).toBeNull();
+		getRoomCost.mockClear();
+		rerender(<StatusBar state={state([])} session={session} />);
+		expect(getRoomCost).not.toHaveBeenCalled();
+	});
+
+	it("keeps no placeholder slots for data it does not have", () => {
+		render(<StatusBar state={state([])} session={session} />);
+		expect(screen.queryByText("ctx")).toBeNull();
+		expect(screen.queryByText("\u2387")).toBeNull();
+	});
+
+	it("names the file explorer button", () => {
+		render(
+			<StatusBar
+				state={state([])}
+				session={session}
+				onShowFiles={() => {}}
+			/>,
+		);
+		expect(screen.getByRole("button", { name: "Open files" })).toBeTruthy();
 	});
 });

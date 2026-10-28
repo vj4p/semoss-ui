@@ -333,6 +333,7 @@ export const PromptInput = ({
 					autoCorrect="off"
 					className="max-h-48 min-h-9 w-full resize-none"
 					data-testid="promptInput-textarea"
+					data-console-prompt=""
 				/>
 				{showCompletions && completions.length > 0 && (
 					<CompletionMenu

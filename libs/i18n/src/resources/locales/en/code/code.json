@@ -51,7 +51,9 @@
 		"starting": "starting",
 		"running": "running",
 		"waiting": "waiting for you",
-		"stopping": "stopping"
+		"stopping": "stopping",
+		"cost": "Session cost",
+		"openFiles": "Open files"
 	},
 	"theme": {
 		"mode": "Appearance",
@@ -246,6 +248,77 @@
 			"deny": "Deny the waiting tool call (prompt empty)",
 			"edit": "Edit the waiting call's arguments (prompt empty)",
 			"alwaysAllow": "Approve it, and stop asking about its tool (prompt empty)"
+		}
+	},
+	"overlay": {
+		"loading": "Loading",
+		"loadFailed": "Could not load this view",
+		"retry": "Try again",
+		"unknownTime": "unknown time",
+		"ago": {
+			"justNow": "just now",
+			"minutes": "{{count}}m ago",
+			"hours": "{{count}}h ago",
+			"days": "{{count}}d ago"
+		},
+		"files": {
+			"noRoomTitle": "No room yet",
+			"noRoomBody": "The room's files appear here once you send a message.",
+			"filterLabel": "Filter files",
+			"filterPlaceholder": "Filter files in the folders you have opened",
+			"clearFilter": "Clear filter",
+			"hint": "Open a folder to list it. Select a file to copy its path.",
+			"empty": "No files yet",
+			"emptyFolder": "Empty folder",
+			"noMatch": "No file here matches \"{{query}}\"",
+			"copied": "Copied {{path}}",
+			"copyFailed": "Could not copy {{path}}"
+		},
+		"runs": {
+			"heading": "Run history ({{count}} total)",
+			"empty": "No runs yet",
+			"emptyHint": "Send a prompt to start your first run",
+			"emptyPrompt": "(empty prompt)",
+			"seconds": "{{seconds}}s"
+		},
+		"cost": {
+			"summary": "Session summary",
+			"totalCost": "Total cost",
+			"totalTokens": "Total tokens",
+			"calls": "API calls",
+			"byModel": "By model ({{count}})",
+			"input": "Input",
+			"output": "Output",
+			"total": "Total",
+			"callsShort": "Calls",
+			"noPrice": "No price",
+			"unknownModel": "Unknown model",
+			"empty": "No usage data yet",
+			"emptyHint": "Cost tracking will appear after your first model interaction",
+			"noteEstimate": "Costs are estimates based on published rates and may not reflect actual billing.",
+			"noteUnpricedTitle": "No price for {{count}} of {{total}} models.",
+			"noteNoneRated": "There is no published rate for the model this room used, so its cost is unknown, not zero.",
+			"notePartial": "The total counts only the models that have one, so the room cost at least this much."
+		},
+		"inbox": {
+			"heading": "Waiting on you ({{count}})",
+			"empty": "Nothing waiting on you",
+			"emptyHint": "Actions an agent needs you to approve will appear here.",
+			"approve": "Approve {{tool}}",
+			"anyTool": "a tool",
+			"room": "room {{id}}",
+			"openRoom": "Open room"
+		},
+		"packs": {
+			"heading": "Available capability packs ({{count}} total)",
+			"empty": "No capability packs available",
+			"emptyHint": "Packs may be disabled or not yet configured",
+			"tools": "Tools: {{count}}",
+			"needApproval": "Need approval: {{count}}"
+		},
+		"diff": {
+			"title": "No changes to compare",
+			"body": "A diff needs an app with version history. This room works in its own folder, which has none. Use :files to see what the agent wrote."
 		}
 	}
 }

@@ -50,7 +50,9 @@
 		"starting": "開始中",
 		"running": "実行中",
 		"waiting": "入力待ち",
-		"stopping": "停止中"
+		"stopping": "停止中",
+		"cost": "セッションのコスト",
+		"openFiles": "ファイルを開く"
 	},
 	"theme": {
 		"mode": "外観",
@@ -245,6 +247,77 @@
 			"deny": "待機中のツール呼び出しを拒否 (プロンプトが空のとき)",
 			"edit": "待機中の呼び出しの引数を編集 (プロンプトが空のとき)",
 			"alwaysAllow": "承認し、以後そのツールの確認を省略 (プロンプトが空のとき)"
+		}
+	},
+	"overlay": {
+		"loading": "読み込み中",
+		"loadFailed": "この表示を読み込めませんでした",
+		"retry": "再試行",
+		"unknownTime": "時刻不明",
+		"ago": {
+			"justNow": "たった今",
+			"minutes": "{{count}}分前",
+			"hours": "{{count}}時間前",
+			"days": "{{count}}日前"
+		},
+		"files": {
+			"noRoomTitle": "ルームはまだありません",
+			"noRoomBody": "メッセージを送信すると、ルームのファイルがここに表示されます。",
+			"filterLabel": "ファイルを絞り込む",
+			"filterPlaceholder": "開いたフォルダー内のファイルを絞り込む",
+			"clearFilter": "絞り込みを解除",
+			"hint": "フォルダーを開くと内容が表示されます。ファイルを選択するとパスをコピーします。",
+			"empty": "ファイルはまだありません",
+			"emptyFolder": "空のフォルダー",
+			"noMatch": "「{{query}}」に一致するファイルはありません",
+			"copied": "コピーしました: {{path}}",
+			"copyFailed": "{{path}} をコピーできませんでした"
+		},
+		"runs": {
+			"heading": "実行履歴(全{{count}}件)",
+			"empty": "実行はまだありません",
+			"emptyHint": "プロンプトを送信して最初の実行を開始してください",
+			"emptyPrompt": "(空のプロンプト)",
+			"seconds": "{{seconds}}秒"
+		},
+		"cost": {
+			"summary": "セッションの概要",
+			"totalCost": "合計コスト",
+			"totalTokens": "合計トークン数",
+			"calls": "API 呼び出し",
+			"byModel": "モデル別({{count}})",
+			"input": "入力",
+			"output": "出力",
+			"total": "合計",
+			"callsShort": "呼び出し",
+			"noPrice": "価格なし",
+			"unknownModel": "不明なモデル",
+			"empty": "使用状況データはまだありません",
+			"emptyHint": "最初のモデル操作の後にコストの追跡が表示されます",
+			"noteEstimate": "コストは公開されている料金に基づく見積もりであり、実際の請求額とは異なる場合があります。",
+			"noteUnpricedTitle": "{{total}} 件中 {{count}} 件のモデルに価格がありません。",
+			"noteNoneRated": "このルームで使用したモデルには公開料金がないため、コストは 0 ではなく不明です。",
+			"notePartial": "合計には価格があるモデルのみが含まれるため、このルームの実際のコストは少なくともこの金額です。"
+		},
+		"inbox": {
+			"heading": "あなたの対応待ち({{count}})",
+			"empty": "対応待ちはありません",
+			"emptyHint": "エージェントが承認を求める操作がここに表示されます。",
+			"approve": "{{tool}} を承認",
+			"anyTool": "ツール",
+			"room": "ルーム {{id}}",
+			"openRoom": "ルームを開く"
+		},
+		"packs": {
+			"heading": "利用可能な機能パック(全{{count}}件)",
+			"empty": "利用可能な機能パックはありません",
+			"emptyHint": "パックが無効になっているか、まだ設定されていない可能性があります",
+			"tools": "ツール数: {{count}}",
+			"needApproval": "承認が必要: {{count}}"
+		},
+		"diff": {
+			"title": "比較する変更はありません",
+			"body": "差分にはバージョン履歴のあるアプリが必要です。このルームは独自のフォルダーで動作し、履歴がありません。エージェントが書いた内容は :files で確認できます。"
 		}
 	}
 }

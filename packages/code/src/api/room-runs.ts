@@ -1,4 +1,5 @@
-import { parseServerTime } from "./server-time";
+import { isRecord } from "@/utility/is-record";
+import { parseServerTime } from "@/utility/server-time";
 
 /** One of the room's runs, as the `:runs` overlay lists it. */
 export interface RoomRun {
@@ -17,27 +18,27 @@ export interface RoomRun {
  * The reactor returns them oldest first, for replaying a conversation. A run
  * has a duration only once it has both ends: a running one has no `completedAt`,
  * and showing a made-up duration for it would be worse than showing none.
+ *
+ * @name parseRoomRuns
+ * @param output - The reactor's output.
+ * @return The runs.
  */
 export const parseRoomRuns = (output: unknown): RoomRun[] => {
 	if (!Array.isArray(output)) {
 		return [];
 	}
 	const runs = output.flatMap((row): RoomRun[] => {
-		if (typeof row !== "object" || row === null) {
-			return [];
-		}
-		const run = row as Record<string, unknown>;
-		if (typeof run.runId !== "string") {
+		if (!isRecord(row) || typeof row.runId !== "string") {
 			return [];
 		}
 		const startedAt =
-			parseServerTime(run.startedAt) ?? parseServerTime(run.dateCreated);
-		const completedAt = parseServerTime(run.completedAt);
+			parseServerTime(row.startedAt) ?? parseServerTime(row.dateCreated);
+		const completedAt = parseServerTime(row.completedAt);
 		return [
 			{
-				id: run.runId,
-				prompt: typeof run.input === "string" ? run.input : "",
-				status: typeof run.status === "string" ? run.status : "UNKNOWN",
+				id: row.runId,
+				prompt: typeof row.input === "string" ? row.input : "",
+				status: typeof row.status === "string" ? row.status : "UNKNOWN",
 				startedAt,
 				durationMs:
 					startedAt && completedAt

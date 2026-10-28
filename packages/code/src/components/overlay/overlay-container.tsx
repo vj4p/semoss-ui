@@ -63,6 +63,19 @@ export const OverlayContainer = ({
 				showCloseButton={false}
 				// Prevent Dialog from auto-focusing the close button
 				onOpenAutoFocus={(e) => e.preventDefault()}
+				// An overlay opens from a command typed in the prompt, not from a
+				// button, so there is no trigger for the dialog to give focus back
+				// to. Without this focus falls to the page and a keyboard user has to
+				// tab back to the prompt.
+				onCloseAutoFocus={(e) => {
+					const prompt = document.querySelector<HTMLElement>(
+						"[data-console-prompt]",
+					);
+					if (prompt) {
+						e.preventDefault();
+						prompt.focus();
+					}
+				}}
 			>
 				<div className="flex items-center justify-between border-b px-6 py-4">
 					<DialogTitle className="font-mono font-semibold text-lg">
@@ -75,7 +88,7 @@ export const OverlayContainer = ({
 						data-testid="overlay-close"
 						aria-label="Close"
 					>
-						<XIcon />
+						<XIcon aria-hidden="true" />
 					</Button>
 				</div>
 				<div className="flex-1 overflow-y-auto px-6 py-4">

@@ -52,7 +52,9 @@
 		"starting": "iniciando",
 		"running": "en ejecución",
 		"waiting": "esperando tu respuesta",
-		"stopping": "deteniendo"
+		"stopping": "deteniendo",
+		"cost": "Coste de la sesión",
+		"openFiles": "Abrir archivos"
 	},
 	"theme": {
 		"mode": "Apariencia",
@@ -247,6 +249,77 @@
 			"deny": "Rechazar la llamada a herramienta en espera (indicación vacía)",
 			"edit": "Editar los argumentos de la llamada en espera (indicación vacía)",
 			"alwaysAllow": "Aprobarla y dejar de preguntar sobre su herramienta (indicación vacía)"
+		}
+	},
+	"overlay": {
+		"loading": "Cargando",
+		"loadFailed": "No se pudo cargar esta vista",
+		"retry": "Reintentar",
+		"unknownTime": "hora desconocida",
+		"ago": {
+			"justNow": "ahora mismo",
+			"minutes": "hace {{count}} min",
+			"hours": "hace {{count}} h",
+			"days": "hace {{count}} d"
+		},
+		"files": {
+			"noRoomTitle": "Aún no hay sala",
+			"noRoomBody": "Los archivos de la sala aparecen aquí cuando envías un mensaje.",
+			"filterLabel": "Filtrar archivos",
+			"filterPlaceholder": "Filtrar archivos en las carpetas que has abierto",
+			"clearFilter": "Borrar filtro",
+			"hint": "Abre una carpeta para ver su contenido. Selecciona un archivo para copiar su ruta.",
+			"empty": "Aún no hay archivos",
+			"emptyFolder": "Carpeta vacía",
+			"noMatch": "Ningún archivo aquí coincide con \"{{query}}\"",
+			"copied": "Copiado: {{path}}",
+			"copyFailed": "No se pudo copiar {{path}}"
+		},
+		"runs": {
+			"heading": "Historial de ejecuciones ({{count}} en total)",
+			"empty": "Aún no hay ejecuciones",
+			"emptyHint": "Envía una instrucción para iniciar tu primera ejecución",
+			"emptyPrompt": "(instrucción vacía)",
+			"seconds": "{{seconds}} s"
+		},
+		"cost": {
+			"summary": "Resumen de la sesión",
+			"totalCost": "Coste total",
+			"totalTokens": "Tokens totales",
+			"calls": "Llamadas a la API",
+			"byModel": "Por modelo ({{count}})",
+			"input": "Entrada",
+			"output": "Salida",
+			"total": "Total",
+			"callsShort": "Llamadas",
+			"noPrice": "Sin precio",
+			"unknownModel": "Modelo desconocido",
+			"empty": "Aún no hay datos de uso",
+			"emptyHint": "El seguimiento de costes aparecerá tras tu primera interacción con un modelo",
+			"noteEstimate": "Los costes son estimaciones basadas en tarifas publicadas y pueden no reflejar la facturación real.",
+			"noteUnpricedTitle": "Sin precio para {{count}} de {{total}} modelos.",
+			"noteNoneRated": "No hay tarifa publicada para el modelo que usó esta sala, así que su coste es desconocido, no cero.",
+			"notePartial": "El total solo cuenta los modelos que tienen precio, así que la sala costó al menos esta cantidad."
+		},
+		"inbox": {
+			"heading": "Esperan tu decisión ({{count}})",
+			"empty": "Nada espera tu decisión",
+			"emptyHint": "Las acciones que un agente necesita que apruebes aparecerán aquí.",
+			"approve": "Aprobar {{tool}}",
+			"anyTool": "una herramienta",
+			"room": "sala {{id}}",
+			"openRoom": "Abrir sala"
+		},
+		"packs": {
+			"heading": "Paquetes de capacidades disponibles ({{count}} en total)",
+			"empty": "No hay paquetes de capacidades disponibles",
+			"emptyHint": "Es posible que los paquetes estén desactivados o aún sin configurar",
+			"tools": "Herramientas: {{count}}",
+			"needApproval": "Requieren aprobación: {{count}}"
+		},
+		"diff": {
+			"title": "No hay cambios que comparar",
+			"body": "Una comparación necesita una aplicación con historial de versiones. Esta sala trabaja en su propia carpeta, que no tiene ninguno. Usa :files para ver lo que escribió el agente."
 		}
 	}
 }

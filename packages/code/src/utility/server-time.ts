@@ -25,8 +25,23 @@ export const parseServerTime = (value: unknown): Date | undefined => {
 	return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 };
 
-/** How long ago, in the words the overlays use. */
-export const formatAgo = (then: Date, now: Date = new Date()): string => {
+/** How long ago a time was, as a unit and a count the caller words in its language. */
+export interface Ago {
+	unit: "justNow" | "minutes" | "hours" | "days";
+	count: number;
+}
+
+/**
+ * How long ago `then` was, to the coarsest whole unit. A time in the future
+ * reads as "just now": the server's clock and the browser's can differ by a
+ * few seconds, and "in 3 seconds" helps nobody.
+ *
+ * @name agoOf
+ * @param then - The earlier time.
+ * @param now - The time to measure from; the current time by default.
+ * @return The unit and the count of it.
+ */
+export const agoOf = (then: Date, now: Date = new Date()): Ago => {
 	const seconds = Math.max(
 		0,
 		Math.floor((now.getTime() - then.getTime()) / 1000),
@@ -34,8 +49,8 @@ export const formatAgo = (then: Date, now: Date = new Date()): string => {
 	const minutes = Math.floor(seconds / 60);
 	const hours = Math.floor(minutes / 60);
 	const days = Math.floor(hours / 24);
-	if (days > 0) return `${days}d ago`;
-	if (hours > 0) return `${hours}h ago`;
-	if (minutes > 0) return `${minutes}m ago`;
-	return "just now";
+	if (days > 0) return { unit: "days", count: days };
+	if (hours > 0) return { unit: "hours", count: hours };
+	if (minutes > 0) return { unit: "minutes", count: minutes };
+	return { unit: "justNow", count: 0 };
 };

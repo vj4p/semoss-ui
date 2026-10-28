@@ -57,12 +57,12 @@ An application, so it uses the `src/` layout from the root AGENTS.md including `
 
 | Folder / file | Purpose |
 |---------------|---------|
-| `api/` | Pixel calls by domain: `rooms.ts` (open, create, read and write a room's options), `engines.ts` (the models, the user's default) |
+| `api/` | Pixel calls by domain: `rooms.ts` (open, create, read and write a room's options), `engines.ts` (the models, the user's default), `room-data.ts` (what the overlays read: a room's folder, runs, cost, the user's pending actions, the capability packs). Each read's parser sits beside it and is tested without a network: `room-files.ts`, `room-runs.ts`, `cost-summary.ts`, `pending-actions.ts` |
 | `components/console/` | The console: `console.tsx` stacks the transcript, the pending actions, the prompt and the status bar; `line-view.tsx` draws agent-core's lines; `argument-list.tsx` is a tool call's arguments, on its approval card and in its opened line; `pending-actions.tsx` shows what a run waits on; `announcer.tsx` is the screen-reader channel; `completion-menu.tsx` shows Tab completion suggestions. `prompt-input`, `pending-actions`, `status-bar`, `line-view` and `transcript` have component tests beside them |
-| `components/overlay/` | Full-screen overlay views: `overlay-container.tsx` (base pattern), `help-overlay.tsx` (categorized help), `history-search-overlay.tsx` (Ctrl+R), `files-overlay.tsx`, `diff-overlay.tsx`, `runs-overlay.tsx`, `packs-overlay.tsx`, `cost-overlay.tsx`, `inbox-overlay.tsx`. All dismissed with `q` or Escape |
-| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-completions` (Tab completion provider), `use-session-state`, `use-line-labels` (the words the transcript adds to agent-core's lines), `use-elapsed-seconds` (a run's time, and a running tool call's), `use-ready-approval` (when the approval keys may act) |
+| `components/overlay/` | Full-screen overlay views, all dismissed with `q` or Escape: `overlay-container.tsx` (base pattern), `help-overlay.tsx` (categorized help), `history-search-overlay.tsx` (Ctrl+R), `agent-overlay.tsx`, `settings-overlay.tsx`, `mcp-overlay.tsx`, and the five that read the platform: `files-overlay.tsx` (with `room-folder.tsx`), `runs-overlay.tsx`, `cost-overlay.tsx` (with `cost-body.tsx`), `inbox-overlay.tsx`, `packs-overlay.tsx`, plus `diff-overlay.tsx`. `overlay-loading.tsx`, `overlay-error.tsx` and `overlay-empty.tsx` are the three states every reading overlay shares. Component tests sit beside each, rendered with `render-overlay.tsx` |
+| `hooks/` | `use-console-session` (a session for the URL's room), `use-catalog`, `use-completions` (Tab completion provider), `use-session-state`, `use-line-labels` (the words the transcript adds to agent-core's lines), `use-elapsed-seconds` (a run's time, and a running tool call's), `use-ready-approval` (when the approval keys may act), `use-overlay-query` (a read that starts when an overlay opens, with Try again and a guard against a late answer), `use-room-cost` (the status bar's cost) |
 | `pages/` | `router.tsx`, `initialized.layout.tsx`, `authenticated.layout.tsx`, `console.page.tsx`, `login.page.tsx`, `error.page.tsx` |
-| `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts`, `keyboard.ts` (the platform, and the approval keys that the hints and buttons name) |
+| `utility/` | `session-backend.ts` (agent-core's backend port, over the SDK), `translate.ts`, `announcements.ts`, `line-styles.ts`, `download.ts`, `keyboard.ts` (the platform, and the approval keys that the hints and buttons name), `server-time.ts` (reads the zone-less times the platform returns as UTC, and how long ago), `cost-label.ts` (money and the total's label), `is-record.ts` |
 | `app.tsx`, `main.tsx`, `index.css` | App entry files |
 
 ## Key Dependencies
@@ -225,8 +225,8 @@ Contrast decisions, measured against the tokens:
   apply to it. There is nothing to validate before it is sent, and the answer arrives in the
   transcript, not beside it. The status bar's harness and model selects apply as they change.
 - **A tool call's chevron ends its row**, so that the status glyphs stay in one column. It is
-  a glyph, `▸` mirrored right to left and `▾` once open, not a Lucide icon: this package does
-  not depend on `lucide-react`, and adding it would change `pnpm-lock.yaml`. The summary hides
+  a glyph, `▸` mirrored right to left and `▾` once open, not a Lucide icon, so it mirrors with
+  the text. The package does depend on `lucide-react`, and the overlays and status bar use it. The summary hides
   the browser's own triangle with `list-none` and, for WebKit, the
   `[&::-webkit-details-marker]:hidden` variant.
 
@@ -260,26 +260,36 @@ The console offers built-in commands (`:help`, `:harness`, `:model`, etc.) and f
 
 ### Overlay Commands
 
-Six overlay commands provide full-screen information views, following a consistent pattern:
-- Dismissed with `q` key or Escape
-- Full-screen with backdrop (OverlayContainer pattern from Phase 4)
-- Keyboard-first navigation within each overlay
+Six overlay commands show information about the room, following one pattern: dismissed with
+`q` or Escape, full-screen over a backdrop (`OverlayContainer`), keyboard first. The five that
+read the platform follow the same shape, and a new one should too:
 
-| Command | Description | Status |
-|---------|-------------|--------|
-| `:files` | Browse files in workspace | Placeholder (hardcoded tree) |
-| `:diff` | Git diff viewer | Functional (parses `git diff HEAD`) |
-| `:runs` | Run history browser | Functional (from session entries) |
-| `:packs` | Capability packs display | Functional (calls `readCapabilityPacks`) |
-| `:cost` | Cost/usage breakdown | Placeholder (structure defined) |
-| `:inbox` | Notifications/messages | Placeholder (roadmap shown) |
+- the Pixel call lives in `api/room-data.ts` with its parser beside it, never in the component;
+- the component reads through `useOverlayQuery`, which gives the three states every one needs:
+  loading (`OverlayLoading`, announced), failed (`OverlayError`: an `Alert` with Try again) and
+  empty (`OverlayEmpty`: what is missing and what to do), plus the populated view;
+- the room's `roomId` and `insightId` come from `console-loader.tsx` as props, so the read runs
+  in the room's insight, and a console with no room yet says so instead of failing;
+- every string is in `code:overlay.*` in all seven languages (a test checks the keys and
+  placeholders match), and times and money go through `Intl`.
 
-**Implementation notes:**
-- `DiffOverlay`: Runs `git diff HEAD` via `runPixel`, parses output, syntax-highlights additions/deletions
-- `RunsOverlay`: Extracts from `session.getState().entries` (RunEntry and InputEntry types)
-- `PacksOverlay`: Calls `readCapabilityPacks` from agent-core, displays tool counts and engine requirements
-- `CostOverlay` and `InboxOverlay`: Placeholder components with "implementation pending" notes
-- All overlays are wired through `onShowOverlay` callback from session commands to console state
+| Command | What it shows | Read from |
+|---------|---------------|-----------|
+| `:files` | The room's folder, one level per opened folder; selecting a file copies its path and says so | `BrowseInsightAssets` in the room's insight. That folder is the agent's working directory when no space is given. The reactor refuses a path that leaves it |
+| `:runs` | The room's runs, newest first: when, status, how long | `GetAgentRunsForRoom`, so a reopened room keeps its history. A run still going has no duration |
+| `:cost` | Tokens, calls and money per model | `GetModelCost`. A model with no published price says "No price", never `$0.00`, and a total that leaves one out is marked as a minimum (`summarizeCost`) |
+| `:inbox` | Agent actions waiting on the signed-in user, across all rooms, each opening its room | `GetPendingAgentActions`. Deciding an action happens in its room |
+| `:packs` | Capability packs, their tools, how many ask first, the engines they need | `readCapabilityPacks` from agent-core, through `getCapabilityPacks`, which reports a failed read rather than an empty list |
+| `:diff` | Says there is nothing to compare, and why | Nothing. A diff comes from a project's version history (`ProjectGitStatus`, `ProjectCommitDiff`), and a console room works in its own folder, which has none. A real `:diff` needs a room that works inside a project, or a new reactor |
+
+Times in agent run and action rows have no zone (`2026-09-12 03:47:56.368990`). The platform's
+containers run on UTC, and `parseServerTime` reads them that way.
+
+The status bar shows the room's cost once it has usage (`useRoomCost`, read when the room opens
+and each time a run ends). It has no slots for context use or the git branch: nothing feeds them,
+and a placeholder that looks like a measurement is worse than none.
+
+All overlays are wired through the `onShowOverlay` callback from session commands to console state.
 
 ### Ergonomics Features (Phase 6)
 

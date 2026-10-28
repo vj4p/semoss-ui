@@ -95,20 +95,24 @@ const RoomLoader = ({
 					<RunsOverlay
 						open={activeOverlay === "runs"}
 						onDismiss={() => setActiveOverlay(null)}
-						session={room.session}
+						roomId={room.openedRoom?.roomId}
+						insightId={room.openedRoom?.insightId}
 					/>
 					<PacksOverlay
 						open={activeOverlay === "packs"}
 						onDismiss={() => setActiveOverlay(null)}
+						insightId={room.openedRoom?.insightId}
 					/>
 					<CostOverlay
 						open={activeOverlay === "cost"}
 						onDismiss={() => setActiveOverlay(null)}
-						session={room.session}
+						roomId={room.openedRoom?.roomId}
+						insightId={room.openedRoom?.insightId}
 					/>
 					<InboxOverlay
 						open={activeOverlay === "inbox"}
 						onDismiss={() => setActiveOverlay(null)}
+						insightId={room.openedRoom?.insightId}
 					/>
 					<HistorySearchOverlay
 						open={activeOverlay === "history"}

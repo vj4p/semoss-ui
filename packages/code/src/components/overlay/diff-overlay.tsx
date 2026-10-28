@@ -1,4 +1,6 @@
+import { useTranslation } from "@semoss/i18n";
 import { OverlayContainer } from "./overlay-container";
+import { OverlayEmpty } from "./overlay-empty";
 
 export interface DiffOverlayProps {
 	open: boolean;
@@ -14,18 +16,21 @@ export interface DiffOverlayProps {
  * `ProjectCommitDiff`), and a console room works in its own folder, which has
  * none. Until a room can work inside a project, this says so rather than
  * showing an error that looks like a fault.
+ *
+ * @name DiffOverlay
+ * @param props.open - Whether the overlay is showing.
+ * @param props.onDismiss - Called to close it.
  */
-export const DiffOverlay = ({ open, onDismiss }: DiffOverlayProps) => (
-	<OverlayContainer open={open} onDismiss={onDismiss} title=":diff">
-		<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-			<p className="font-mono text-muted-foreground text-sm">
-				No changes to compare
-			</p>
-			<p className="max-w-md text-muted-foreground text-xs">
-				A diff needs an app with version history. This room works in its
-				own folder, which has none. Use :files to see what the agent
-				wrote.
-			</p>
-		</div>
-	</OverlayContainer>
-);
+export const DiffOverlay = ({ open, onDismiss }: DiffOverlayProps) => {
+	const { t } = useTranslation("code");
+	return (
+		<OverlayContainer open={open} onDismiss={onDismiss} title=":diff">
+			<div className="font-mono">
+				<OverlayEmpty
+					title={t("overlay.diff.title")}
+					description={t("overlay.diff.body")}
+				/>
+			</div>
+		</OverlayContainer>
+	);
+};
