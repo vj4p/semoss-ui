@@ -14,6 +14,7 @@ import {
 	AlertTitle,
 	Button,
 	Tabs,
+	TabsContent,
 	TabsList,
 	TabsTrigger,
 	toast,
@@ -45,21 +46,21 @@ import { ErrorDetail } from "../../form-editor/error-detail";
 import { TraceDetail } from "../../form-editor/trace-detail";
 import { StatusBadge } from "../../status-badge";
 import { RunBanner } from "../run-banner";
+import { RunInputViewer } from "./run-input-viewer";
 import { RunNodeDataViewer } from "./run-node-data-viewer";
-import {
-	RunInputViewer,
-	RunStepVariablesViewer,
-} from "./run-node-input-viewers";
 import { RunNodeSourceViewer } from "./run-node-source-viewer";
 import {
 	findSavedResultForOccurrence,
+	getAvailableRunNodeViews,
 	getRunNodeDataSource,
 	getRunNodeOccurrenceKey,
 	getVisibleRunNodeContentView,
+	isRunNodeContentView,
 	RUN_NODE_VIEW_LABELS,
 	RUN_RESULTS_LAYOUT_CLASSES,
 	type RunNodeContentView,
 } from "./run-node-view-state";
+import { RunStepVariablesViewer } from "./run-step-variables-viewer";
 
 export interface RunsTabSnapshot {
 	running: boolean;
@@ -727,8 +728,11 @@ function HistoryRunView({
 	);
 }
 
-/** Shared results panel: left nav + right output. */
-function ResultsPanel({
+/**
+ * Shared results panel: left nav + right output. Exported for its own tests; the
+ * package barrel exposes only `RunsTab`.
+ */
+export function ResultsPanel({
 	appId,
 	devMode,
 	runId,
@@ -820,10 +824,11 @@ function ResultsPanel({
 
 	const displayResult = selectedBodyResult ?? selectedResult;
 	// the backend sends a run's inputs and a step's variables only to an editor
-	const availableViews = {
-		input: Boolean(runInput) && !selectedBodyKey,
-		variables: Boolean(displayResult?.inputVariables),
-	};
+	const availableViews = getAvailableRunNodeViews(
+		runInput,
+		displayResult,
+		selectedBodyKey !== null,
+	);
 	const visibleContentView = getVisibleRunNodeContentView(
 		contentView,
 		devMode,
@@ -877,6 +882,75 @@ function ResultsPanel({
 		displayResult && runId
 			? getRunNodeOccurrenceKey(runId, displayResult.NODE_ID, occurrence)
 			: null;
+
+	// Source needs a run to read it from; without one the output stays showing.
+	const activeView =
+		visibleContentView === "source" && !runId
+			? "output"
+			: visibleContentView;
+	const showViewTabs =
+		availableViews.input ||
+		availableViews.variables ||
+		Boolean(runId && devMode);
+	const outputView = displayResult ? (
+		<>
+			{displayResult.STATUS === "WAITING_FOR_INPUT" &&
+				reviewAgentTrace &&
+				onViewAgentRun && (
+					<Button
+						type="button"
+						size="sm"
+						onClick={() => onViewAgentRun(reviewAgentTrace)}
+					>
+						<Clock3 className="size-4" aria-hidden />
+						Review request
+					</Button>
+				)}
+			{displayResult.ERROR_MESSAGE && (
+				<ErrorDetail message={displayResult.ERROR_MESSAGE} />
+			)}
+			{displayResult.STATUS === "SUCCESS" &&
+			dataSource.kind !== "preview" ? (
+				<RunNodeDataViewer
+					key={occurrenceKey}
+					appId={appId}
+					insightId={
+						dataSource.kind === "live"
+							? dataSource.insightId
+							: (executionInsightId ?? undefined)
+					}
+					frame={
+						dataSource.kind === "live"
+							? dataSource.frame
+							: displayResult.OUTPUT_FRAME
+					}
+					savedResult={
+						dataSource.kind === "retained"
+							? dataSource.savedResult
+							: undefined
+					}
+					outputPreview={displayResult.OUTPUT_PREVIEW ?? ""}
+					onOutputPopout={onOutputPopout}
+				/>
+			) : (
+				<CellOutputBlock
+					output={
+						displayResult.OUTPUT_PREVIEW ??
+						"No output was produced."
+					}
+					onOutputPopout={() =>
+						onOutputPopout(
+							displayResult.OUTPUT_PREVIEW ??
+								"No output was produced.",
+						)
+					}
+				/>
+			)}
+			{displayResult.trace && (
+				<TraceDetail trace={displayResult.trace} step={displayStep} />
+			)}
+		</>
+	) : null;
 
 	const handleSelectNode = useCallback(
 		(nodeId: string) => {
@@ -1220,16 +1294,14 @@ function ResultsPanel({
 										"Loop step"}
 								</p>
 							)}
-							{(availableViews.input ||
-								availableViews.variables ||
-								(runId && devMode)) && (
+							{showViewTabs ? (
 								<Tabs
-									value={visibleContentView}
-									onValueChange={(value) =>
-										setContentView(
-											value as RunNodeContentView,
-										)
-									}
+									value={activeView}
+									onValueChange={(value) => {
+										if (isRunNodeContentView(value)) {
+											setContentView(value);
+										}
+									}}
 								>
 									<TabsList
 										aria-label={
@@ -1255,102 +1327,62 @@ function ResultsPanel({
 											</TabsTrigger>
 										)}
 									</TabsList>
-								</Tabs>
-							)}
-							{visibleContentView === "source" && runId ? (
-								<RunNodeSourceViewer
-									key={occurrenceKey}
-									appId={appId}
-									runId={runId}
-									nodeId={displayResult.NODE_ID}
-								/>
-							) : visibleContentView === "input" && runInput ? (
-								<RunInputViewer runInput={runInput} />
-							) : visibleContentView === "variables" &&
-								displayResult.inputVariables ? (
-								<RunStepVariablesViewer
-									variables={displayResult.inputVariables}
-									omitted={
-										displayResult.inputVariablesOmitted
-									}
-								/>
-							) : (
-								<>
-									{displayResult.STATUS ===
-										"WAITING_FOR_INPUT" &&
-										reviewAgentTrace &&
-										onViewAgentRun && (
-											<Button
-												type="button"
-												size="sm"
-												onClick={() =>
-													onViewAgentRun(
-														reviewAgentTrace,
-													)
+									<TabsContent
+										value="output"
+										className={
+											RUN_RESULTS_LAYOUT_CLASSES.tabPanel
+										}
+									>
+										{outputView}
+									</TabsContent>
+									{runInput && availableViews.input && (
+										<TabsContent
+											value="input"
+											className={
+												RUN_RESULTS_LAYOUT_CLASSES.tabPanel
+											}
+										>
+											<RunInputViewer
+												runInput={runInput}
+											/>
+										</TabsContent>
+									)}
+									{displayResult.inputVariables &&
+										availableViews.variables && (
+											<TabsContent
+												value="variables"
+												className={
+													RUN_RESULTS_LAYOUT_CLASSES.tabPanel
 												}
 											>
-												<Clock3
-													className="size-4"
-													aria-hidden
+												<RunStepVariablesViewer
+													variables={
+														displayResult.inputVariables
+													}
+													omitted={
+														displayResult.inputVariablesOmitted
+													}
 												/>
-												Review request
-											</Button>
+											</TabsContent>
 										)}
-									{displayResult.ERROR_MESSAGE && (
-										<ErrorDetail
-											message={
-												displayResult.ERROR_MESSAGE
+									{runId && devMode && (
+										<TabsContent
+											value="source"
+											className={
+												RUN_RESULTS_LAYOUT_CLASSES.tabPanel
 											}
-										/>
+										>
+											<RunNodeSourceViewer
+												key={occurrenceKey}
+												appId={appId}
+												runId={runId}
+												nodeId={displayResult.NODE_ID}
+											/>
+										</TabsContent>
 									)}
-									{displayResult.STATUS === "SUCCESS" &&
-									dataSource.kind !== "preview" ? (
-										<RunNodeDataViewer
-											key={occurrenceKey}
-											appId={appId}
-											insightId={
-												dataSource.kind === "live"
-													? dataSource.insightId
-													: (executionInsightId ??
-														undefined)
-											}
-											frame={
-												dataSource.kind === "live"
-													? dataSource.frame
-													: displayResult.OUTPUT_FRAME
-											}
-											savedResult={
-												dataSource.kind === "retained"
-													? dataSource.savedResult
-													: undefined
-											}
-											outputPreview={
-												displayResult.OUTPUT_PREVIEW ??
-												""
-											}
-											onOutputPopout={onOutputPopout}
-										/>
-									) : (
-										<CellOutputBlock
-											output={
-												displayResult.OUTPUT_PREVIEW ??
-												"No output was produced."
-											}
-											onOutputPopout={() =>
-												onOutputPopout(
-													displayResult.OUTPUT_PREVIEW ??
-														"No output was produced.",
-												)
-											}
-										/>
-									)}
-									{displayResult.trace && (
-										<TraceDetail
-											trace={displayResult.trace}
-											step={displayStep}
-										/>
-									)}
-								</>
+								</Tabs>
+							) : (
+								outputView
 							)}
 						</div>
 					)

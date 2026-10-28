@@ -6,9 +6,11 @@ import type {
 import {
 	findSavedResultForOccurrence,
 	getAsyncViewerState,
+	getAvailableRunNodeViews,
 	getRunNodeDataSource,
 	getRunNodeOccurrenceKey,
 	getVisibleRunNodeContentView,
+	isRunNodeContentView,
 	mapSavedResultPage,
 	RUN_NODE_VIEW_LABELS,
 	RUN_RESULTS_LAYOUT_CLASSES,
@@ -137,6 +139,35 @@ describe("run node viewer states and invariants", () => {
 		expect(getVisibleRunNodeContentView("source", false, both)).toBe(
 			"output",
 		);
+	});
+
+	it("recognises exactly the four detail views", () => {
+		for (const view of ["output", "input", "variables", "source"]) {
+			expect(isRunNodeContentView(view)).toBe(true);
+		}
+		for (const other of ["", "Output", "data", "__proto__", "toString"]) {
+			expect(isRunNodeContentView(other)).toBe(false);
+		}
+	});
+
+	it("offers the run's input at the run level and variables when the step has them", () => {
+		const withVariables = { inputVariables: [] };
+		expect(getAvailableRunNodeViews("{}", withVariables, false)).toEqual({
+			input: true,
+			variables: true,
+		});
+		expect(getAvailableRunNodeViews(undefined, null, false)).toEqual({
+			input: false,
+			variables: false,
+		});
+		expect(getAvailableRunNodeViews("", {}, false)).toEqual({
+			input: false,
+			variables: false,
+		});
+	});
+
+	it("does not offer the run's input for a step inside a loop iteration", () => {
+		expect(getAvailableRunNodeViews("{}", {}, true).input).toBe(false);
 	});
 
 	it("provides explicit accessible names for detail and recovery controls", () => {

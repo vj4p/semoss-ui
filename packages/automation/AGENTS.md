@@ -45,6 +45,23 @@ package (theme sync and MCP tool-completion signaling to the playground parent).
   standard `FRAME_MAP` noun for row-shaped node output. Page that frame through the existing
   `Frame | QueryAll | Offset | Limit | Collect` Pixel path. If the run workspace has closed or the
   result is not tabular, retain the saved output-preview fallback.
+- Run input and step variables: `GetAutomationRun` returns `INPUT_SNAPSHOT` (JSON of what the run
+  was started with) and, per step, `inputVariables` (+ `inputVariablesOmitted`) only to an editor
+  (edit permission, or the caller's own inline scope) and only within the 30-day step-input
+  retention. Values are redacted for secret-like names and bounded server-side (at most 100
+  variables, 2,000 characters per value, 256 KB in all). Everything else gets neither field, so the
+  run view shows the Input and Variables tabs only when the data is present. Run input belongs to the run, so it is not offered for a step inside a loop
+  iteration.
+- Assistant-edit Undo (`use-assistant-undo.ts`, `undo-banner.tsx`): the assistant's tools save each
+  edit at once, so Undo cannot restore client state. Before the canvas reloads for an assistant edit
+  the hook keeps the canvas as it was (the first copy of a run of edits), then pairs it with the
+  revision that edit produced. Undo saves that copy with `saveAutomation(appId, canvas,
+  expectedRevision)` (`src/api/automation-save.ts`), so the backend refuses it ("Automation changed
+  since it was loaded") if anyone has saved since, then reloads. A hand edit, a save, a failed undo,
+  or opening another automation clears the copy. An undo that finishes after another automation
+  opened returns `superseded` and neither reloads nor clears. Callers of the canvas `refresh()` pass
+  `toolName` "reload" or "undo" for their own reloads; any other name is treated as an assistant edit
+  and records an undo point. A failed undo keeps an `Alert` on the canvas as well as the toast.
 - `control.loop` is a compound node whose `body` is a nested acyclic workflow
   graph. Keep its body in the canonical workflow document, reuse the normal node
   forms and catalog, and treat expand/collapse as transient canvas state. The

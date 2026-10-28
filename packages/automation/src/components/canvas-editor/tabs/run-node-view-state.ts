@@ -25,6 +25,20 @@ export type RunNodeDataSource =
 export type AsyncViewerState = "loading" | "error" | "empty" | "ready";
 export type RunNodeContentView = "output" | "input" | "variables" | "source";
 
+const RUN_NODE_CONTENT_VIEWS: readonly string[] = [
+	"output",
+	"input",
+	"variables",
+	"source",
+] satisfies RunNodeContentView[];
+
+/** Narrows a tab value to one of the detail views. */
+export function isRunNodeContentView(
+	value: string,
+): value is RunNodeContentView {
+	return RUN_NODE_CONTENT_VIEWS.includes(value);
+}
+
 export const RUN_NODE_VIEW_LABELS = {
 	navigation: "Run nodes",
 	detailView: "Run node detail view",
@@ -43,6 +57,7 @@ export const RUN_RESULTS_LAYOUT_CLASSES = {
 	navigation:
 		"max-h-48 w-full shrink-0 overflow-y-auto border-border border-b bg-muted/20 p-2 sm:max-h-none sm:w-56 sm:border-r sm:border-b-0",
 	content: "min-w-0 flex-1 overflow-y-auto p-3",
+	tabPanel: "outline-none focus-visible:outline-2 focus-visible:outline-ring",
 	scrollRegion:
 		"max-h-[28rem] overflow-auto rounded-md border focus-visible:outline-2 focus-visible:outline-ring",
 } as const;
@@ -122,6 +137,21 @@ export function getAsyncViewerState(
 export interface RunNodeAvailableViews {
 	input: boolean;
 	variables: boolean;
+}
+
+/**
+ * Which optional views a selection has data for. The run's input belongs to the
+ * run as a whole, so it is not offered for a step inside a loop iteration.
+ */
+export function getAvailableRunNodeViews(
+	runInput: string | undefined,
+	result: Pick<AutomationNodeResult, "inputVariables"> | null,
+	isLoopIterationSelected: boolean,
+): RunNodeAvailableViews {
+	return {
+		input: Boolean(runInput) && !isLoopIterationSelected,
+		variables: Boolean(result?.inputVariables),
+	};
 }
 
 /**

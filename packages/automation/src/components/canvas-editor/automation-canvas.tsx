@@ -11,10 +11,10 @@ import {
 	useEdgesState,
 	useNodesState,
 } from "@xyflow/react";
-import { encodeTextToBase64 } from "@semoss/utility/encoding";
 
 import "@xyflow/react/dist/style.css";
 import {
+	AlertCircle,
 	CheckCircle,
 	Code2,
 	Layers3,
@@ -33,6 +33,7 @@ import {
 	useCallback,
 	useEffect,
 	useImperativeHandle,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -44,6 +45,9 @@ import {
 	runPixelAsync,
 } from "@semoss/sdk";
 import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
 	Button,
 	Dialog,
 	DialogContent,
@@ -58,7 +62,11 @@ import {
 	toast,
 	useTheme,
 } from "@semoss/ui/next";
-import { getAutomationRun, listAutomationRuns } from "../../api";
+import {
+	getAutomationRun,
+	listAutomationRuns,
+	saveAutomation,
+} from "../../api";
 import { AutomationContext } from "../../contexts/automation.context";
 import type {
 	AutomationEdge,
@@ -91,10 +99,8 @@ import type {
 import type { CanvasWorkflowDocument } from "../../domain/automation-workflow-adapter";
 import {
 	canvasDocumentFromWorkflow,
-	canvasDocumentToWorkflow,
 	createCanvasWorkflowNode,
 	createInitialCanvasWorkflowDocument,
-	getCanvasNodeSources,
 	validateCanvasWorkflowConnections,
 	validateCanvasWorkflowNode,
 } from "../../domain/automation-workflow-adapter";
@@ -139,7 +145,7 @@ const CHANGE_HIGHLIGHT_DURATION_MS = 2500;
 type ChangeHighlight = { all: true } | { all: false; stepIds: Set<string> };
 
 /** Everything a save writes, as the canvas holds it. */
-type UndoCanvas = Parameters<typeof canvasDocumentToWorkflow>[0];
+type UndoCanvas = CanvasWorkflowDocument;
 
 function isStepHighlighted(
 	highlight: ChangeHighlight | null,
@@ -761,18 +767,7 @@ export const AutomationCanvasContent = forwardRef<
 		isDirty,
 		getCanvas: () => latestCanvasRef.current,
 		restore: async (canvas, baseRevision) => {
-			const definitionPayload = encodeTextToBase64(
-				JSON.stringify(canvasDocumentToWorkflow(canvas)),
-			);
-			const nodeSourcesPayload = encodeTextToBase64(
-				JSON.stringify(getCanvasNodeSources(canvas.steps)),
-			);
-			const response = await runPixel(
-				`SaveAutomation(project=${JSON.stringify([appId])}, json=${JSON.stringify([definitionPayload])}, nodeSources=${JSON.stringify([nodeSourcesPayload])}, expectedRevision=${JSON.stringify([baseRevision])});`,
-			);
-			if (response.errors.length > 0) {
-				throw new Error(response.errors.join("\n"));
-			}
+			await saveAutomation(appId, canvas, baseRevision);
 		},
 		reload: () =>
 			refreshRef.current?.(
@@ -787,6 +782,11 @@ export const AutomationCanvasContent = forwardRef<
 		clear: clearUndoPoint,
 		undo: runUndo,
 	} = assistantUndo;
+	/** Why the last undo failed, kept for the automation it failed on until dismissed. */
+	const [undoFailure, setUndoFailure] = useState<{
+		appId: string;
+		message: string;
+	} | null>(null);
 	const [addingToLoopId, setAddingToLoopId] = useState<string | null>(null);
 	const [loopBodyInsertionPoint, setLoopBodyInsertionPoint] =
 		useState<LoopBodyInsertionPoint | null>(null);
@@ -1052,13 +1052,16 @@ export const AutomationCanvasContent = forwardRef<
 	} | null>(null);
 	const restoredActiveRunForProjectRef = useRef<string | null>(null);
 
-	latestCanvasRef.current = {
-		description,
-		triggerBindings,
-		steps,
-		edges: graphEdges,
-		nodeGroups,
-	};
+	// the undo reads the canvas through a ref; write it after commit, not in render
+	useLayoutEffect(() => {
+		latestCanvasRef.current = {
+			description,
+			triggerBindings,
+			steps,
+			edges: graphEdges,
+			nodeGroups,
+		};
+	}, [description, triggerBindings, steps, graphEdges, nodeGroups]);
 
 	const refresh = useCallback(
 		(
@@ -1108,7 +1111,9 @@ export const AutomationCanvasContent = forwardRef<
 		},
 		[appId, isDirty, noteAssistantEdit],
 	);
-	refreshRef.current = refresh;
+	useLayoutEffect(() => {
+		refreshRef.current = refresh;
+	}, [refresh]);
 
 	/**
 	 * Re-reads the saved automation from the server, for when a person or an agent
@@ -2537,41 +2542,22 @@ export const AutomationCanvasContent = forwardRef<
 		}
 		setSaving(true);
 		try {
-			const definition = canvasDocumentToWorkflow({
-				description,
-				triggerBindings,
-				steps,
-				edges: graphEdges,
-				nodeGroups,
-			});
-			const nodeSources = getCanvasNodeSources(steps);
-			const definitionPayload = encodeTextToBase64(
-				JSON.stringify(definition),
+			const output = await saveAutomation(
+				appId,
+				{
+					description,
+					triggerBindings,
+					steps,
+					edges: graphEdges,
+					nodeGroups,
+				},
+				definitionRevisionRef.current,
 			);
-			const nodeSourcesPayload = encodeTextToBase64(
-				JSON.stringify(nodeSources),
-			);
-			const expectedRevisionArgument = definitionRevisionRef.current
-				? `, expectedRevision=${JSON.stringify([definitionRevisionRef.current])}`
-				: "";
-			const response = await runPixel(
-				`SaveAutomation(project=${JSON.stringify([appId])}, json=${JSON.stringify([definitionPayload])}, nodeSources=${JSON.stringify([nodeSourcesPayload])}${expectedRevisionArgument});`,
-			);
-			if (response.errors.length > 0) {
-				throw new Error(response.errors.join("\n"));
-			}
-			const output = response.pixelReturn?.[0]?.output as
-				| {
-						nodeSources?: Record<string, string>;
-						revision?: string;
-						scopeVariables?: Record<string, AutomationScopeEntry[]>;
-				  }
-				| undefined;
-			if (typeof output?.revision === "string") {
+			if (typeof output.revision === "string") {
 				definitionRevisionRef.current = output.revision;
 			}
-			setScopeVariablesByNode(output?.scopeVariables ?? {});
-			if (output?.nodeSources) {
+			setScopeVariablesByNode(output.scopeVariables ?? {});
+			if (output.nodeSources) {
 				skipDraftPersistenceRef.current = true;
 				setSteps((previous) =>
 					previous.map((step) => {
@@ -2593,6 +2579,7 @@ export const AutomationCanvasContent = forwardRef<
 			setIsDirty(false);
 			// the saved revision moved on, so the copy from before the edit is stale
 			clearUndoPoint();
+			setUndoFailure(null);
 			toast.success("Automation saved");
 			return true;
 		} catch (error) {
@@ -2630,19 +2617,23 @@ export const AutomationCanvasContent = forwardRef<
 		if (readOnly) return;
 		const result = await runUndo();
 		if (result.ok) {
+			setUndoFailure(null);
 			toast.success("Put the automation back as it was");
 			return;
 		}
+		// another automation is open now; this failure is not about it
+		if (result.superseded) return;
 		const message =
 			result.error instanceof Error
 				? normalizeAutomationErrorMessage(result.error.message)
 				: "Unknown error";
-		toast.error(
-			message.includes("Automation changed since it was loaded")
-				? "Cannot undo: the automation was saved again after the assistant changed it."
-				: `Undo failed: ${message}`,
-		);
-	}, [readOnly, runUndo]);
+		const text = message.includes("Automation changed since it was loaded")
+			? "Cannot undo: the automation was saved again after the assistant changed it."
+			: `Undo failed: ${message}`;
+		// the banner is gone once an undo fails, so keep the reason on screen too
+		setUndoFailure({ appId, message: text });
+		toast.error(text);
+	}, [appId, readOnly, runUndo]);
 
 	const syncPythonSource = useCallback(
 		(stepId: string, source: string) => {
@@ -4392,6 +4383,55 @@ export const AutomationCanvasContent = forwardRef<
 											/>
 										</div>
 									)}
+									{/* A failed undo stays visible after its toast is gone */}
+									{!assistantUndo.available &&
+										!readOnly &&
+										undoFailure?.appId === appId && (
+											<div className="absolute inset-x-0 top-0 z-20 px-4 pt-3">
+												<Alert variant="destructive">
+													<AlertCircle aria-hidden="true" />
+													<AlertTitle>
+														Could not undo the AI's
+														changes
+													</AlertTitle>
+													<AlertDescription>
+														<p>
+															{
+																undoFailure.message
+															}
+														</p>
+														<div className="flex flex-wrap items-center gap-2">
+															<Button
+																type="button"
+																size="sm"
+																variant="outline"
+																onClick={() => {
+																	setUndoFailure(
+																		null,
+																	);
+																	reloadFromServer();
+																}}
+															>
+																Reload saved
+																automation
+															</Button>
+															<Button
+																type="button"
+																size="sm"
+																variant="ghost"
+																onClick={() =>
+																	setUndoFailure(
+																		null,
+																	)
+																}
+															>
+																Dismiss
+															</Button>
+														</div>
+													</AlertDescription>
+												</Alert>
+											</div>
+										)}
 
 									{/* Onboarding tour (fixed popovers) */}
 									{!readOnly && (
