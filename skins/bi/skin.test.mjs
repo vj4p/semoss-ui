@@ -6,6 +6,10 @@ import vm from "node:vm";
 
 const here = (file) => new URL(file, import.meta.url);
 const css = readFileSync(here("./bi-skin.css"), "utf8");
+const platformCss = readFileSync(
+	here("../../libs/ui/src/styles/globals.css"),
+	"utf8",
+);
 const script = readFileSync(here("./bi-skin.js"), "utf8");
 
 /** Every variable BI's own stylesheet defines on :root. */
@@ -126,6 +130,86 @@ for (const [name, tokens] of [
 			);
 		});
 	}
+}
+
+/** The custom properties in the first `<selector> {` block of the platform's globals.css. */
+const readPlatformBlock = (selector) => {
+	const start = platformCss.indexOf(`${selector} {`);
+	assert.notEqual(start, -1, `no ${selector} block in globals.css`);
+	const body = platformCss.slice(start, platformCss.indexOf("}", start));
+	const tokens = {};
+	for (const match of body.matchAll(/(--[\w-]+):\s*([^;]+);/g)) {
+		tokens[match[1]] = match[2].trim().toLowerCase();
+	}
+	return tokens;
+};
+
+/** [BI variable, platform token]: DESIGN.md carve-out 6 says these literals must match. */
+const PLATFORM_MATCHES = [
+	["--color-primary-10", "--accent"],
+	["--color-error-100", "--destructive"],
+	["--color-error-10", "--destructive-tint"],
+	["--color-success-100", "--success"],
+	["--color-success-10", "--success-tint"],
+	["--color-warn-100", "--warning"],
+	["--color-warn-10", "--warning-tint"],
+	["--color-grey-1", "--foreground"],
+	["--color-grey-3", "--muted-foreground"],
+];
+
+for (const [name, tokens, platform, primaryToken] of [
+	["light", light, readPlatformBlock(":root"), "--primary"],
+	["dark", dark, readPlatformBlock(".dark"), "--primary-text"],
+]) {
+	test(`${name}: the skin's primary and accent equal the platform's globals.css`, () => {
+		// BI draws links and text in primary-100, so in dark it takes the text blue
+		assert.equal(
+			tokens["--color-primary-100"],
+			platform[primaryToken],
+			`--color-primary-100 vs ${primaryToken}`,
+		);
+		assert.equal(
+			tokens["--color-primary-10"],
+			platform["--accent"],
+			"--color-primary-10 vs --accent",
+		);
+	});
+
+	test(`${name}: the skin's status and text colors equal the platform's`, () => {
+		for (const [variable, token] of PLATFORM_MATCHES) {
+			assert.equal(
+				tokens[variable],
+				platform[token],
+				`${variable} vs ${token}`,
+			);
+		}
+	});
+
+	test(`${name}: the primary ramp is on the same blue as primary-100`, () => {
+		const hueOf = (hex) => {
+			const n = Number.parseInt(hex.slice(1), 16);
+			const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(
+				(c) => c / 255,
+			);
+			const max = Math.max(r, g, b);
+			const delta = max - Math.min(r, g, b);
+			const hue =
+				max === r
+					? ((g - b) / delta) % 6
+					: max === g
+						? (b - r) / delta + 2
+						: (r - g) / delta + 4;
+			return (hue * 60 + 360) % 360;
+		};
+		const base = hueOf(tokens["--color-primary-100"]);
+		for (const step of ["70", "50", "30"]) {
+			const hue = hueOf(tokens[`--color-primary-${step}`]);
+			assert.ok(
+				Math.abs(hue - base) <= 3,
+				`primary-${step} hue ${hue.toFixed(1)} is not ${base.toFixed(1)}`,
+			);
+		}
+	});
 }
 
 test("light islands keep exactly the light palette", () => {

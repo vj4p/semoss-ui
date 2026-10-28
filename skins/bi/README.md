@@ -9,7 +9,7 @@ is baked into the Docker image, so it cannot be rebuilt or restyled in the usual
 BI draws its own components (`smss-btn`, `smss-input`, `smss-card`, and the rest) from 27 CSS
 variables on `:root`. `bi-skin.css` redefines them (`html:root`, one step more specific than BI's
 `:root`), once for light and once for `html[data-theme="dark"]`. The platform's values are used:
-`#0560D8` primary, contrast-safe greys, Geist.
+`#1F4FD8` primary (`#9DB6F8` as text in dark), contrast-safe greys, Geist. `skin.test.mjs` checks the skin's primary, accent and status literals against `libs/ui/src/styles/globals.css`.
 
 `bi-skin.js` runs in `<head>` and keeps BI in step with the platform:
 

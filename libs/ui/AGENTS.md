@@ -34,7 +34,7 @@ Tokens are raw values on `:root` (light) and `.dark` (dark), mapped to Tailwind 
 | `background` / `foreground` | `bg-background`, `text-foreground` | Page surface and default text |
 | `card` / `card-foreground` | `bg-card`, `text-card-foreground` | Card surfaces |
 | `popover` / `popover-foreground` | `bg-popover` | Popovers, dropdowns, menus |
-| `primary` / `primary-foreground` | `bg-primary`, `ring-primary` | Brand blue **fills** (buttons, selection); white text on it is 5.7:1 |
+| `primary` / `primary-foreground` | `bg-primary`, `ring-primary` | Brand blue **fills** (buttons, selection); white text on it is 6.63:1 in light and 4.66:1 in dark, so the dark margin over AA's 4.5:1 is thin: do not lighten `primary` in dark |
 | `primary-text` | `text-primary-text` | Links and text-only primary accents. Same blue in light; a lighter blue in dark so text stays AA |
 | `assistant` / `assistant-foreground` | `Button variant="assistant"` | Purple assistant actions, such as Ask Assistant |
 | `canvas` | `bg-canvas` | App background behind panels (`bg-card`) |

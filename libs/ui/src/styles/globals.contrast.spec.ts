@@ -40,11 +40,21 @@ const channel = (c: number): number => {
 const luminance = ([r, g, b]: Rgb): number =>
 	0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 
-const contrast = (a: string, b: string): number => {
-	const [hi, lo] = [luminance(parseColor(a)), luminance(parseColor(b))].sort(
-		(x, y) => y - x,
-	);
+const contrastOfRgb = (a: Rgb, b: Rgb): number => {
+	const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
 	return (hi + 0.05) / (lo + 0.05);
+};
+
+const contrast = (a: string, b: string): number =>
+	contrastOfRgb(parseColor(a), parseColor(b));
+
+/** The opaque color a `fg` at `alpha` (0..1) paints over `bg`, as Tailwind's `bg-x/10` does. */
+const blend = (fg: string, bg: string, alpha: number): Rgb => {
+	const top = parseColor(fg);
+	const under = parseColor(bg);
+	return [0, 1, 2].map((i) =>
+		Math.round(alpha * top[i] + (1 - alpha) * under[i]),
+	) as Rgb;
 };
 
 /** [foreground token, background token, minimum ratio]. 4.5 is text, 3 is a non-text indicator. */
@@ -59,6 +69,8 @@ const surfacePairs = (surface: string): Pair[] => [
 	["destructive", surface, 4.5],
 	["info", surface, 4.5],
 	["ring", surface, 3],
+	// a chart series is a graphical object (WCAG 1.4.11), so 3:1
+	["chart-1", surface, 3],
 ];
 
 const sharedPairs: Pair[] = [
@@ -66,6 +78,9 @@ const sharedPairs: Pair[] = [
 	["muted-foreground", "canvas", 4.5],
 	["foreground", "accent", 4.5],
 	["primary-text", "accent", 4.5],
+	["primary-text", "canvas", 4.5],
+	["primary-text", "muted", 4.5],
+	["primary-text", "sidebar", 4.5],
 	["primary-foreground", "primary", 4.5],
 	["success-foreground", "success", 4.5],
 	["warning-foreground", "warning", 4.5],
@@ -76,6 +91,8 @@ const sharedPairs: Pair[] = [
 	["destructive", "destructive-tint", 4.5],
 	["info", "info-tint", 4.5],
 	["foreground", "sidebar", 4.5],
+	["sidebar-accent-foreground", "sidebar-accent", 4.5],
+	["sidebar-ring", "sidebar", 3],
 	["foreground", "popover", 4.5],
 ];
 
@@ -95,6 +112,29 @@ describe.each([
 			`${fg} ${tokens[fg]} on ${bg} ${tokens[bg]}`,
 		).toBeGreaterThanOrEqual(min);
 	});
+});
+
+describe.each([
+	["light", ":root"],
+	["dark", ".dark"],
+] as const)("%s theme primary tint", (_name, selector) => {
+	const tokens = readBlock(selector);
+
+	// `bg-primary/10 text-primary-text` is the icon chip and badge idiom
+	it.each(["card", "background"])(
+		"primary-text on a 10%% primary tint over %s is at least 4.5:1",
+		(surface) => {
+			const tint = blend(tokens.primary, tokens[surface], 0.1);
+			const ratio = contrastOfRgb(
+				parseColor(tokens["primary-text"]),
+				tint,
+			);
+			expect(
+				ratio,
+				`primary-text ${tokens["primary-text"]} on primary/10 over ${surface} ${tokens[surface]}`,
+			).toBeGreaterThanOrEqual(4.5);
+		},
+	);
 });
 
 describe("token registration", () => {

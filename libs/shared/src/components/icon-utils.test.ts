@@ -39,26 +39,56 @@ const contrast = (a: string, b: string): number => {
 	return (hi + 0.05) / (lo + 0.05);
 };
 
+/** The hue an avatar style was painted with. */
+const hueOf = (backgroundColor: string): number => {
+	const match = backgroundColor.match(/^hsl\((\d+),/);
+	if (!match) throw new Error(`Cannot parse ${backgroundColor}`);
+	return Number(match[1]);
+};
+
+/**
+ * Ask the real function for a style at every hue by trying labels until each of
+ * the 360 hues has come back once.
+ */
+const stylesByHue = (): Map<
+	number,
+	ReturnType<typeof getAppCatalogAvatarStyle>
+> => {
+	const styles = new Map<
+		number,
+		ReturnType<typeof getAppCatalogAvatarStyle>
+	>();
+	for (let i = 0; i < 200_000 && styles.size < 360; i++) {
+		const style = getAppCatalogAvatarStyle(`app-${i}`);
+		const hue = hueOf(style.backgroundColor);
+		if (!styles.has(hue)) styles.set(hue, style);
+	}
+	return styles;
+};
+
 describe("getAppCatalogAvatarStyle", () => {
+	it("reaches every hue from some label, so the readability check below covers them all", () => {
+		expect(stylesByHue().size).toBe(360);
+	});
+
 	it("keeps the initials readable (4.5:1) on every hue the name hash can pick", () => {
-		// the hue is the name's hash modulo 360, so every hue is reachable
-		const hues = Array.from({ length: 360 }, (_, i) => i);
 		const worst = Math.min(
-			...hues.map((hue) => {
-				// find a label-independent style by stubbing the hue through the format
-				const style = {
-					backgroundColor: `hsl(${hue}, 22%, 72%)`,
-					color: `hsl(${hue}, 28%, 22%)`,
-				};
-				return contrast(style.color, style.backgroundColor);
-			}),
+			...[...stylesByHue().values()].map((style) =>
+				contrast(style.color, style.backgroundColor),
+			),
 		);
 		expect(worst).toBeGreaterThanOrEqual(4.5);
 	});
 
-	it("uses the lightness the readability check covers", () => {
-		const style = getAppCatalogAvatarStyle("App Building Agent");
-		expect(style.backgroundColor).toMatch(/, 22%, 72%\)$/);
-		expect(style.color).toMatch(/, 28%, 22%\)$/);
+	it("gives the same label the same style every time", () => {
+		expect(getAppCatalogAvatarStyle("App Building Agent")).toEqual(
+			getAppCatalogAvatarStyle("App Building Agent"),
+		);
+	});
+
+	it("treats an empty label as App", () => {
+		expect(getAppCatalogAvatarStyle("")).toEqual(
+			getAppCatalogAvatarStyle("App"),
+		);
 	});
 });

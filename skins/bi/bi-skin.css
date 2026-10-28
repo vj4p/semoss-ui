@@ -39,9 +39,9 @@
 /* Light. Same values as the platform's tokens in libs/ui globals.css. */
 html:root {
 	--color-primary-100: #1f4fd8;
-	--color-primary-70: #044bb0;
-	--color-primary-50: #8db6f2;
-	--color-primary-30: #bbd5f7;
+	--color-primary-70: #1a42b4;
+	--color-primary-50: #8da7f2;
+	--color-primary-30: #bbcbf7;
 	--color-primary-10: #edf2ff;
 	--color-warn-100: #b45309;
 	--color-warn-70: #d97706;
@@ -73,9 +73,9 @@ html:root {
  */
 html[data-theme="dark"]:root {
 	--color-primary-100: #9db6f8;
-	--color-primary-70: #8dbdff;
-	--color-primary-50: #2f5fa8;
-	--color-primary-30: #1f3f73;
+	--color-primary-70: #cbd8fb;
+	--color-primary-50: #2f50a8;
+	--color-primary-30: #1f3673;
 	--color-primary-10: #14213f;
 	--color-warn-100: #fbbf24;
 	--color-warn-70: #d9a21a;
@@ -160,9 +160,9 @@ html[data-theme="dark"] .home-intro__content__cards__card,
 html[data-theme="dark"] .home-intro .smss-overlay__wrapper__header,
 html[data-theme="dark"] .ag-theme-balham {
 	--color-primary-100: #1f4fd8;
-	--color-primary-70: #044bb0;
-	--color-primary-50: #8db6f2;
-	--color-primary-30: #bbd5f7;
+	--color-primary-70: #1a42b4;
+	--color-primary-50: #8da7f2;
+	--color-primary-30: #bbcbf7;
 	--color-primary-10: #edf2ff;
 	--color-warn-100: #b45309;
 	--color-warn-70: #d97706;
