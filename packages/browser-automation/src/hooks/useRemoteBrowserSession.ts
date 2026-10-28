@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { getErrorMessage } from "@semoss/utility/error";
+import { canEditProject } from "../domain/recording-projects";
 import {
 	assertPixelSuccess,
 	fetchWithCsrf,
@@ -326,11 +327,7 @@ export function useRemoteBrowserSession(): UseRemoteBrowserSessionReturn {
 							const value = project.project_id;
 							const permission =
 								project.user_permission ?? project.permission;
-							if (
-								!value ||
-								(typeof permission === "number" &&
-									permission > 2)
-							) {
+							if (!value || !canEditProject(permission)) {
 								return null;
 							}
 							return {
