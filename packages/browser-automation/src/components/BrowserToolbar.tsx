@@ -82,7 +82,9 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 	}, [currentUrl]);
 
 	return (
-		<div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 xl:w-auto xl:flex-1 xl:flex-nowrap">
+		// Below sm the groups join the top bar's own row, so the URL field and the
+		// primary actions sit on two rows between them rather than three.
+		<div className="flex w-full min-w-0 flex-wrap items-center gap-1.5 max-sm:contents xl:w-auto xl:flex-1 xl:flex-nowrap">
 			<div className="flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-muted/70 p-0.5">
 				<ToolbarTip label="Back">
 					<Button
@@ -116,7 +118,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 				</ToolbarTip>
 			</div>
 
-			<div className="flex h-9 min-w-40 flex-[1_1_16rem] items-center gap-1 rounded-md border border-border bg-background px-1 shadow-black/20 shadow-inner focus-within:border-primary/70 focus-within:ring-2 focus-within:ring-primary/15">
+			<div className="flex h-9 min-w-40 flex-[1_1_10rem] items-center gap-1 rounded-md border border-border bg-background px-1 shadow-black/20 shadow-inner focus-within:border-primary/70 focus-within:ring-2 focus-within:ring-primary/15 sm:flex-[1_1_16rem]">
 				<Input
 					value={urlInput}
 					onChange={(event) => setUrlInput(event.target.value)}
@@ -142,7 +144,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 				</ToolbarTip>
 			</div>
 
-			<div className="flex shrink-0 items-center gap-1.5 border-border border-l pl-2">
+			<div className="flex shrink-0 items-center gap-1.5 border-border border-l pl-2 max-sm:border-l-0 max-sm:pl-0">
 				<ToolbarTip
 					label={
 						isRecording
@@ -168,7 +170,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 									: "text-destructive"
 							}
 						/>
-						<span className="hidden sm:inline">
+						<span className="max-sm:sr-only">
 							{isRecording ? "RECORDING" : "Record"}
 						</span>
 					</Button>
@@ -181,7 +183,7 @@ export const BrowserToolbar: React.FC<BrowserToolbarProps> = ({
 						onClick={onOpenSaveRecording}
 					>
 						{isSaving ? <Spinner /> : <Save />}
-						<span className="hidden sm:inline">Save</span>
+						<span className="max-sm:sr-only">Save</span>
 					</Button>
 				</ToolbarTip>
 			</div>

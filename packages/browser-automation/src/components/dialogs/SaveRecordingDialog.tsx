@@ -1,5 +1,9 @@
+import { Info } from "lucide-react";
 import { useId } from "react";
 import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
 	Button,
 	Dialog,
 	DialogContent,
@@ -59,13 +63,22 @@ export function SaveRecordingDialog(props: SaveRecordingDialogProps) {
 	const fileId = useId();
 	const descriptionId = useId();
 	const intentId = useId();
-	const hasRequiredMetadata =
-		!!props.title.trim() &&
-		!!props.description.trim() &&
-		!!props.intent.trim();
+	const projectId = useId();
+	const modelId = useId();
 	const requiresProject =
 		!props.showPlaygroundDestinations ||
 		props.destination === "playground-and-app";
+	const missing = [
+		requiresProject && !props.project ? "project" : null,
+		props.title.trim() ? null : "title",
+		props.description.trim() ? null : "description",
+		props.intent.trim() ? null : "intent",
+	].filter((name): name is string => name !== null);
+	const hasRequiredMetadata = missing.every((name) => name === "project");
+	const hasNoEditableProjects =
+		requiresProject &&
+		!props.isLoadingProjects &&
+		props.projects.length === 0;
 	const selectProject = (value: string) =>
 		props.onProjectChange(
 			props.projects.find((item) => item.value === value) ?? null,
@@ -134,40 +147,75 @@ export function SaveRecordingDialog(props: SaveRecordingDialogProps) {
 					)}
 					{requiresProject && (
 						<div className="grid gap-2">
-							<Label>Project</Label>
-							<Select
-								value={props.project?.value ?? ""}
-								onValueChange={selectProject}
-								disabled={props.isLoadingProjects}
-							>
-								<SelectTrigger className="w-full">
-									<SelectValue
-										placeholder={
-											props.isLoadingProjects
-												? "Loading projects..."
-												: "Select a project"
-										}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									{props.projects.map((item) => (
-										<SelectItem
-											key={item.value}
-											value={item.value}
+							{hasNoEditableProjects ? (
+								<Alert>
+									<Info aria-hidden="true" />
+									<AlertTitle>No app you can edit</AlertTitle>
+									<AlertDescription>
+										<p>
+											A recording is saved into an app you
+											own or can edit. Ask an owner to
+											give you edit access to an app, or
+											create one, then open this dialog
+											again.
+										</p>
+										{props.showPlaygroundDestinations && (
+											<Button
+												type="button"
+												size="sm"
+												variant="outline"
+												onClick={() =>
+													props.onDestinationChange(
+														"playground",
+													)
+												}
+											>
+												Save to Playground only
+											</Button>
+										)}
+									</AlertDescription>
+								</Alert>
+							) : (
+								<>
+									<Label htmlFor={projectId}>Project</Label>
+									<Select
+										value={props.project?.value ?? ""}
+										onValueChange={selectProject}
+										disabled={props.isLoadingProjects}
+									>
+										<SelectTrigger
+											id={projectId}
+											className="w-full"
 										>
-											{item.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<p className="text-muted-foreground text-xs">
-								Apps you can edit are shown. Agents and skills
-								are excluded.
-							</p>
+											<SelectValue
+												placeholder={
+													props.isLoadingProjects
+														? "Loading projects..."
+														: "Select a project"
+												}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{props.projects.map((item) => (
+												<SelectItem
+													key={item.value}
+													value={item.value}
+												>
+													{item.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									<p className="text-muted-foreground text-xs">
+										Apps you can edit are shown. Agents and
+										skills are excluded.
+									</p>
+								</>
+							)}
 						</div>
 					)}
 					<div className="grid gap-2">
-						<Label>AI model</Label>
+						<Label htmlFor={modelId}>AI model</Label>
 						<Select
 							value={props.model?.value ?? ""}
 							onValueChange={selectModel}
@@ -176,7 +224,7 @@ export function SaveRecordingDialog(props: SaveRecordingDialogProps) {
 								props.isGeneratingMetadata
 							}
 						>
-							<SelectTrigger className="w-full">
+							<SelectTrigger id={modelId} className="w-full">
 								<SelectValue
 									placeholder={
 										props.isLoadingModels
@@ -277,6 +325,12 @@ export function SaveRecordingDialog(props: SaveRecordingDialogProps) {
 						)}
 					</div>
 				</div>
+				{/* always mounted, so a change in what is missing is announced */}
+				<output className="text-muted-foreground text-xs">
+					{missing.length > 0 && !props.isGeneratingMetadata
+						? `Still needed to save: ${missing.join(", ")}.`
+						: ""}
+				</output>
 				<DialogFooter>
 					<Button
 						variant="outline"

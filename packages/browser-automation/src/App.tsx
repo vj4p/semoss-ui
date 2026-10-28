@@ -30,6 +30,7 @@ import {
 	SaveRecordingDialog,
 } from "./components/dialogs/SaveRecordingDialog";
 import { StopRecordingDialog } from "./components/dialogs/StopRecordingDialog";
+import { PanelsMenu } from "./components/PanelsMenu";
 import { PlaygroundStartPrompt } from "./components/PlaygroundStartPrompt";
 import { ReplaySidebar } from "./components/replay/ReplaySidebar";
 import { normalizeBrowserUrl } from "./domain/browser-url";
@@ -51,6 +52,7 @@ import {
 	getToolStringParameter,
 	isPlayRecordingTool,
 } from "./domain/tool-context";
+import { useAutoStartSession } from "./hooks/use-auto-start-session";
 import { useBrowserSocket } from "./hooks/useBrowserSocket";
 import { usePlaybackController } from "./hooks/usePlaybackController";
 import { useRemoteBrowserSession } from "./hooks/useRemoteBrowserSession";
@@ -75,6 +77,7 @@ import type {
 	McpToolContext,
 	RecordingMetadataModelOption,
 	RemoteBrowserRecordedStep,
+	RemoteBrowserSessionInfo,
 	SelectedTextContext,
 	SelectionBounds,
 	StepsEnvelope,
@@ -223,7 +226,6 @@ export default function App() {
 		localY: number;
 	} | null>(null);
 
-	const autoStartedRef = useRef(false);
 	const autoRecordingStartedRef = useRef(false);
 	const autoPlaybackProjectSelectedRef = useRef(false);
 	const autoPlaybackRecordingSelectedRef = useRef(false);
@@ -502,7 +504,6 @@ export default function App() {
 			return;
 		}
 		activeToolExecutionRef.current = toolExecutionKey;
-		autoStartedRef.current = false;
 		autoRecordingStartedRef.current = false;
 		autoPlaybackProjectSelectedRef.current = false;
 		autoPlaybackRecordingSelectedRef.current = false;
@@ -604,43 +605,32 @@ export default function App() {
 		};
 	}, []);
 
-	useEffect(() => {
-		if (!semossContextReady) return;
-		if (autoStartedRef.current || session || isCreating) return;
-		const startupUrl = isMcpPlaybackMode
-			? mcpStartUrl || playback.startUrl
-			: mcpStartUrl;
-		if (isPlaygroundMode && !startupUrl) return;
-
-		autoStartedRef.current = true;
+	const handleAutoStarting = useCallback((startupUrl: string) => {
 		if (startupUrl) setCurrentUrl(startupUrl);
-		createSession(
-			isPlaygroundMode ? startupUrl : "",
-			1365,
-			768,
-			!isPlaygroundMode,
-		).then((info) => {
-			// A failed start stays spent. Clearing the guard here would let this effect
-			// run again as soon as isCreating clears, so a browser that cannot start
-			// would be retried endlessly. The error banner stays up and the toolbar's
-			// start button tries again on request.
-			if (!info) return;
+	}, []);
+	const handleAutoStarted = useCallback(
+		(info: RemoteBrowserSessionInfo, startupUrl: string) => {
 			setCurrentUrl(
 				info.currentUrl || startupUrl || "https://example.com",
 			);
 			setLatestFrame(null);
 			setIsRecording(false);
-		});
-	}, [
-		createSession,
+		},
+		[],
+	);
+	const autoStart = useAutoStartSession({
+		isReady: semossContextReady,
+		hasSession: !!session,
 		isCreating,
-		isMcpPlaybackMode,
 		isPlaygroundMode,
-		mcpStartUrl,
-		playback.startUrl,
-		semossContextReady,
-		session,
-	]);
+		startupUrl: isMcpPlaybackMode
+			? mcpStartUrl || playback.startUrl
+			: mcpStartUrl,
+		rearmKey: toolExecutionKey,
+		createSession,
+		onStarting: handleAutoStarting,
+		onStarted: handleAutoStarted,
+	});
 
 	useEffect(() => {
 		if (
@@ -1133,13 +1123,12 @@ export default function App() {
 			return;
 		}
 
-		autoStartedRef.current = true;
+		// A failed start stays spent: clearing the guard would let the automatic start
+		// try again by itself the moment this one fails.
+		autoStart.markStarted();
 		setCurrentUrl(targetUrl);
 		const info = await createSession(targetUrl, 1365, 768, false);
-		if (!info) {
-			autoStartedRef.current = false;
-			return;
-		}
+		if (!info) return;
 
 		setCurrentUrl(info.currentUrl || targetUrl);
 		setSelectedTextContexts([]);
@@ -1151,7 +1140,12 @@ export default function App() {
 		setActiveBrowserTabId("tab-1");
 		playback.resetReplayPreparation();
 		setIsRecording(false);
-	}, [createSession, mcpStartUrlInput, playback.resetReplayPreparation]);
+	}, [
+		autoStart.markStarted,
+		createSession,
+		mcpStartUrlInput,
+		playback.resetReplayPreparation,
+	]);
 
 	const closeBrowserSession = useCallback(async () => {
 		sendEvent({ type: "close-session" });
@@ -2400,6 +2394,7 @@ export default function App() {
 							variant={
 								selectedTextContextsOpen ? "default" : "outline"
 							}
+							className="max-sm:hidden"
 							onClick={() =>
 								setSelectedTextContextsOpen((open) => !open)
 							}
@@ -2425,16 +2420,19 @@ export default function App() {
 							) : (
 								<Check />
 							)}
-							{isReturningToPlayground ||
-							isSaving ||
-							isSavingRecording
-								? "Returning"
-								: "Return to Playground"}
+							<span className="max-sm:sr-only">
+								{isReturningToPlayground ||
+								isSaving ||
+								isSavingRecording
+									? "Returning"
+									: "Return to Playground"}
+							</span>
 						</Button>
 					)}
 					<Button
 						size="sm"
 						variant={replayMenuOpen ? "default" : "outline"}
+						aria-expanded={replayMenuOpen}
 						onClick={() => {
 							playback.setControlsOpen(!replayMenuOpen);
 							playback.setLoadedRecordingOpen(
@@ -2443,12 +2441,13 @@ export default function App() {
 						}}
 					>
 						{replayMenuOpen ? <ChevronDown /> : <ChevronRight />}
-						Replay
+						<span className="max-sm:sr-only">Replay</span>
 					</Button>
 					{recordedSteps.length > 0 && (
 						<Button
 							size="sm"
 							variant={recordedStepsOpen ? "default" : "outline"}
+							className="max-sm:hidden"
 							onClick={() =>
 								setRecordedStepsOpen((open) => !open)
 							}
@@ -2463,6 +2462,18 @@ export default function App() {
 							Recorded ({recordedSteps.length})
 						</Button>
 					)}
+					<PanelsMenu
+						recordedCount={recordedSteps.length}
+						recordedOpen={recordedStepsOpen}
+						onToggleRecorded={() =>
+							setRecordedStepsOpen((open) => !open)
+						}
+						contextsCount={selectedTextContexts.length}
+						contextsOpen={selectedTextContextsOpen}
+						onToggleContexts={() =>
+							setSelectedTextContextsOpen((open) => !open)
+						}
+					/>
 					{playback.isPaused && (
 						<Badge
 							variant="outline"

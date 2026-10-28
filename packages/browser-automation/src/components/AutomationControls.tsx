@@ -127,13 +127,16 @@ export const AutomationControls: React.FC<AutomationControlsProps> = ({
 						onClick={onToggle}
 					>
 						{isGoalRunning ? <Square /> : <Wand2 />}
-						{isGoalRunning
-							? progressLabel || "Stop automation"
-							: isActive
-								? subMode === "fill-page"
-									? "Filling…"
-									: "Automation On"
-								: "Automate"}
+						{/* the text leaves the layout on narrow screens, not the name */}
+						<span className="max-sm:sr-only">
+							{isGoalRunning
+								? progressLabel || "Stop automation"
+								: isActive
+									? subMode === "fill-page"
+										? "Filling…"
+										: "Automation On"
+									: "Automate"}
+						</span>
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>

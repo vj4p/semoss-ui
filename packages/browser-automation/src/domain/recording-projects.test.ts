@@ -12,6 +12,20 @@ describe("canEditProject", () => {
 		expect(canEditProject(4)).toBe(false);
 	});
 
+	it("rejects values that are not a permission level", () => {
+		for (const value of [
+			0,
+			-1,
+			Number.NaN,
+			Number.POSITIVE_INFINITY,
+			1.5,
+			3,
+		]) {
+			expect(canEditProject(value)).toBe(false);
+		}
+		expect(canEditProject(Number.NEGATIVE_INFINITY)).toBe(false);
+	});
+
 	it("rejects a project that comes back with no permission", () => {
 		expect(canEditProject(undefined)).toBe(false);
 		expect(canEditProject(null)).toBe(false);
