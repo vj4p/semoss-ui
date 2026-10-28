@@ -182,6 +182,19 @@
 			"name": "Naam",
 			"newest": "Nieuwste",
 			"edited": "Onlangs bewerkt"
+		},
+		"clearFilters": "Filters wissen",
+		"empty": {
+			"title": "Nog geen agents",
+			"description": "Agents die je maakt of waartoe je toegang krijgt, verschijnen hier."
+		},
+		"filteredEmpty": {
+			"title": "Geen agents gevonden",
+			"description": "Probeer een andere zoekopdracht of verwijder een filter."
+		},
+		"error": {
+			"title": "Laden van agents mislukt",
+			"description": "Er ging iets mis bij het laden van je agents. Probeer het opnieuw."
 		}
 	}
 }

@@ -183,6 +183,19 @@
 			"name": "Nombre",
 			"newest": "Más recientes",
 			"edited": "Editados recientemente"
+		},
+		"clearFilters": "Borrar filtros",
+		"empty": {
+			"title": "Aún no hay agentes",
+			"description": "Los agentes que crees o a los que te den acceso aparecerán aquí."
+		},
+		"filteredEmpty": {
+			"title": "Ningún agente coincide",
+			"description": "Prueba con otra búsqueda o quita un filtro."
+		},
+		"error": {
+			"title": "No se pudieron cargar los agentes",
+			"description": "Algo salió mal al cargar tus agentes. Inténtalo de nuevo."
 		}
 	}
 }

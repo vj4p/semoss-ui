@@ -1,15 +1,20 @@
-import { SearchIcon } from "lucide-react";
+import { CircleAlertIcon, SearchIcon } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useTranslation } from "@semoss/i18n";
 import { useIteratorPixel } from "@semoss/sdk/react";
 import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
 	Button,
+	H3,
+	H4,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
-	Muted,
+	P,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -26,86 +31,17 @@ import {
 import { WorkspaceCard } from "@/components";
 import { useChat, useGlobalBreadcrumbs, useRoot } from "@/hooks";
 import type { App } from "@/types";
-
-/**
- * The filters offered, in display order. The access filters keep the agents
- * whose effective permission is any of those chosen; Created by Me narrows to
- * the agents the user made, under any of their logins.
- */
-const AGENT_FILTERS = ["createdByMe", "owner", "edit", "view"] as const;
-type AgentFilter = (typeof AGENT_FILTERS)[number];
-
-/** The permission level each access filter keeps. */
-const FILTER_PERMISSIONS: Partial<Record<AgentFilter, number>> = {
-	owner: 1,
-	edit: 2,
-	view: 3,
-};
-
-/** The orderings offered, in display order, with the sort each sends. */
-const SORT_OPTIONS = {
-	name: '{"PROJECTNAME": "ASC"}',
-	newest: '{"DATECREATED": "DESC"}',
-	edited: '{"DATELASTEDITED": "DESC"}',
-} as const;
-type SortOption = keyof typeof SORT_OPTIONS;
-
-const PAGE_SIZE = 25;
-
-const isAgentFilter = (value: string): value is AgentFilter =>
-	AGENT_FILTERS.some((filter) => filter === value);
-
-const isSortOption = (value: string): value is SortOption =>
-	value in SORT_OPTIONS;
-
-/**
- * Build the pixel that lists one page of the user's agents: every agent they
- * can use, narrowed by the chosen filters.
- *
- * @param filters - The chosen filters; none for every agent.
- * @param search - What the user typed; empty for no search.
- * @param sort - The ordering.
- * @param limit - The page size.
- * @param offset - How many agents to skip.
- * @return The pixel.
- */
-const buildCatalogPixel = (
-	filters: readonly AgentFilter[],
-	search: string,
-	sort: SortOption,
-	limit: number,
-	offset: number,
-): string => {
-	const filterWord = search
-		? `filterWord=["<encode>${search}</encode>"], `
-		: "";
-	const permissions = filters.flatMap((filter) => {
-		const level = FILTER_PERMISSIONS[filter];
-		return level === undefined ? [] : [level];
-	});
-	const permissionFilter =
-		permissions.length > 0
-			? `effectivePermissions=${JSON.stringify(permissions)}, `
-			: "";
-	const createdByMe = filters.includes("createdByMe")
-		? "createdByMe=[true], "
-		: "";
-	return `META | MyProjects(${filterWord}projectType=["WORKSPACE"], ${permissionFilter}${createdByMe}sort=[${SORT_OPTIONS[sort]}], limit=[${limit}], offset=[${offset}])`;
-};
-
-/**
- * The user's permission on an agent, as the card shows it. A global agent the
- * user holds no grant on is one they can use but not change.
- *
- * @param app - The agent, as the list returns it.
- * @return The permission.
- */
-const toCardPermission = (app: App): "OWNER" | "EDIT" | "READ_ONLY" =>
-	(app.permission ?? app.user_permission) === 1
-		? "OWNER"
-		: (app.permission ?? app.user_permission) === 2
-			? "EDIT"
-			: "READ_ONLY";
+import {
+	AGENT_FILTERS,
+	type AgentFilter,
+	buildCatalogPixel,
+	isAgentFilter,
+	isSortOption,
+	PAGE_SIZE,
+	SORT_OPTION_NAMES,
+	type SortOption,
+	toCardPermission,
+} from "@/utility/workspace-catalog";
 
 /**
  * Renders the WorkspacePage, allowing users to access their workspace or discover new ones
@@ -114,7 +50,6 @@ const toCardPermission = (app: App): "OWNER" | "EDIT" | "READ_ONLY" =>
  */
 export const WorkspacePage = observer(() => {
 	const { t } = useTranslation(["workspace", "notifications", "common"]);
-	const navigate = useNavigate();
 	const { root } = useRoot();
 	const { theme: colorMode } = useTheme();
 
@@ -181,6 +116,32 @@ export const WorkspacePage = observer(() => {
 		? root.theme.images.workspaceDark
 		: root.theme.images.workspace;
 
+	/** A search or a filter is narrowing the list. */
+	const isFiltered = search.trim() !== "" || filters.length > 0;
+	const clearFilters = () => {
+		setSearch("");
+		setFilters([]);
+	};
+
+	// shown in place of the list when nothing loaded, below it when a later page failed
+	const loadError = getWorkspaces.isError ? (
+		<Alert variant="destructive">
+			<CircleAlertIcon aria-hidden="true" />
+			<AlertTitle>{t("workspace:catalog.error.title")}</AlertTitle>
+			<AlertDescription>
+				<p>{t("workspace:catalog.error.description")}</p>
+				<Button
+					variant="outline"
+					size="sm"
+					className="mt-2"
+					onClick={() => getWorkspaces.reset()}
+				>
+					{t("common:buttons.retry")}
+				</Button>
+			</AlertDescription>
+		</Alert>
+	) : null;
+
 	return (
 		<div
 			ref={(el) => {
@@ -191,15 +152,15 @@ export const WorkspacePage = observer(() => {
 			<div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6">
 				<div className="flex flex-wrap items-start justify-between gap-4 border-b pb-6">
 					<div className="min-w-0 flex-1">
-						<h1 className="font-semibold text-2xl tracking-tight">
-							{t("workspace:catalog.title")}
-						</h1>
-						<p className="mt-2 max-w-2xl text-muted-foreground text-sm">
+						<H3>{t("workspace:catalog.title")}</H3>
+						<P className="mt-2 max-w-prose font-medium text-muted-foreground">
 							{t("workspace:catalog.description")}
-						</p>
+						</P>
 					</div>
-					<Button onClick={() => navigate("/agent/new")}>
-						{t("workspace:actions.createAgent")}
+					<Button asChild>
+						<Link to="/agent/new">
+							{t("workspace:actions.createAgent")}
+						</Link>
 					</Button>
 					{src && (
 						<img
@@ -238,9 +199,7 @@ export const WorkspacePage = observer(() => {
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{(
-									Object.keys(SORT_OPTIONS) as SortOption[]
-								).map((option) => (
+								{SORT_OPTION_NAMES.map((option) => (
 									<SelectItem key={option} value={option}>
 										{t(`workspace:catalog.sort.${option}`)}
 									</SelectItem>
@@ -274,9 +233,52 @@ export const WorkspacePage = observer(() => {
 							<Spinner />
 						</div>
 					) : getWorkspaces.data.length === 0 ? (
-						<div className="flex items-center justify-center py-12">
-							<Muted>{t("workspace:messages.noResults")}</Muted>
-						</div>
+						// a failed fetch is not "no agents": say so and offer a retry
+						(loadError ?? (
+							<output className="flex flex-col items-center gap-2 px-2 py-12 text-center">
+								<H4>
+									{isFiltered
+										? t(
+												"workspace:catalog.filteredEmpty.title",
+											)
+										: t("workspace:catalog.empty.title")}
+								</H4>
+								<P className="max-w-prose text-muted-foreground text-sm">
+									{isFiltered
+										? t(
+												"workspace:catalog.filteredEmpty.description",
+											)
+										: t(
+												"workspace:catalog.empty.description",
+											)}
+								</P>
+								<div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+									{isFiltered ? (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={clearFilters}
+										>
+											{t(
+												"workspace:catalog.clearFilters",
+											)}
+										</Button>
+									) : (
+										<Button
+											variant="outline"
+											size="sm"
+											asChild
+										>
+											<Link to="/agent/new">
+												{t(
+													"workspace:actions.createAgent",
+												)}
+											</Link>
+										</Button>
+									)}
+								</div>
+							</output>
+						))
 					) : (
 						<div className="grid @2xl:grid-cols-2 @3xl:grid-cols-3 grid-cols-1 gap-4">
 							{getWorkspaces.data.map((w) => (
@@ -312,6 +314,9 @@ export const WorkspacePage = observer(() => {
 							))}
 						</div>
 					)}
+
+					{/* a later page failed: the agents already loaded stay */}
+					{getWorkspaces.data.length > 0 ? loadError : null}
 
 					{getWorkspaces.isLoading &&
 						getWorkspaces.data.length > 0 && (

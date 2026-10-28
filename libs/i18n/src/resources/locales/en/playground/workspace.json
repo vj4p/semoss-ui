@@ -217,6 +217,19 @@
 			"name": "Name",
 			"newest": "Newest",
 			"edited": "Recently Edited"
+		},
+		"clearFilters": "Clear filters",
+		"empty": {
+			"title": "No agents yet",
+			"description": "Agents you create or are given access to appear here."
+		},
+		"filteredEmpty": {
+			"title": "No agents match",
+			"description": "Try a different search, or remove a filter."
+		},
+		"error": {
+			"title": "Could not load agents",
+			"description": "Something went wrong while loading your agents. Try again."
 		}
 	}
 }

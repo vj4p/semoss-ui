@@ -183,6 +183,19 @@
 			"name": "Nom",
 			"newest": "Plus récents",
 			"edited": "Modifiés récemment"
+		},
+		"clearFilters": "Effacer les filtres",
+		"empty": {
+			"title": "Aucun agent pour le moment",
+			"description": "Les agents que vous créez ou auxquels on vous donne accès apparaissent ici."
+		},
+		"filteredEmpty": {
+			"title": "Aucun agent ne correspond",
+			"description": "Essayez une autre recherche ou retirez un filtre."
+		},
+		"error": {
+			"title": "Impossible de charger les agents",
+			"description": "Un problème est survenu lors du chargement de vos agents. Réessayez."
 		}
 	}
 }
