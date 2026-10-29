@@ -1,6 +1,6 @@
 // biome-ignore-all lint/correctness/useExhaustiveDependencies: TODO
 
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type React from "react";
 import { Suspense, useEffect, useReducer, useRef, useState } from "react";
 import { MonacoEditor } from "@semoss/shared";
@@ -172,20 +172,19 @@ export const ConfigurationsPage = () => {
 
 	const settingsPage = () => {
 		return Object.keys(socialProps) ? (
-			<div className="flex">
-				{/* Left nav */}
-				<div className="w-[291px] shrink-0">
+			<div className="flex flex-col gap-4 md:flex-row md:gap-0">
+				{/* Left nav, stacked above the properties on narrow screens */}
+				<div className="w-full md:w-[291px] md:shrink-0">
 					<div className="rounded-md border">
-						<button
-							type="button"
-							className="flex w-full items-center justify-between px-4 py-3 font-medium text-sm"
-						>
-							<span>Authentication</span>
-							<ChevronDown className="size-4" />
-						</button>
+						<p className="px-4 py-3 font-medium text-sm">
+							Authentication
+						</p>
 						<div className="border-t px-3 pt-2 pb-3">
 							<div className="relative">
-								<Search className="-translate-y-1/2 absolute top-1/2 left-2 size-4 text-muted-foreground" />
+								<Search
+									className="-translate-y-1/2 absolute top-1/2 left-2 size-4 text-muted-foreground"
+									aria-hidden
+								/>
 								<Input
 									ref={authSearchBarRef}
 									className="h-8 pl-8 text-sm"
@@ -194,6 +193,7 @@ export const ConfigurationsPage = () => {
 										setAuthSearch(e.target.value)
 									}
 									placeholder="Search..."
+									aria-label="Search sign-in providers"
 								/>
 							</div>
 						</div>
