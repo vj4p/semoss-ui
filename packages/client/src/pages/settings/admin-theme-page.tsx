@@ -51,7 +51,9 @@ import {
 	editAdminTheme,
 	getAdminThemes,
 	setActiveAdminTheme,
+	setAllAdminThemesInactive,
 } from "@/api/theme";
+import { DeleteThemeDialog } from "@/features/admin-theme/delete-theme-dialog";
 import { useAPI, useSettings } from "@/hooks";
 
 /** Legacy SEMOSS client theme shape — coexists with `ThemeMap` in the same JSON document. */
@@ -421,12 +423,14 @@ export const AdminThemePage: React.FC = () => {
 
 	const [themeId, setThemeId] = useState<string>("");
 	const [isCreating, setIsCreating] = useState(false);
+	const themeNameId = useId();
 	const [themeName, setThemeName] = useState("");
 	const [themeValue, setThemeValue] = useState("");
 	const [themeActive, setThemeActive] = useState(false);
 	const [jsonErrors, setJsonErrors] = useState<string[]>([]);
 	const [activeTab, setActiveTab] = useState<ActiveTab>("json");
 	const [isLoading, setIsLoading] = useState(false);
+	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [collapseCmd, setCollapseCmd] = useState<CollapseCommand>(null);
 	const jsonEditorRef = useRef<MonacoFoldingEditor | null>(null);
 
@@ -637,6 +641,25 @@ export const AdminThemePage: React.FC = () => {
 			toast.error(getErrorMessage(error, "Failed to delete theme"));
 		} finally {
 			setIsLoading(false);
+			setIsConfirmingDelete(false);
+		}
+	};
+
+	const switchToDefaultTheme = async () => {
+		try {
+			setIsLoading(true);
+			const response = await setAllAdminThemesInactive();
+			if (!response) {
+				throw new Error("Failed to switch to the default theme");
+			}
+			toast.success("Using the default theme");
+			getThemes.refresh();
+		} catch (error) {
+			toast.error(
+				getErrorMessage(error, "Failed to switch to the default theme"),
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -721,21 +744,31 @@ export const AdminThemePage: React.FC = () => {
 						</Button>
 					) : (
 						<>
-							<Button
-								variant="outline"
-								disabled={
-									themeActive || isLoading || !selectedTheme
-								}
-								onClick={() => activateTheme()}
-								data-test-id="activateTheme-btn"
-								className="w-full sm:w-auto"
-							>
-								Activate
-							</Button>
+							{themeActive ? (
+								<Button
+									variant="outline"
+									disabled={isLoading}
+									onClick={() => switchToDefaultTheme()}
+									data-test-id="useDefaultTheme-btn"
+									className="w-full sm:w-auto"
+								>
+									Use default theme
+								</Button>
+							) : (
+								<Button
+									variant="outline"
+									disabled={isLoading || !selectedTheme}
+									onClick={() => activateTheme()}
+									data-test-id="activateTheme-btn"
+									className="w-full sm:w-auto"
+								>
+									Activate
+								</Button>
+							)}
 							<Button
 								variant="destructive"
 								disabled={isLoading || !selectedTheme}
-								onClick={() => deleteTheme()}
+								onClick={() => setIsConfirmingDelete(true)}
 								data-test-id="deleteTheme-btn"
 								className="w-full sm:w-auto"
 							>
@@ -767,8 +800,9 @@ export const AdminThemePage: React.FC = () => {
 				<>
 					<FieldGroup>
 						<Field>
-							<FieldLabel>Name</FieldLabel>
+							<FieldLabel htmlFor={themeNameId}>Name</FieldLabel>
 							<Input
+								id={themeNameId}
 								disabled={isLoading}
 								value={themeName}
 								onChange={(e) => setThemeName(e.target.value)}
@@ -807,7 +841,10 @@ export const AdminThemePage: React.FC = () => {
 												onClick={expandAll}
 												className="flex-1 sm:flex-none"
 											>
-												<Maximize2 className="size-4" />
+												<Maximize2
+													className="size-4"
+													aria-hidden
+												/>
 												Expand
 											</Button>
 										</TooltipTrigger>
@@ -826,7 +863,10 @@ export const AdminThemePage: React.FC = () => {
 												onClick={collapseAll}
 												className="flex-1 sm:flex-none"
 											>
-												<Minimize2 className="size-4" />
+												<Minimize2
+													className="size-4"
+													aria-hidden
+												/>
 												Collapse
 											</Button>
 										</TooltipTrigger>
@@ -949,6 +989,14 @@ export const AdminThemePage: React.FC = () => {
 					</CollapseContext.Provider>
 				</>
 			)}
+			<DeleteThemeDialog
+				open={isConfirmingDelete && Boolean(selectedTheme)}
+				themeName={selectedTheme?.THEME_NAME ?? themeName}
+				isActive={themeActive}
+				isDeleting={isLoading}
+				onConfirm={() => deleteTheme()}
+				onCancel={() => setIsConfirmingDelete(false)}
+			/>
 		</div>
 	);
 };
@@ -2058,6 +2106,7 @@ const FormSection: React.FC<{
 					className={`mt-1 size-4 shrink-0 text-muted-foreground transition-transform ${
 						open ? "" : "-rotate-90"
 					}`}
+					aria-hidden
 				/>
 				<div className="flex flex-col gap-1">
 					<h3 className="font-semibold text-base tracking-tight">

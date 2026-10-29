@@ -101,3 +101,15 @@ export const setActiveAdminTheme = async (id: string) => {
 
 	return response.data;
 };
+
+/**
+ * Turn every admin theme off, so the instance uses its default look
+ */
+export const setAllAdminThemesInactive = async () => {
+	const response = await post(
+		`${Env.MODULE}/api/themes/setAllAdminThemesInactive`,
+		{},
+	);
+
+	return response.data;
+};
