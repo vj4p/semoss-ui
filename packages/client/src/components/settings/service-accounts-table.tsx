@@ -1,4 +1,4 @@
-import { Copy, Download, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Copy, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDebouncedValue } from "@semoss/sdk/react";
 import { PersonIdentity } from "@semoss/shared";
@@ -18,7 +18,6 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	Input,
 	InputGroup,
 	InputGroupAddon,
 	InputGroupInput,
@@ -37,11 +36,8 @@ import {
 	TableRow,
 	toast,
 } from "@semoss/ui/next";
-import { downloadBlob } from "@semoss/utility/browser";
-import { getErrorMessage } from "@semoss/utility/error";
-import { sanitizeFileNameStem } from "@semoss/utility/file";
-import { createAPIUser, deleteMember } from "@/api";
-import { SdkBlock } from "@/components/shared/sdk-block";
+import { deleteMember } from "@/api";
+import { CreateServiceAccountDialog } from "@/features/service-account-create/create-service-account-dialog";
 import { useAPI, useServerPagination, useSettings } from "@/hooks";
 import { UserAddOverlay } from "./user-add-overlay";
 import { UserPopover } from "./user-popover";
@@ -75,15 +71,8 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 	>([]);
 
 	const [createModalOpen, setCreateModalOpen] = useState(false);
-	const [newServiceAccountName, setNewServiceAccountName] =
-		useState<string>("");
-	const [isCreating, setIsCreating] = useState(false);
 	const [cachedTotalUsers, setCachedTotalUsers] = useState<number>(0);
 	const [paginationTotalUsers, setPaginationTotalUsers] = useState<number>(0);
-	const [createdServiceAccount, setCreatedServiceAccount] = useState<Record<
-		string,
-		string
-	> | null>(null);
 
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [deleteMode, setDeleteMode] = useState<"single" | "bulk">("single");
@@ -176,16 +165,6 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 		});
 	}, [renderedServiceAccounts]);
 
-	const createdServiceAccountEntries = useMemo(() => {
-		if (!createdServiceAccount) {
-			return [];
-		}
-
-		return Object.entries(createdServiceAccount).filter(
-			([entryKey]) => entryKey !== "errorMessage",
-		);
-	}, [createdServiceAccount]);
-
 	const avatarUsers = useMemo(() => {
 		if (!renderedServiceAccounts.length) {
 			return [];
@@ -219,55 +198,6 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 		} catch (_error) {
 			toast.error(`Unable to copy ${label}`);
 		}
-	};
-
-	const resetCreateState = () => {
-		setNewServiceAccountName("");
-		setCreatedServiceAccount(null);
-	};
-
-	const createServiceAccount = async () => {
-		const trimmedName = newServiceAccountName.trim();
-
-		if (!trimmedName) {
-			toast.error("Service account name is required");
-			return;
-		}
-
-		setIsCreating(true);
-		try {
-			const response = await createAPIUser(trimmedName);
-
-			if (!response) {
-				throw new Error("Unable to create service account");
-			}
-
-			if (response.errorMessage) {
-				throw new Error(response.errorMessage);
-			}
-
-			setCreatedServiceAccount(response);
-			toast.success("Successfully created service account");
-			onChange();
-			getUsers.refresh();
-		} catch (error) {
-			toast.error(
-				getErrorMessage(error, "Unable to create service account"),
-			);
-		} finally {
-			setIsCreating(false);
-		}
-	};
-
-	const downloadCredentialsJson = () => {
-		if (!createdServiceAccount) return;
-		const slug =
-			sanitizeFileNameStem(newServiceAccountName) || "service-account";
-		const blob = new Blob(
-			[JSON.stringify(createdServiceAccount, null, 2)],
-			{ type: "application/json" },
-		);
-		downloadBlob(blob, `${slug}-credentials.json`);
 	};
 
 	const deleteServiceAccounts = async (accounts: ServiceAccountUser[]) => {
@@ -344,10 +274,11 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 					<div className="min-w-[240px]">
 						<InputGroup>
 							<InputGroupAddon>
-								<Search className="size-4" />
+								<Search className="size-4" aria-hidden />
 							</InputGroupAddon>
 							<InputGroupInput
 								placeholder="Search Service Accounts"
+								aria-label="Search Service Accounts"
 								value={search}
 								onChange={(
 									e: React.ChangeEvent<HTMLInputElement>,
@@ -367,18 +298,17 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 								setDeleteModalOpen(true);
 							}}
 						>
-							<Trash2 className="size-4" />
+							<Trash2 className="size-4" aria-hidden />
 							Delete Selected
 						</Button>
 					) : null}
 					<Button
 						disabled={isLoading}
 						onClick={() => {
-							resetCreateState();
 							setCreateModalOpen(true);
 						}}
 					>
-						<Plus className="size-4" />
+						<Plus className="size-4" aria-hidden />
 						Create Service Account
 					</Button>
 				</div>
@@ -527,6 +457,7 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 													<Button
 														variant="ghost"
 														size="icon-sm"
+														aria-label={`Copy id of ${displayName}`}
 														onClick={() =>
 															copyText(
 																account.id,
@@ -534,11 +465,15 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 															)
 														}
 													>
-														<Copy className="size-4" />
+														<Copy
+															className="size-4"
+															aria-hidden
+														/>
 													</Button>
 													<Button
 														variant="ghost"
 														size="icon-sm"
+														aria-label={`Edit ${displayName}`}
 														onClick={() => {
 															setServiceAccountToEdit(
 																account,
@@ -548,11 +483,15 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 															);
 														}}
 													>
-														<Pencil className="size-4" />
+														<Pencil
+															className="size-4"
+															aria-hidden
+														/>
 													</Button>
 													<Button
 														variant="ghost"
 														size="icon-sm"
+														aria-label={`Delete ${displayName}`}
 														onClick={() => {
 															setServiceAccountToDelete(
 																account,
@@ -565,7 +504,10 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 															);
 														}}
 													>
-														<Trash2 className="size-4" />
+														<Trash2
+															className="size-4"
+															aria-hidden
+														/>
 													</Button>
 												</div>
 											</TableCell>
@@ -659,7 +601,6 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 						<Button
 							disabled={isLoading}
 							onClick={() => {
-								resetCreateState();
 								setCreateModalOpen(true);
 							}}
 						>
@@ -683,86 +624,16 @@ export const ServiceAccountsTable = (props: ServiceAccountsTableProps) => {
 				}}
 			/>
 
-			<Dialog
-				open={createModalOpen}
-				onOpenChange={(open) => {
-					if (!open) {
-						setCreateModalOpen(false);
-						resetCreateState();
-					}
-				}}
-			>
-				<DialogContent className="max-w-2xl">
-					<DialogHeader>
-						<DialogTitle className="font-medium text-base leading-6">
-							Create Service Account
-						</DialogTitle>
-						<DialogDescription>
-							Create a service account for machine-based access.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="space-y-3">
-						<div className="space-y-1.5">
-							<p className="font-medium text-sm">
-								Service Account Name
-							</p>
-							<Input
-								value={newServiceAccountName}
-								disabled={Boolean(createdServiceAccount)}
-								onChange={(e) =>
-									setNewServiceAccountName(e.target.value)
-								}
-								placeholder="Enter service account name"
-								maxLength={255}
-							/>
-						</div>
-						<div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-							One-time credentials are shown only once after
-							creation. Copy and store them now.
-						</div>
-						{createdServiceAccount ? (
-							<div className="flex flex-col gap-3">
-								{createdServiceAccountEntries.length > 0 ? (
-									createdServiceAccountEntries.map(
-										([entryKey, entryValue]) => (
-											<SdkBlock
-												key={entryKey}
-												label={entryKey.toLowerCase()}
-												code={entryValue}
-												testId={`serviceAccount-${entryKey}-copy-btn`}
-											/>
-										),
-									)
-								) : (
-									<p className="text-sm">
-										Service account created successfully.
-									</p>
-								)}
-							</div>
-						) : null}
-					</div>
-					<DialogFooter>
-						{createdServiceAccount ? (
-							<Button
-								variant="default"
-								className="gap-2"
-								onClick={downloadCredentialsJson}
-							>
-								<Download className="size-4" />
-								Download JSON
-							</Button>
-						) : null}
-						{!createdServiceAccount ? (
-							<Button
-								onClick={createServiceAccount}
-								disabled={isCreating}
-							>
-								{isCreating ? "Creating..." : "Create"}
-							</Button>
-						) : null}
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			{createModalOpen ? (
+				<CreateServiceAccountDialog
+					open
+					onCreated={() => {
+						onChange();
+						getUsers.refresh();
+					}}
+					onClose={() => setCreateModalOpen(false)}
+				/>
+			) : null}
 
 			<Dialog
 				open={deleteModalOpen}
