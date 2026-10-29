@@ -20,6 +20,8 @@ import { Navigate } from "react-router";
 import type { ThemeMap } from "@semoss/shared";
 import { MonacoEditor } from "@semoss/shared";
 import {
+	Alert,
+	AlertDescription,
 	Button,
 	Field,
 	FieldDescription,
@@ -431,6 +433,8 @@ export const AdminThemePage: React.FC = () => {
 	const [activeTab, setActiveTab] = useState<ActiveTab>("json");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+	// the last failed save, delete or activate, kept until the next attempt so it is not lost with a toast
+	const [actionError, setActionError] = useState<string | null>(null);
 	const [collapseCmd, setCollapseCmd] = useState<CollapseCommand>(null);
 	const jsonEditorRef = useRef<MonacoFoldingEditor | null>(null);
 
@@ -573,15 +577,18 @@ export const AdminThemePage: React.FC = () => {
 
 	const saveTheme = async () => {
 		if (!parsedTheme) {
-			toast.error("Invalid JSON — please fix errors before saving");
+			setActionError(
+				"The theme JSON is not valid. Fix it before saving.",
+			);
 			return;
 		}
 		if (!themeName.trim()) {
-			toast.error("Theme name is required");
+			setActionError("Enter a name before saving.");
 			return;
 		}
 
 		try {
+			setActionError(null);
 			setIsLoading(true);
 
 			if (isCreating) {
@@ -620,7 +627,7 @@ export const AdminThemePage: React.FC = () => {
 				getThemes.refresh();
 			}
 		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to save theme"));
+			setActionError(getErrorMessage(error, "Failed to save theme"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -629,6 +636,7 @@ export const AdminThemePage: React.FC = () => {
 	const deleteTheme = async () => {
 		if (!selectedTheme) return;
 		try {
+			setActionError(null);
 			setIsLoading(true);
 			const response = await deleteAdminTheme(selectedTheme.ID);
 			if (!response) {
@@ -638,7 +646,7 @@ export const AdminThemePage: React.FC = () => {
 			setThemeId("");
 			getThemes.refresh();
 		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to delete theme"));
+			setActionError(getErrorMessage(error, "Failed to delete theme"));
 		} finally {
 			setIsLoading(false);
 			setIsConfirmingDelete(false);
@@ -647,6 +655,7 @@ export const AdminThemePage: React.FC = () => {
 
 	const switchToDefaultTheme = async () => {
 		try {
+			setActionError(null);
 			setIsLoading(true);
 			const response = await setAllAdminThemesInactive();
 			if (!response) {
@@ -655,7 +664,7 @@ export const AdminThemePage: React.FC = () => {
 			toast.success("Using the default theme");
 			getThemes.refresh();
 		} catch (error) {
-			toast.error(
+			setActionError(
 				getErrorMessage(error, "Failed to switch to the default theme"),
 			);
 		} finally {
@@ -665,6 +674,7 @@ export const AdminThemePage: React.FC = () => {
 
 	const activateTheme = async () => {
 		try {
+			setActionError(null);
 			setIsLoading(true);
 			const response = await setActiveAdminTheme(themeId);
 			if (!response) {
@@ -673,7 +683,7 @@ export const AdminThemePage: React.FC = () => {
 			toast.success("Theme activated");
 			getThemes.refresh();
 		} catch (error) {
-			toast.error(getErrorMessage(error, "Failed to activate theme"));
+			setActionError(getErrorMessage(error, "Failed to activate theme"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -698,6 +708,16 @@ export const AdminThemePage: React.FC = () => {
 	const saveDisabled =
 		isLoading || !isValidJson || !themeName.trim() || !hasChanges;
 	const hasNoThemeSelected = !isCreating && !selectedTheme;
+	// why Save is off, said where the person is looking: it can be a tab away from the JSON
+	let saveBlockedReason: string | null = null;
+	if (isCreating || hasChanges) {
+		if (!isValidJson) {
+			saveBlockedReason =
+				"The theme JSON cannot be read. Fix it on the JSON tab to save.";
+		} else if (!themeName.trim()) {
+			saveBlockedReason = "Enter a name to save this theme.";
+		}
+	}
 
 	return (
 		<div className="mx-auto flex w-full flex-1 flex-col gap-4 pb-8">
@@ -810,6 +830,17 @@ export const AdminThemePage: React.FC = () => {
 							/>
 						</Field>
 					</FieldGroup>
+
+					{actionError ? (
+						<Alert variant="destructive">
+							<AlertDescription>{actionError}</AlertDescription>
+						</Alert>
+					) : null}
+					{saveBlockedReason ? (
+						<p className="text-muted-foreground text-sm">
+							{saveBlockedReason}
+						</p>
+					) : null}
 
 					<CollapseContext.Provider value={collapseCmd}>
 						<Tabs
