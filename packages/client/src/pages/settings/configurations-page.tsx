@@ -197,7 +197,11 @@ export const ConfigurationsPage = () => {
 								/>
 							</div>
 						</div>
-						<div className="flex flex-col pb-2">
+						{/* bounded on phones so the properties start right after it, in full from md up */}
+						<nav
+							aria-label="Sign-in providers"
+							className="flex max-h-60 flex-col overflow-y-auto pb-2 md:max-h-none md:overflow-visible"
+						>
 							{authentication.map((value) => (
 								<div key={value} className="px-4 py-1 text-sm">
 									<Button
@@ -224,7 +228,7 @@ export const ConfigurationsPage = () => {
 									</Button>
 								</div>
 							))}
-						</div>
+						</nav>
 					</div>
 				</div>
 				{/* Right panel */}
