@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import type { Project } from "@semoss/shared";
 import {
+	Alert,
+	AlertDescription,
 	Button,
 	Dialog,
 	DialogContent,
@@ -19,11 +21,16 @@ import {
 	z,
 	zodResolver,
 } from "@semoss/ui/next";
+import { getErrorMessage } from "@semoss/utility/error";
 import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
+import {
+	buildCloneSkillPixel,
+	buildCreateAppFromTemplatePixel,
+} from "@/api/project-clone";
 import { useSession } from "@/hooks";
 
 const schema = z.object({
-	name: z.string().min(1, "Name is required"),
+	name: z.string().trim().min(1, "Name is required"),
 	description: z.string().default(""),
 	isGlobal: z.boolean().default(false),
 });
@@ -72,19 +79,14 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 		}
 	}, [open, form.reset]);
 
-	const escapePixelString = (value: string) => {
-		return value.replaceAll("'", "\\'");
-	};
-
-	const handleSubmit = async (values: FormValues) => {
+	const handleSubmit = async (values: FormValues): Promise<void> => {
 		if (!project.project_id) return;
 
+		let clonedProjectId: string | undefined;
 		try {
-			let clonedProjectId: string | undefined;
-
 			if (project.project_type === "SKILL") {
 				const { errors, pixelReturn } = await runPixel(
-					`CloneSkill(skillId=["${project.project_id}"], name=["${escapePixelString(values.name.trim())}"]);`,
+					buildCloneSkillPixel(project.project_id, values.name),
 				);
 
 				if (errors.length > 0) {
@@ -97,7 +99,11 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 				);
 			} else {
 				const { errors, pixelReturn } = await runPixel(
-					`CreateAppFromTemplate(project=["${escapePixelString(values.name.trim())}"], projectTemplate=["${project.project_id}"], global=["${values.isGlobal}"]);`,
+					buildCreateAppFromTemplatePixel(
+						values.name,
+						project.project_id,
+						values.isGlobal,
+					),
 				);
 
 				if (errors.length > 0) {
@@ -122,21 +128,29 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 					}
 				}
 			}
-
-			toast.success(`${label} cloned successfully`);
-			onClose(clonedProjectId);
-		} catch (error) {
-			console.error(error);
-			const message = `There was an error cloning your ${label.toLowerCase()}. Please try again.`;
-			toast.error(message);
+		} catch (error: unknown) {
+			// shown in the dialog, with the server's reason: "try again" is no use when
+			// the project is not a template at all, and a toast is gone before it is read
+			form.setError("root.server", {
+				type: "server",
+				message: getErrorMessage(
+					error,
+					`There was an error cloning your ${label.toLowerCase()}.`,
+				),
+			});
+			return;
 		}
+
+		toast.success(`${label} cloned successfully`);
+		onClose(clonedProjectId);
 	};
 
 	return (
 		<Dialog
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (!nextOpen) {
+				// closing does not stop the request, so stay until it has answered
+				if (!nextOpen && !form.formState.isSubmitting) {
 					onClose();
 				}
 			}}
@@ -151,7 +165,12 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 					</DialogDescription>
 				</DialogHeader>
 
-				<Form form={form} onSubmit={handleSubmit}>
+				<Form
+					form={form}
+					onSubmit={handleSubmit}
+					noValidate
+					aria-busy={form.formState.isSubmitting}
+				>
 					<FieldGroup className="py-2">
 						<FormInput
 							name="name"
@@ -178,6 +197,14 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 							/>
 						)}
 					</FieldGroup>
+
+					{form.formState.errors.root?.server?.message ? (
+						<Alert variant="destructive">
+							<AlertDescription>
+								{form.formState.errors.root.server.message}
+							</AlertDescription>
+						</Alert>
+					) : null}
 
 					<DialogFooter className="mt-4">
 						<Button
