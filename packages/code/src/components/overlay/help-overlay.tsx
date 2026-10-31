@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import type { KeyBinding, Platform, Session } from "@semoss/agent-core";
+import { Trans, useTranslation } from "@semoss/i18n";
+import { Input } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
 
 export interface HelpOverlayProps {
@@ -14,7 +16,7 @@ interface CommandItem {
 	name: string;
 	usage: string;
 	description: string;
-	category: string;
+	category: CommandCategory;
 }
 
 interface KeyItem {
@@ -23,15 +25,18 @@ interface KeyItem {
 	description: string;
 }
 
-const COMMAND_CATEGORIES = {
-	control: "Control",
-	navigation: "Navigation",
-	overlays: "Information",
-	session: "Session",
-} as const;
+/** The command groups in display order; each has a `overlay.help.categories.*` label. */
+const COMMAND_CATEGORIES = [
+	"control",
+	"navigation",
+	"information",
+	"session",
+] as const;
 
-const COMMAND_CATEGORY_MAP: Record<string, keyof typeof COMMAND_CATEGORIES> = {
-	help: "overlays",
+type CommandCategory = (typeof COMMAND_CATEGORIES)[number];
+
+const COMMAND_CATEGORY_MAP: Record<string, CommandCategory> = {
+	help: "information",
 	harness: "session",
 	model: "session",
 	new: "session",
@@ -43,12 +48,12 @@ const COMMAND_CATEGORY_MAP: Record<string, keyof typeof COMMAND_CATEGORIES> = {
 	always: "control",
 	allowed: "session",
 	revoke: "session",
-	files: "overlays",
-	diff: "overlays",
-	runs: "overlays",
-	packs: "overlays",
-	cost: "overlays",
-	inbox: "overlays",
+	files: "information",
+	diff: "information",
+	runs: "information",
+	packs: "information",
+	cost: "information",
+	inbox: "information",
 	export: "session",
 };
 
@@ -63,6 +68,7 @@ export const HelpOverlay = ({
 	keymap,
 	platform,
 }: HelpOverlayProps) => {
+	const { t } = useTranslation("code");
 	const [query, setQuery] = useState("");
 
 	const { commands, keys } = useMemo(() => {
@@ -92,9 +98,7 @@ export const HelpOverlay = ({
 					name: spec.name,
 					usage: fullUsage,
 					description: session.translate(spec.describe),
-					category:
-						COMMAND_CATEGORY_MAP[spec.name] ||
-						("session" as keyof typeof COMMAND_CATEGORIES),
+					category: COMMAND_CATEGORY_MAP[spec.name] ?? "session",
 				};
 			},
 		);
@@ -140,9 +144,11 @@ export const HelpOverlay = ({
 			(cmd) =>
 				cmd.name.toLowerCase().includes(lowerQuery) ||
 				cmd.description.toLowerCase().includes(lowerQuery) ||
-				cmd.category.toLowerCase().includes(lowerQuery),
+				t(`overlay.help.categories.${cmd.category}`)
+					.toLowerCase()
+					.includes(lowerQuery),
 		);
-	}, [commands, query]);
+	}, [commands, query, t]);
 
 	const filteredKeys = useMemo(() => {
 		if (!query) return keys;
@@ -156,51 +162,61 @@ export const HelpOverlay = ({
 
 	// Group commands by category
 	const commandsByCategory = useMemo(() => {
-		const grouped: Record<string, CommandItem[]> = {};
+		const grouped: Record<CommandCategory, CommandItem[]> = {
+			control: [],
+			navigation: [],
+			information: [],
+			session: [],
+		};
 		for (const cmd of filteredCommands) {
-			if (!grouped[cmd.category]) {
-				grouped[cmd.category] = [];
-			}
 			grouped[cmd.category].push(cmd);
 		}
 		return grouped;
 	}, [filteredCommands]);
 
 	return (
-		<OverlayContainer open={open} onDismiss={onDismiss} title="Help">
+		<OverlayContainer
+			open={open}
+			onDismiss={onDismiss}
+			title={t("overlay.help.title")}
+		>
 			<div className="flex flex-col gap-4">
 				{/* Search input */}
 				<div className="sticky top-0 bg-background pb-4">
-					<input
-						type="text"
+					<Input
+						type="search"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search commands and shortcuts..."
-						className="w-full rounded border bg-background px-3 py-2 font-mono text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
+						placeholder={t("overlay.help.searchPlaceholder")}
+						aria-label={t("overlay.help.searchLabel")}
+						className="font-mono"
 					/>
-					{query && (
-						<p className="mt-2 text-muted-foreground text-xs">
-							{filteredCommands.length} command
-							{filteredCommands.length !== 1 ? "s" : ""},{" "}
-							{filteredKeys.length} shortcut
-							{filteredKeys.length !== 1 ? "s" : ""}
-						</p>
-					)}
+					{query ? (
+						<output className="mt-2 block text-muted-foreground text-xs">
+							{filteredCommands.length === 0 &&
+							filteredKeys.length === 0
+								? t("overlay.help.noMatches", { query })
+								: t("overlay.help.matches", {
+										commands: filteredCommands.length,
+										shortcuts: filteredKeys.length,
+									})}
+						</output>
+					) : null}
 				</div>
 
 				{/* Commands section */}
 				<div className="space-y-4">
 					<h2 className="font-mono font-semibold text-lg">
-						Commands
+						{t("overlay.help.commands")}
 					</h2>
-					{Object.entries(COMMAND_CATEGORIES).map(([key, label]) => {
-						const categoryCommands = commandsByCategory[key] || [];
+					{COMMAND_CATEGORIES.map((key) => {
+						const categoryCommands = commandsByCategory[key];
 						if (categoryCommands.length === 0 && query) return null;
 
 						return (
 							<div key={key} className="space-y-2">
 								<h3 className="font-medium font-mono text-muted-foreground text-sm">
-									{label}
+									{t(`overlay.help.categories.${key}`)}
 								</h3>
 								<div className="space-y-1 ps-4">
 									{categoryCommands.map((cmd) => (
@@ -208,7 +224,10 @@ export const HelpOverlay = ({
 											key={cmd.name}
 											className="flex flex-col gap-1 rounded p-2 hover:bg-accent/50"
 										>
-											<code className="font-mono text-sm">
+											<code
+												dir="ltr"
+												className="font-mono text-sm"
+											>
 												{cmd.usage}
 											</code>
 											<p className="text-muted-foreground text-xs">
@@ -226,7 +245,7 @@ export const HelpOverlay = ({
 				{filteredKeys.length > 0 && (
 					<div className="space-y-2">
 						<h2 className="font-mono font-semibold text-lg">
-							Keyboard Shortcuts
+							{t("overlay.help.shortcuts")}
 						</h2>
 						<div className="space-y-1 ps-4">
 							{filteredKeys.map((key) => (
@@ -234,7 +253,10 @@ export const HelpOverlay = ({
 									key={key.action}
 									className="flex items-start justify-between gap-4 rounded p-2 hover:bg-accent/50"
 								>
-									<kbd className="rounded border bg-muted px-2 py-1 font-mono text-xs">
+									<kbd
+										dir="ltr"
+										className="rounded border bg-muted px-2 py-1 font-mono text-xs"
+									>
 										{key.keys}
 									</kbd>
 									<p className="flex-1 text-muted-foreground text-sm">
@@ -249,8 +271,11 @@ export const HelpOverlay = ({
 				{/* Tips */}
 				<div className="mt-4 rounded border border-info bg-info-tint p-3">
 					<p className="font-mono text-info text-xs">
-						<strong>Tip:</strong> Type two colons (::) to send a
-						prompt that starts with a colon.
+						<Trans
+							t={t}
+							i18nKey="overlay.help.tip"
+							components={{ strong: <strong /> }}
+						/>
 					</p>
 				</div>
 			</div>

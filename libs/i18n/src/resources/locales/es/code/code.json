@@ -320,6 +320,37 @@
 		"diff": {
 			"title": "No hay cambios que comparar",
 			"body": "Una comparación necesita una aplicación con historial de versiones. Esta sala trabaja en su propia carpeta, que no tiene ninguno. Usa :files para ver lo que escribió el agente."
+		},
+		"close": "Cerrar",
+		"closeHint": "Pulsa <keyQ>q</keyQ> o <keyEsc>Esc</keyEsc> para cerrar",
+		"help": {
+			"title": "Ayuda",
+			"searchLabel": "Buscar comandos y atajos",
+			"searchPlaceholder": "Buscar comandos y atajos...",
+			"matches": "Comandos: {{commands}} · Atajos: {{shortcuts}}",
+			"noMatches": "Nada coincide con \"{{query}}\"",
+			"commands": "Comandos",
+			"shortcuts": "Atajos de teclado",
+			"categories": {
+				"control": "Control",
+				"navigation": "Navegación",
+				"information": "Información",
+				"session": "Sesión"
+			},
+			"tip": "<strong>Consejo:</strong> Escribe dos signos de dos puntos (::) para enviar un mensaje que empiece con dos puntos."
+		},
+		"history": {
+			"title": "Buscar en el historial (Ctrl+R)",
+			"searchLabel": "Buscar en el historial de comandos y mensajes",
+			"searchPlaceholder": "Escribe para buscar en el historial de comandos y mensajes...",
+			"count": "Elementos: {{total}}",
+			"hint": "Usa ↑↓ para moverte, Intro para elegir, Esc para cerrar",
+			"noMatchTitle": "Ningún elemento coincide",
+			"noMatchHint": "Prueba con otro término de búsqueda",
+			"emptyTitle": "El historial está vacío",
+			"emptyHint": "Los comandos y mensajes aparecerán aquí",
+			"command": "cmd",
+			"prompt": "mensaje"
 		}
 	}
 }

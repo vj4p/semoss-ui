@@ -1,6 +1,10 @@
 import { XIcon } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
+import { Trans, useTranslation } from "@semoss/i18n";
 import { Button, Dialog, DialogContent, DialogTitle } from "@semoss/ui/next";
+
+/** A key name in the close hint: a keycap, so it stays left-to-right in every language. */
+const KEY_CLASS = "rounded border px-1.5 py-0.5";
 
 export interface OverlayContainerProps {
 	/** Whether the overlay is open. */
@@ -24,6 +28,8 @@ export const OverlayContainer = ({
 	title,
 	children,
 }: OverlayContainerProps) => {
+	const { t } = useTranslation("code");
+
 	useEffect(() => {
 		if (!open) {
 			return;
@@ -86,7 +92,7 @@ export const OverlayContainer = ({
 						size="icon-sm"
 						onClick={onDismiss}
 						data-testid="overlay-close"
-						aria-label="Close"
+						aria-label={t("overlay.close")}
 					>
 						<XIcon aria-hidden="true" />
 					</Button>
@@ -96,10 +102,14 @@ export const OverlayContainer = ({
 				</div>
 				<div className="border-t px-6 py-2">
 					<p className="font-mono text-muted-foreground text-sm">
-						Press{" "}
-						<kbd className="rounded border px-1.5 py-0.5">q</kbd> or{" "}
-						<kbd className="rounded border px-1.5 py-0.5">Esc</kbd>{" "}
-						to close
+						<Trans
+							t={t}
+							i18nKey="overlay.closeHint"
+							components={{
+								keyQ: <kbd dir="ltr" className={KEY_CLASS} />,
+								keyEsc: <kbd dir="ltr" className={KEY_CLASS} />,
+							}}
+						/>
 					</p>
 				</div>
 			</DialogContent>

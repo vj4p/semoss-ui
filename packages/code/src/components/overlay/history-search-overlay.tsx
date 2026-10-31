@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { Session } from "@semoss/agent-core";
+import { useTranslation } from "@semoss/i18n";
+import { Input, Muted } from "@semoss/ui/next";
 import { OverlayContainer } from "./overlay-container";
+import { OverlayEmpty } from "./overlay-empty";
 
 export interface HistorySearchOverlayProps {
 	open: boolean;
@@ -25,11 +28,14 @@ export const HistorySearchOverlay = ({
 	onSelect,
 	session,
 }: HistorySearchOverlayProps) => {
+	const { t } = useTranslation("code");
+	const listId = useId();
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [items, setItems] = useState<HistoryItem[]>([]);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
+	const optionId = (index: number): string => `${listId}-option-${index}`;
 
 	// Load history when overlay opens
 	useEffect(() => {
@@ -70,8 +76,9 @@ export const HistorySearchOverlay = ({
 		setQuery("");
 		setSelectedIndex(0);
 
-		// Focus input when overlay opens
-		setTimeout(() => inputRef.current?.focus(), 0);
+		// The dialog's own auto-focus is off (see OverlayContainer), so focus the search
+		const focusTimer = setTimeout(() => inputRef.current?.focus(), 0);
+		return () => clearTimeout(focusTimer);
 	}, [open, session]);
 
 	// Filter items based on query
@@ -80,6 +87,12 @@ export const HistorySearchOverlay = ({
 		const lowerQuery = query.toLowerCase();
 		return item.text.toLowerCase().includes(lowerQuery);
 	});
+
+	/** Hands the chosen entry to the prompt and closes the overlay. */
+	const choose = (text: string): void => {
+		onSelect(text);
+		onDismiss();
+	};
 
 	// Handle keyboard navigation
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -97,8 +110,7 @@ export const HistorySearchOverlay = ({
 			case "Enter":
 				e.preventDefault();
 				if (filteredItems[selectedIndex]) {
-					onSelect(filteredItems[selectedIndex].text);
-					onDismiss();
+					choose(filteredItems[selectedIndex].text);
 				}
 				break;
 			case "Escape":
@@ -121,10 +133,7 @@ export const HistorySearchOverlay = ({
 			selectedIndex
 		] as HTMLElement;
 		if (selectedElement) {
-			selectedElement.scrollIntoView({
-				block: "nearest",
-				behavior: "smooth",
-			});
+			selectedElement.scrollIntoView({ block: "nearest" });
 		}
 	}, [selectedIndex]);
 
@@ -153,72 +162,105 @@ export const HistorySearchOverlay = ({
 		<OverlayContainer
 			open={open}
 			onDismiss={onDismiss}
-			title="Search History (Ctrl+R)"
+			title={t("overlay.history.title")}
 		>
 			<div className="flex flex-col gap-4">
 				{/* Search input */}
 				<div className="sticky top-0 bg-background pb-4">
-					<input
+					<Input
 						ref={inputRef}
 						type="text"
+						role="combobox"
+						aria-expanded={filteredItems.length > 0}
+						aria-controls={listId}
+						aria-autocomplete="list"
+						aria-activedescendant={
+							filteredItems.length > 0
+								? optionId(selectedIndex)
+								: undefined
+						}
+						aria-describedby={`${listId}-hint`}
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
 						onKeyDown={handleKeyDown}
-						placeholder="Type to search command and prompt history..."
-						className="w-full rounded border bg-background px-3 py-2 font-mono text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
+						placeholder={t("overlay.history.searchPlaceholder")}
+						aria-label={t("overlay.history.searchLabel")}
+						className="font-mono"
 					/>
-					<p className="mt-2 text-muted-foreground text-xs">
-						{filteredItems.length} item
-						{filteredItems.length !== 1 ? "s" : ""} • Use ↑↓ to
-						navigate, Enter to select, Esc to close
-					</p>
+					<div className="mt-2 flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs">
+						<output>
+							{t("overlay.history.count", {
+								total: filteredItems.length,
+							})}
+						</output>
+						<span aria-hidden="true">•</span>
+						<span id={`${listId}-hint`}>
+							{t("overlay.history.hint")}
+						</span>
+					</div>
 				</div>
 
 				{/* Results list */}
 				{filteredItems.length === 0 ? (
-					<div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-						<p className="font-mono text-muted-foreground text-sm">
-							{query ? "No matching items" : "History is empty"}
-						</p>
-						<p className="text-muted-foreground text-xs">
-							{query
-								? "Try a different search term"
-								: "Commands and prompts will appear here"}
-						</p>
-					</div>
+					<OverlayEmpty
+						title={
+							query
+								? t("overlay.history.noMatchTitle")
+								: t("overlay.history.emptyTitle")
+						}
+						description={
+							query
+								? t("overlay.history.noMatchHint")
+								: t("overlay.history.emptyHint")
+						}
+					/>
 				) : (
 					<div
 						ref={listRef}
-						className="flex flex-col gap-1 overflow-y-auto"
-						style={{ maxHeight: "calc(100vh - 16rem)" }}
+						id={listId}
+						role="listbox"
+						aria-label={t("overlay.history.title")}
+						className="flex flex-col gap-1"
 					>
 						{filteredItems.map((item, index) => (
-							<button
+							<div
 								key={`${item.text}-${index}`}
-								type="button"
-								onClick={() => {
-									onSelect(item.text);
-									onDismiss();
+								id={optionId(index)}
+								role="option"
+								tabIndex={-1}
+								aria-selected={index === selectedIndex}
+								onClick={() => choose(item.text)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault();
+										choose(item.text);
+									}
 								}}
-								className={`flex items-start gap-3 rounded px-3 py-2 text-left transition-colors ${
+								className={`flex cursor-pointer items-start gap-3 rounded px-3 py-2 text-left transition-colors ${
 									index === selectedIndex
 										? "bg-accent text-accent-foreground"
 										: "hover:bg-accent/50"
 								}`}
 							>
-								<span
+								<Muted
 									className={`mt-0.5 rounded px-1.5 py-0.5 font-mono text-xs ${
 										item.type === "command"
 											? "bg-info-tint text-info"
 											: "bg-success-tint text-success"
 									}`}
 								>
-									{item.type === "command" ? "cmd" : "prompt"}
-								</span>
-								<span className="min-w-0 flex-1 truncate font-mono text-sm">
+									{item.type === "command"
+										? t("overlay.history.command")
+										: t("overlay.history.prompt")}
+								</Muted>
+								{/* dir=auto: an entry is a command (":help", left-to-right) or a prompt in any language */}
+								<span
+									dir="auto"
+									className="min-w-0 flex-1 truncate font-mono text-sm"
+								>
 									{highlightMatch(item.text, query)}
 								</span>
-							</button>
+							</div>
 						))}
 					</div>
 				)}

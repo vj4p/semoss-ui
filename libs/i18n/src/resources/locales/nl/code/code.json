@@ -319,6 +319,37 @@
 		"diff": {
 			"title": "Geen wijzigingen om te vergelijken",
 			"body": "Voor een diff is een app met versiegeschiedenis nodig. Deze ruimte werkt in een eigen map, die er geen heeft. Gebruik :files om te zien wat de agent heeft geschreven."
+		},
+		"close": "Sluiten",
+		"closeHint": "Druk op <keyQ>q</keyQ> of <keyEsc>Esc</keyEsc> om te sluiten",
+		"help": {
+			"title": "Help",
+			"searchLabel": "Zoek opdrachten en sneltoetsen",
+			"searchPlaceholder": "Zoek opdrachten en sneltoetsen...",
+			"matches": "Opdrachten: {{commands}} · Sneltoetsen: {{shortcuts}}",
+			"noMatches": "Niets komt overeen met \"{{query}}\"",
+			"commands": "Opdrachten",
+			"shortcuts": "Sneltoetsen",
+			"categories": {
+				"control": "Besturing",
+				"navigation": "Navigatie",
+				"information": "Informatie",
+				"session": "Sessie"
+			},
+			"tip": "<strong>Tip:</strong> Typ twee dubbele punten (::) om een prompt te versturen die met een dubbele punt begint."
+		},
+		"history": {
+			"title": "Geschiedenis doorzoeken (Ctrl+R)",
+			"searchLabel": "Opdracht- en promptgeschiedenis doorzoeken",
+			"searchPlaceholder": "Typ om de opdracht- en promptgeschiedenis te doorzoeken...",
+			"count": "Items: {{total}}",
+			"hint": "Gebruik ↑↓ om te navigeren, Enter om te kiezen, Esc om te sluiten",
+			"noMatchTitle": "Geen overeenkomende items",
+			"noMatchHint": "Probeer een andere zoekterm",
+			"emptyTitle": "De geschiedenis is leeg",
+			"emptyHint": "Opdrachten en prompts verschijnen hier",
+			"command": "cmd",
+			"prompt": "prompt"
 		}
 	}
 }

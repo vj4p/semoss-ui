@@ -319,6 +319,37 @@
 		"diff": {
 			"title": "No changes to compare",
 			"body": "A diff needs an app with version history. This room works in its own folder, which has none. Use :files to see what the agent wrote."
+		},
+		"close": "Close",
+		"closeHint": "Press <keyQ>q</keyQ> or <keyEsc>Esc</keyEsc> to close",
+		"help": {
+			"title": "Help",
+			"searchLabel": "Search commands and shortcuts",
+			"searchPlaceholder": "Search commands and shortcuts...",
+			"matches": "Commands: {{commands}} · Shortcuts: {{shortcuts}}",
+			"noMatches": "Nothing matches \"{{query}}\"",
+			"commands": "Commands",
+			"shortcuts": "Keyboard Shortcuts",
+			"categories": {
+				"control": "Control",
+				"navigation": "Navigation",
+				"information": "Information",
+				"session": "Session"
+			},
+			"tip": "<strong>Tip:</strong> Type two colons (::) to send a prompt that starts with a colon."
+		},
+		"history": {
+			"title": "Search History (Ctrl+R)",
+			"searchLabel": "Search command and prompt history",
+			"searchPlaceholder": "Type to search command and prompt history...",
+			"count": "Items: {{total}}",
+			"hint": "Use ↑↓ to navigate, Enter to select, Esc to close",
+			"noMatchTitle": "No matching items",
+			"noMatchHint": "Try a different search term",
+			"emptyTitle": "History is empty",
+			"emptyHint": "Commands and prompts will appear here",
+			"command": "cmd",
+			"prompt": "prompt"
 		}
 	}
 }

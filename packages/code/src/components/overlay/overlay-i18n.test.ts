@@ -21,8 +21,9 @@ const leaves = (
 	return into;
 };
 
+/** The `{{values}}` and `<tags>` a translation has to keep, since code fills or styles them. */
 const placeholders = (text: string): string[] =>
-	(text.match(/\{\{\w+\}\}/g) ?? []).sort();
+	(text.match(/\{\{\w+\}\}|<\/?\w+>/g) ?? []).sort();
 
 const load = async (language: string): Promise<Tree> => {
 	const loader = codeResources.load.code;

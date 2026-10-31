@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { OverlayContainer } from "./overlay-container";
+import { overlayI18n, renderOverlay } from "./render-overlay";
 
 /** A prompt and an overlay opened from it by a command, as the console does. */
 const Host = () => {
@@ -26,9 +27,13 @@ const Host = () => {
 	);
 };
 
+beforeAll(async () => {
+	await overlayI18n.ready;
+});
+
 describe("OverlayContainer", () => {
 	it("gives focus back to the prompt when it closes, since nothing was clicked to open it", async () => {
-		render(<Host />);
+		renderOverlay(<Host />);
 		const prompt = screen.getByRole("textbox", { name: "Prompt" });
 		prompt.focus();
 		fireEvent.keyDown(prompt, { key: "Enter" });
@@ -39,7 +44,7 @@ describe("OverlayContainer", () => {
 	});
 
 	it("closes on a bare q, but lets q be typed into a field inside the overlay", async () => {
-		render(
+		renderOverlay(
 			<OverlayContainer open onDismiss={() => {}} title=":test">
 				<input aria-label="Filter" />
 			</OverlayContainer>,

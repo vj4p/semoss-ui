@@ -318,6 +318,37 @@
 		"diff": {
 			"title": "比較する変更はありません",
 			"body": "差分にはバージョン履歴のあるアプリが必要です。このルームは独自のフォルダーで動作し、履歴がありません。エージェントが書いた内容は :files で確認できます。"
+		},
+		"close": "閉じる",
+		"closeHint": "<keyQ>q</keyQ> または <keyEsc>Esc</keyEsc> を押すと閉じます",
+		"help": {
+			"title": "ヘルプ",
+			"searchLabel": "コマンドとショートカットを検索",
+			"searchPlaceholder": "コマンドとショートカットを検索...",
+			"matches": "コマンド: {{commands}} · ショートカット: {{shortcuts}}",
+			"noMatches": "\"{{query}}\" に一致するものはありません",
+			"commands": "コマンド",
+			"shortcuts": "キーボードショートカット",
+			"categories": {
+				"control": "制御",
+				"navigation": "ナビゲーション",
+				"information": "情報",
+				"session": "セッション"
+			},
+			"tip": "<strong>ヒント:</strong> コロンで始まるプロンプトを送るには、コロンを2つ（::）入力します。"
+		},
+		"history": {
+			"title": "履歴を検索 (Ctrl+R)",
+			"searchLabel": "コマンドとプロンプトの履歴を検索",
+			"searchPlaceholder": "入力してコマンドとプロンプトの履歴を検索...",
+			"count": "項目: {{total}}",
+			"hint": "↑↓ で移動、Enter で選択、Esc で閉じます",
+			"noMatchTitle": "一致する項目がありません",
+			"noMatchHint": "別の検索語をお試しください",
+			"emptyTitle": "履歴は空です",
+			"emptyHint": "コマンドとプロンプトがここに表示されます",
+			"command": "cmd",
+			"prompt": "プロンプト"
 		}
 	}
 }

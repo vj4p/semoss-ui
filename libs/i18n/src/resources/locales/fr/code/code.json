@@ -320,6 +320,37 @@
 		"diff": {
 			"title": "Aucune modification à comparer",
 			"body": "Une comparaison nécessite une application avec historique de versions. Ce salon travaille dans son propre dossier, qui n'en a pas. Utilisez :files pour voir ce que l'agent a écrit."
+		},
+		"close": "Fermer",
+		"closeHint": "Appuyez sur <keyQ>q</keyQ> ou <keyEsc>Échap</keyEsc> pour fermer",
+		"help": {
+			"title": "Aide",
+			"searchLabel": "Rechercher des commandes et des raccourcis",
+			"searchPlaceholder": "Rechercher des commandes et des raccourcis...",
+			"matches": "Commandes : {{commands}} · Raccourcis : {{shortcuts}}",
+			"noMatches": "Rien ne correspond à \"{{query}}\"",
+			"commands": "Commandes",
+			"shortcuts": "Raccourcis clavier",
+			"categories": {
+				"control": "Contrôle",
+				"navigation": "Navigation",
+				"information": "Informations",
+				"session": "Session"
+			},
+			"tip": "<strong>Astuce :</strong> Tapez deux fois deux-points (::) pour envoyer une requête qui commence par deux-points."
+		},
+		"history": {
+			"title": "Rechercher dans l'historique (Ctrl+R)",
+			"searchLabel": "Rechercher dans l'historique des commandes et des requêtes",
+			"searchPlaceholder": "Saisissez pour rechercher dans l'historique des commandes et des requêtes...",
+			"count": "Éléments : {{total}}",
+			"hint": "Utilisez ↑↓ pour naviguer, Entrée pour choisir, Échap pour fermer",
+			"noMatchTitle": "Aucun élément correspondant",
+			"noMatchHint": "Essayez un autre terme de recherche",
+			"emptyTitle": "L'historique est vide",
+			"emptyHint": "Les commandes et les requêtes apparaîtront ici",
+			"command": "cmd",
+			"prompt": "requête"
 		}
 	}
 }
