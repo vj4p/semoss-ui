@@ -137,6 +137,31 @@ describe.each([
 	);
 });
 
+describe.each([
+	["light", ":root"],
+	["dark", ".dark"],
+] as const)("%s theme status text on its own tint", (_name, selector) => {
+	const tokens = readBlock(selector);
+
+	// `bg-success/10 text-success` and its siblings are the status chip and button idiom; a
+	// status colour that is readable on white can still miss 4.5:1 once its own tint sits behind it
+	it.each(
+		["success", "warning", "destructive", "info"].flatMap((status) =>
+			["card", "background"].map((surface) => [status, surface]),
+		),
+	)(
+		"%s text on its own 10 percent tint over %s is at least 4.5:1",
+		(status, surface) => {
+			const tint = blend(tokens[status], tokens[surface], 0.1);
+			const ratio = contrastOfRgb(parseColor(tokens[status]), tint);
+			expect(
+				ratio,
+				`${status} ${tokens[status]} on ${status}/10 over ${surface} ${tokens[surface]}`,
+			).toBeGreaterThanOrEqual(4.5);
+		},
+	);
+});
+
 describe("token registration", () => {
 	it.each([
 		"canvas",

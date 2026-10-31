@@ -43,7 +43,7 @@ html:root {
 	--color-primary-50: #8da7f2;
 	--color-primary-30: #bbcbf7;
 	--color-primary-10: #edf2ff;
-	--color-warn-100: #b45309;
+	--color-warn-100: #ad5009;
 	--color-warn-70: #d97706;
 	--color-warn-30: #fcd9a8;
 	--color-warn-10: #fdf3e3;
@@ -51,7 +51,7 @@ html:root {
 	--color-error-70: #e05252;
 	--color-error-30: #f5b8b8;
 	--color-error-10: #fcecec;
-	--color-success-100: #15803d;
+	--color-success-100: #147b3b;
 	--color-success-70: #3fa56a;
 	--color-success-30: #b7dfc6;
 	--color-success-10: #eef7f1;
@@ -164,7 +164,7 @@ html[data-theme="dark"] .ag-theme-balham {
 	--color-primary-50: #8da7f2;
 	--color-primary-30: #bbcbf7;
 	--color-primary-10: #edf2ff;
-	--color-warn-100: #b45309;
+	--color-warn-100: #ad5009;
 	--color-warn-70: #d97706;
 	--color-warn-30: #fcd9a8;
 	--color-warn-10: #fdf3e3;
@@ -172,7 +172,7 @@ html[data-theme="dark"] .ag-theme-balham {
 	--color-error-70: #e05252;
 	--color-error-30: #f5b8b8;
 	--color-error-10: #fcecec;
-	--color-success-100: #15803d;
+	--color-success-100: #147b3b;
 	--color-success-70: #3fa56a;
 	--color-success-30: #b7dfc6;
 	--color-success-10: #eef7f1;
