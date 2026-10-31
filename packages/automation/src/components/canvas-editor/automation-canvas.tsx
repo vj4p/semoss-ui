@@ -107,6 +107,13 @@ import {
 import { OnboardingTour } from "../form-editor/onboarding-tour";
 import { AddNodeMenu } from "./add-node-menu";
 import { AutomationDockLayout } from "./automation-dock-layout";
+import {
+	clearDraft,
+	readDevMode,
+	readDraft,
+	writeDevMode,
+	writeDraft,
+} from "./canvas-storage";
 import { DeletableEdge } from "./deletable-edge";
 import { getFlowStrokeColor, LOOP_PATH_HIGHLIGHT_COLOR } from "./flow-colors";
 import {
@@ -651,9 +658,7 @@ export const AutomationCanvasContent = forwardRef<
 		string | null
 	>(null);
 	const [description, setDescription] = useState("");
-	const [devMode, setDevMode] = useState(
-		() => localStorage.getItem(`automation-devmode-${appId}`) === "true",
-	);
+	const [devMode, setDevMode] = useState(() => readDevMode(appId));
 	const [activeDockTab, setActiveDockTab] = useState<
 		"inspector" | "validation"
 	>("inspector");
@@ -1087,7 +1092,7 @@ export const AutomationCanvasContent = forwardRef<
 			) {
 				noteAssistantEdit();
 			}
-			localStorage.removeItem(`automation-draft-${appId}`);
+			clearDraft(appId);
 			setEditingStepId(null);
 			setWorkflowRefreshToken((value) => value + 1);
 
@@ -1632,9 +1637,7 @@ export const AutomationCanvasContent = forwardRef<
 					previousStructure?.appId === appId &&
 					previousStructure.signature !== signature;
 				loadedGraphStructureRef.current = { appId, signature };
-				const rawDraft = localStorage.getItem(
-					`automation-draft-${appId}`,
-				);
+				const rawDraft = readDraft(appId);
 				if (
 					rawDraft &&
 					!readOnly &&
@@ -1660,7 +1663,7 @@ export const AutomationCanvasContent = forwardRef<
 						);
 						return;
 					} catch {
-						localStorage.removeItem(`automation-draft-${appId}`);
+						clearDraft(appId);
 					}
 				}
 				setSteps(
@@ -1761,10 +1764,7 @@ export const AutomationCanvasContent = forwardRef<
 			baseRevision: definitionRevisionRef.current,
 			savedAt: Date.now(),
 		};
-		localStorage.setItem(
-			`automation-draft-${appId}`,
-			JSON.stringify(draft),
-		);
+		writeDraft(appId, JSON.stringify(draft));
 		setIsDirty(true);
 	}, [
 		steps,
@@ -1812,7 +1812,7 @@ export const AutomationCanvasContent = forwardRef<
 		(value: boolean) => {
 			if (readOnly || viewingHistory) return;
 			setDevMode(value);
-			localStorage.setItem(`automation-devmode-${appId}`, String(value));
+			writeDevMode(appId, value);
 		},
 		[appId, readOnly, viewingHistory],
 	);
@@ -2575,7 +2575,7 @@ export const AutomationCanvasContent = forwardRef<
 					}),
 				);
 			}
-			localStorage.removeItem(`automation-draft-${appId}`);
+			clearDraft(appId);
 			setIsDirty(false);
 			// the saved revision moved on, so the copy from before the edit is stale
 			clearUndoPoint();
@@ -4723,8 +4723,10 @@ export const AutomationCanvasContent = forwardRef<
 										<div className="absolute right-4 bottom-4 z-10 flex items-center overflow-hidden rounded-lg border bg-background shadow-sm">
 											<Tooltip>
 												<TooltipTrigger asChild>
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-sm"
 														aria-label="Zoom out"
 														onClick={() => {
 															void reactFlowInstanceRef.current?.zoomOut(
@@ -4733,13 +4735,13 @@ export const AutomationCanvasContent = forwardRef<
 																},
 															);
 														}}
-														className="flex size-8 items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+														className="rounded-none border-r text-muted-foreground hover:text-foreground"
 													>
 														<ZoomOut
 															className="size-4"
 															aria-hidden
 														/>
-													</button>
+													</Button>
 												</TooltipTrigger>
 												<TooltipContent side="top">
 													Zoom out
@@ -4747,8 +4749,10 @@ export const AutomationCanvasContent = forwardRef<
 											</Tooltip>
 											<Tooltip>
 												<TooltipTrigger asChild>
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-sm"
 														aria-label="Zoom in"
 														onClick={() => {
 															void reactFlowInstanceRef.current?.zoomIn(
@@ -4757,13 +4761,13 @@ export const AutomationCanvasContent = forwardRef<
 																},
 															);
 														}}
-														className="flex size-8 items-center justify-center border-r text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+														className="rounded-none border-r text-muted-foreground hover:text-foreground"
 													>
 														<ZoomIn
 															className="size-4"
 															aria-hidden
 														/>
-													</button>
+													</Button>
 												</TooltipTrigger>
 												<TooltipContent side="top">
 													Zoom in
@@ -4771,17 +4775,19 @@ export const AutomationCanvasContent = forwardRef<
 											</Tooltip>
 											<Tooltip>
 												<TooltipTrigger asChild>
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-sm"
 														aria-label="Zoom to fit workflow"
 														onClick={fitWorkflow}
-														className="flex size-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+														className="rounded-none text-muted-foreground hover:text-foreground"
 													>
 														<Scan
 															className="size-4"
 															aria-hidden
 														/>
-													</button>
+													</Button>
 												</TooltipTrigger>
 												<TooltipContent side="top">
 													Zoom to fit workflow
@@ -4794,14 +4800,19 @@ export const AutomationCanvasContent = forwardRef<
 										<div className="absolute bottom-4 left-4 z-10 flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm">
 											<Tooltip>
 												<TooltipTrigger asChild>
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-sm"
 														aria-label="Clean up node layout"
 														onClick={cleanUpLayout}
-														className="flex items-center justify-center rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+														className="text-muted-foreground"
 													>
-														<RefreshCw className="h-4 w-4" />
-													</button>
+														<RefreshCw
+															className="h-4 w-4"
+															aria-hidden
+														/>
+													</Button>
 												</TooltipTrigger>
 												<TooltipContent side="top">
 													Clean up layout
@@ -4811,8 +4822,10 @@ export const AutomationCanvasContent = forwardRef<
 											<div className="flex items-center gap-0.5 rounded-md bg-muted/60 p-0.5">
 												<Tooltip>
 													<TooltipTrigger asChild>
-														<button
+														<Button
 															type="button"
+															variant="ghost"
+															size="icon-sm"
 															aria-pressed={
 																!devMode
 															}
@@ -4822,10 +4835,17 @@ export const AutomationCanvasContent = forwardRef<
 																	false,
 																)
 															}
-															className={`flex items-center justify-center rounded p-1.5 transition-colors ${!devMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+															className={
+																!devMode
+																	? "bg-background text-foreground shadow-sm hover:bg-background"
+																	: "text-muted-foreground hover:text-foreground"
+															}
 														>
-															<Workflow className="h-4 w-4" />
-														</button>
+															<Workflow
+																className="h-4 w-4"
+																aria-hidden
+															/>
+														</Button>
 													</TooltipTrigger>
 													<TooltipContent side="top">
 														Design mode
@@ -4833,8 +4853,10 @@ export const AutomationCanvasContent = forwardRef<
 												</Tooltip>
 												<Tooltip>
 													<TooltipTrigger asChild>
-														<button
+														<Button
 															type="button"
+															variant="ghost"
+															size="icon-sm"
 															aria-pressed={
 																devMode
 															}
@@ -4844,10 +4866,17 @@ export const AutomationCanvasContent = forwardRef<
 																	true,
 																)
 															}
-															className={`flex items-center justify-center rounded p-1.5 transition-colors ${devMode ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+															className={
+																devMode
+																	? "bg-background text-foreground shadow-sm hover:bg-background"
+																	: "text-muted-foreground hover:text-foreground"
+															}
 														>
-															<Code2 className="h-4 w-4" />
-														</button>
+															<Code2
+																className="h-4 w-4"
+																aria-hidden
+															/>
+														</Button>
 													</TooltipTrigger>
 													<TooltipContent side="top">
 														Dev mode — Python source
@@ -4994,7 +5023,7 @@ export const AutomationCanvasContent = forwardRef<
 					}
 				}}
 			>
-				<DialogContent className="flex h-[80vh] max-w-3xl flex-col p-0">
+				<DialogContent className="flex h-[80dvh] max-h-[80dvh] max-w-3xl flex-col p-0">
 					<DialogHeader className="sr-only">
 						<DialogTitle>Add workflow node</DialogTitle>
 					</DialogHeader>
