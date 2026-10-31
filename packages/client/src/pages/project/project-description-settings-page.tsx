@@ -1,3 +1,4 @@
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import { CatalogDescriptionSettings } from "@/components/catalog";
 import { useProject, useSession } from "@/hooks";
 
@@ -13,9 +14,7 @@ export const ProjectDescriptionSettingsPage = () => {
 			permission={permission}
 			onSave={async (meta) => {
 				const response = await runPixel(
-					`SetProjectMetadata(project=["${project.project_id}"], meta=[${JSON.stringify(
-						meta,
-					)}])`,
+					buildSetProjectMetadataPixel(project.project_id, meta),
 				);
 				if (response.errors.length > 0) {
 					throw new Error(response.errors.join(""));

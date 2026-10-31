@@ -32,6 +32,7 @@ import {
 } from "@semoss/ui/next";
 import { isRecord } from "@semoss/utility/object";
 import { formatToDataTestId } from "@semoss/utility/text";
+import { buildSetEngineMetadataPixel } from "@/api/catalog-meta";
 import {
 	EngineBuiltinToolsField,
 	type ModelBuiltinTools,
@@ -392,9 +393,7 @@ export const ModelImportForm = (props: ModelImportFormProps) => {
 			if (engineId && description) {
 				try {
 					const metadataResponse = await runPixel(
-						`SetEngineMetadata(engine=[${JSON.stringify(engineId)}], meta=[${JSON.stringify(
-							{ description },
-						)}]);`,
+						buildSetEngineMetadataPixel(engineId, { description }),
 					);
 					const metadataResult = metadataResponse.pixelReturn?.[0];
 					if (

@@ -25,6 +25,7 @@ import {
 	Textarea,
 	toast,
 } from "@semoss/ui/next";
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import { useSession } from "@/hooks";
 
 /** Title and error message shown based on the entity being uploaded. */
@@ -156,7 +157,10 @@ export const UploadProjectDialog = ({
 				}
 
 				const metaResp = await runPixel(
-					`SetProjectMetadata(project=["${createOutput.project_id}"], meta=[${JSON.stringify({ tag: tags, description })}])`,
+					buildSetProjectMetadataPixel(createOutput.project_id, {
+						tag: tags,
+						description,
+					}),
 				);
 				if (
 					(

@@ -1,5 +1,9 @@
 import type { Role } from "@semoss/sdk";
 import type { Engine } from "@semoss/shared";
+import {
+	buildDatabaseMetaValuesPixel,
+	buildSetEngineMetadataPixel,
+} from "@/api/catalog-meta";
 import { CatalogTagsSettings } from "@/components/catalog";
 import { useConfig, useSession } from "@/hooks";
 
@@ -33,17 +37,11 @@ export const EngineTagsSettings = ({
 		<CatalogTagsSettings
 			metadata={engine as unknown as Record<string, unknown>}
 			permission={permission}
-			buildMetaValuesPixel={(metaKeys) =>
-				`META | GetDatabaseMetaValues ( metaKeys = [${metaKeys
-					.map((key) => `'${key}'`)
-					.join(",")}] ) ;`
-			}
+			buildMetaValuesPixel={buildDatabaseMetaValuesPixel}
 			metaKeysConfig={databaseMetaKeys}
 			onSave={async (meta) => {
 				const response = await runPixel(
-					`SetEngineMetadata(engine=["${engine.engine_id}"], meta=[${JSON.stringify(
-						meta,
-					)}])`,
+					buildSetEngineMetadataPixel(engine.engine_id, meta),
 				);
 				if (response.errors.length > 0) {
 					throw new Error(response.errors.join(""));

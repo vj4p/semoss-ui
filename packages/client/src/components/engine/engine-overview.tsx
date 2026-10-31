@@ -4,6 +4,10 @@ import { usePixel } from "@semoss/sdk/react";
 import type { Engine } from "@semoss/shared";
 import { Badge, Markdown, Separator, Spinner } from "@semoss/ui/next";
 import { formatLocalDateTime } from "@semoss/utility/date";
+import {
+	buildDatabaseMetaValuesPixel,
+	buildSetEngineMetadataPixel,
+} from "@/api/catalog-meta";
 import { CatalogOverview } from "@/components/catalog";
 import { useConfig, useSession } from "@/hooks";
 import { normalizeTagArray } from "@/utility";
@@ -51,7 +55,7 @@ export const EngineOverview = ({
 			METAVALUE: string;
 			count: number;
 		}[]
-	>(!isModel ? `META | GetDatabaseMetaValues ( metaKeys = ['tag'] ) ;` : "");
+	>(!isModel ? buildDatabaseMetaValuesPixel(["tag"]) : "");
 
 	// Models render a read-only overview; the metadata itself is edited on the
 	// Settings tab. This fetch also resolves the modelId that keys the static
@@ -88,11 +92,7 @@ export const EngineOverview = ({
 	 * @returns Promise that resolves after save flow completes.
 	 */
 	const onSave = async (id: string, metadata: Record<string, unknown>) => {
-		await runPixel(
-			`SetEngineMetadata(engine=["${id}"], meta=[${JSON.stringify(
-				metadata,
-			)}])`,
-		);
+		await runPixel(buildSetEngineMetadataPixel(id, metadata));
 
 		refresh();
 	};

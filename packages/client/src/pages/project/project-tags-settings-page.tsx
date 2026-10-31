@@ -1,3 +1,7 @@
+import {
+	buildProjectMetaValuesPixel,
+	buildSetProjectMetadataPixel,
+} from "@/api/catalog-meta";
 import { CatalogTagsSettings } from "@/components/catalog";
 import { useConfig, useProject, useSession } from "@/hooks";
 
@@ -11,17 +15,11 @@ export const ProjectTagsSettingsPage = () => {
 		<CatalogTagsSettings
 			metadata={project as unknown as Record<string, unknown>}
 			permission={permission}
-			buildMetaValuesPixel={(metaKeys) =>
-				`META | GetProjectMetaValues ( metaKeys = [${metaKeys
-					.map((key) => `'${key}'`)
-					.join(",")}] ) ;`
-			}
+			buildMetaValuesPixel={buildProjectMetaValuesPixel}
 			metaKeysConfig={projectMetaKeys}
 			onSave={async (meta) => {
 				const response = await runPixel(
-					`SetProjectMetadata(project=["${project.project_id}"], meta=[${JSON.stringify(
-						meta,
-					)}])`,
+					buildSetProjectMetadataPixel(project.project_id, meta),
 				);
 				if (response.errors.length > 0) {
 					throw new Error(response.errors.join(""));

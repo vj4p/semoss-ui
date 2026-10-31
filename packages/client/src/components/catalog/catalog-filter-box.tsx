@@ -20,6 +20,10 @@ import {
 	formatUnderscoreLabel,
 	toTitleCase,
 } from "@semoss/utility/text";
+import {
+	buildEngineFilterValuesPixel,
+	buildProjectFilterValuesPixel,
+} from "@/api/catalog-meta";
 import { useConfig } from "@/hooks";
 import { getTagColorPalette } from "@/utility";
 import {
@@ -163,14 +167,14 @@ export const CatalogFilterBox = (props: CatalogFilterboxProps) => {
 	>(
 		fieldKeys.length > 0
 			? isProjectType(type)
-				? `GetProjectMetaValues(projectType=${JSON.stringify(
-						projectTypes?.length ? [...projectTypes] : [type],
-					)}, metaKeys=${JSON.stringify(
+				? buildProjectFilterValuesPixel(
+						projectTypes?.length ? projectTypes : [type],
 						fieldKeys.filter((mk) => mk),
-					)});`
-				: `GetEngineMetaValues( engineTypes=["${type}"], metaKeys = ${JSON.stringify(
+					)
+				: buildEngineFilterValuesPixel(
+						type,
 						fieldKeys.filter((mk) => mk),
-					)});`
+					)
 			: "",
 	);
 

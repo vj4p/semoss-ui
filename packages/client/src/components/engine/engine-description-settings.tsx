@@ -1,5 +1,6 @@
 import type { Role } from "@semoss/sdk";
 import type { Engine } from "@semoss/shared";
+import { buildSetEngineMetadataPixel } from "@/api/catalog-meta";
 import { CatalogDescriptionSettings } from "@/components/catalog";
 import { useSession } from "@/hooks";
 
@@ -31,9 +32,7 @@ export const EngineDescriptionSettings = ({
 			permission={permission}
 			onSave={async (meta) => {
 				const response = await runPixel(
-					`SetEngineMetadata(engine=["${engine.engine_id}"], meta=[${JSON.stringify(
-						meta,
-					)}])`,
+					buildSetEngineMetadataPixel(engine.engine_id, meta),
 				);
 				if (response.errors.length > 0) {
 					throw new Error(response.errors.join(""));

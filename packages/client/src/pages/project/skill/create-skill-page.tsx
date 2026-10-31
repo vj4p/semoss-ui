@@ -21,6 +21,7 @@ import {
 	Textarea,
 	toast,
 } from "@semoss/ui/next";
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import { MarkdownEditor } from "@/components/common/MarkdownEditor";
 import { UploadProjectDialog } from "@/components/project";
 import { NavbarHeader, NavbarLeft } from "@/components/shared";
@@ -85,9 +86,10 @@ export const CreateSkillPage = () => {
 			const hasMeta = form.tags.length > 0 || !!form.description;
 			if (hasMeta) {
 				const { pixelReturn: metaReturn } = await runPixel(
-					`SetProjectMetadata(project=["${appId}"], meta=[${JSON.stringify(
-						{ tag: form.tags, description: form.description },
-					)}])`,
+					buildSetProjectMetadataPixel(appId, {
+						tag: form.tags,
+						description: form.description,
+					}),
 				);
 
 				const operationType = metaReturn[0].operationType[0];

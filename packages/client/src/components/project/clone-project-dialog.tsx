@@ -19,6 +19,7 @@ import {
 	z,
 	zodResolver,
 } from "@semoss/ui/next";
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import { useSession } from "@/hooks";
 
 const schema = z.object({
@@ -111,7 +112,9 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 				const trimmedDescription = values.description.trim();
 				if (trimmedDescription && clonedProjectId) {
 					const metaResponse = await runPixel(
-						`SetProjectMetadata(project=["${escapePixelString(clonedProjectId)}"], meta=[${JSON.stringify({ description: trimmedDescription })}]);`,
+						buildSetProjectMetadataPixel(clonedProjectId, {
+							description: trimmedDescription,
+						}),
 					);
 
 					if (metaResponse.errors.length > 0) {

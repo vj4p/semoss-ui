@@ -5,6 +5,7 @@ import {
 	type SerializedState,
 } from "@semoss/renderer";
 import type { Project } from "@semoss/shared";
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import type { SessionStoreState } from "@/stores";
 import {
 	INPUT_TYPE_CUSTOM_QUERY,
@@ -731,9 +732,9 @@ export async function setBlocksAndOpenUIBuilder(
 	const appId = pixelReturn[0].output.project_id;
 
 	await sessionStore.runPixel(
-		`SetProjectMetadata(project=["${appId}"], meta=[${JSON.stringify({
+		buildSetProjectMetadataPixel(appId, {
 			description: builder.context.value,
-		})}])`,
+		}),
 	);
 
 	navigate(`/app/${appId}/view`);

@@ -1,6 +1,10 @@
 import type { Role } from "@semoss/sdk";
 import { runPixel, usePixel } from "@semoss/sdk/react";
 import type { Project } from "@semoss/shared";
+import {
+	buildProjectMetaValuesPixel,
+	buildSetProjectMetadataPixel,
+} from "@/api/catalog-meta";
 import { CatalogOverview } from "@/components/catalog";
 import { useConfig } from "@/hooks";
 import { normalizeTagArray } from "@/utility";
@@ -24,7 +28,7 @@ export const ProjectOverview = ({
 			METAVALUE: string;
 			count: number;
 		}[]
-	>(`META | GetProjectMetaValues ( metaKeys = ['tag'] ) ;`);
+	>(buildProjectMetaValuesPixel(["tag"]));
 
 	/**
 	 * Persist edited metadata to the backend and refresh project details.
@@ -32,11 +36,7 @@ export const ProjectOverview = ({
 	 * @returns Promise that resolves after save flow completes.
 	 */
 	const onSave = async (id: string, metadata: Record<string, unknown>) => {
-		await runPixel(
-			`SetProjectMetadata(project=["${id}"], meta=[${JSON.stringify(
-				metadata,
-			)}])`,
-		);
+		await runPixel(buildSetProjectMetadataPixel(id, metadata));
 
 		refresh();
 	};

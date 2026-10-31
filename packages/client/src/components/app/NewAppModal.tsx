@@ -18,6 +18,7 @@ import {
 	toast,
 } from "@semoss/ui/next";
 import { uploadImage } from "@/api";
+import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
 import { useSession } from "@/hooks";
 
 type NewAppForm = {
@@ -70,9 +71,10 @@ export const NewAppModal = (props: NewAppModalProps) => {
 			const tags = Array.from(new Set([...data.APP_TAGS, ...extraTags]));
 			if (!tags.length && !data.APP_DESCRIPTION) return true;
 			const { pixelReturn } = await runPixel(
-				`SetProjectMetadata(project=["${resolvedAppId}"], meta=[${JSON.stringify(
-					{ tag: tags, description: data.APP_DESCRIPTION },
-				)}])`,
+				buildSetProjectMetadataPixel(resolvedAppId, {
+					tag: tags,
+					description: data.APP_DESCRIPTION,
+				}),
 			);
 			const operationType = pixelReturn[0].operationType[0];
 			if (operationType.indexOf("ERROR") > -1) {
