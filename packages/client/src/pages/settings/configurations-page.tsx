@@ -1,38 +1,29 @@
-// biome-ignore-all lint/correctness/useExhaustiveDependencies: TODO
-
 import { Search } from "lucide-react";
-import type React from "react";
-import { Suspense, useEffect, useReducer, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { Navigate } from "react-router";
 import { MonacoEditor } from "@semoss/shared";
 import {
 	Button,
-	H3,
 	Input,
-	Label,
 	Spinner,
 	Tabs,
 	TabsList,
 	TabsTrigger,
-	toast,
 } from "@semoss/ui/next";
+import { isRecord } from "@semoss/utility/object";
 import { formatToDataTestId } from "@semoss/utility/text";
-import { modifyLoginProperties } from "@/api";
 import dropbox from "@/assets/img/DROPBOX.png";
 import github from "@/assets/img/GITHUB.svg";
 import google from "@/assets/img/GOOGLE.svg";
 import ms from "@/assets/img/ms.png";
 import other from "@/assets/img/other.png";
+import { CatalogLoadError } from "@/components/catalog/catalog-load-error";
+import { SocialPropertyForm } from "@/features/login-properties/social-property-form";
 import { useAPI, useSettings } from "@/hooks";
-import { useNavigate } from "@/hooks/useNavigate";
-import {
-	type FieldProps,
-	getInputValue,
-	isMasked,
-	isSecretField,
-	nextFieldValue,
-	toField,
-	toPropertyValues,
-} from "./configuration-secrets";
+import { type FieldProps, toField } from "./configuration-secrets";
+
+/** Each login provider's properties as the page edits them, by provider key */
+type SocialProps = Record<string, FieldProps[]>;
 
 const SOCIAL = {
 	google: {
@@ -57,90 +48,64 @@ const SOCIAL = {
 	},
 };
 
-const initialState = {
-	socialProps: {},
-};
-
-const reducer = (state, action) => {
-	switch (action.type) {
-		case "field": {
-			return {
-				...state,
-				[action.field]: action.value,
-			};
-		}
+/**
+ * Turn the server's login properties into the fields the page edits. Anything
+ * that is not properties by provider is skipped rather than trusted.
+ *
+ * @param data - What `getLoginProperties` returned.
+ * @returns The fields by provider, without the CAC provider (it has no settings here).
+ */
+const toSocialProps = (data: unknown): SocialProps => {
+	const formatted: SocialProps = {};
+	if (!isRecord(data)) {
+		return formatted;
 	}
-	return state;
+	for (const [provider, properties] of Object.entries(data)) {
+		if (provider === "cac" || !isRecord(properties)) {
+			continue;
+		}
+		formatted[provider] = Object.entries(properties).map(([label, value]) =>
+			toField(label, value),
+		);
+	}
+	return formatted;
 };
 
 export const ConfigurationsPage = () => {
 	const { adminMode } = useSettings();
-
-	const navigate = useNavigate();
-
-	if (!adminMode) {
-		navigate("/settings");
-	}
-
-	const [state, dispatch] = useReducer(reducer, initialState);
-	const { socialProps } = state;
-
+	const [socialProps, setSocialProps] = useState<SocialProps>({});
 	const [accordionValue, setAccordionValue] = useState<string>();
-	const [authentication, setAuthentication] = useState(
-		Object.keys(socialProps),
-	);
 	const [tabValue, setTabValue] = useState("settings");
 	const [authSearch, setAuthSearch] = useState("");
-	const authSearchBarRef = useRef(null);
 
 	const loginProperties = useAPI(["getLoginProperties"]);
 
+	// a fresh read (the first one, or after Reset) replaces what was edited
 	useEffect(() => {
 		if (loginProperties.status !== "SUCCESS" || !loginProperties.data) {
 			return;
 		}
-
-		const formattedProperties = {};
-		Object.entries(loginProperties.data).forEach((pr) => {
-			if (pr[0] === "cac") return;
-			const fields: FieldProps[] = [];
-			Object.entries(pr[1]).forEach((prop) => {
-				fields.push(toField(prop[0], prop[1]));
-			});
-
-			if (!formattedProperties[pr[0]]) {
-				formattedProperties[pr[0]] = fields;
-			}
-		});
-
-		dispatch({
-			type: "field",
-			field: "socialProps",
-			value: formattedProperties,
-		});
-
-		if (!accordionValue) {
-			setAccordionValue(Object.keys(formattedProperties)[0]);
-		}
-		setAuthentication(Object.keys(formattedProperties));
-		authSearchBarRef.current?.focus();
+		const formatted = toSocialProps(loginProperties.data);
+		setSocialProps(formatted);
+		setAccordionValue((current) =>
+			current && formatted[current] ? current : Object.keys(formatted)[0],
+		);
 	}, [loginProperties.status, loginProperties.data]);
 
-	useEffect(() => {
-		if (!authSearch) {
-			setAuthentication(Object.keys(socialProps));
-			return;
-		}
+	if (!adminMode) {
+		return <Navigate to="/settings" />;
+	}
 
-		const cleanedSearch = authSearch.toLowerCase();
-		const filtered = authentication.filter((c) => {
-			return c.toLowerCase().includes(cleanedSearch);
-		});
+	if (loginProperties.status === "ERROR") {
+		return (
+			<CatalogLoadError
+				noun="sign-in settings"
+				onRetry={loginProperties.refresh}
+			/>
+		);
+	}
 
-		setAuthentication(filtered);
-	}, [authSearch]);
-
-	if (loginProperties.status !== "SUCCESS" || !Object.keys(socialProps)) {
+	if (loginProperties.status !== "SUCCESS") {
 		return (
 			<div className="flex h-full items-center justify-center gap-2">
 				<Spinner className="size-6" />
@@ -151,27 +116,22 @@ export const ConfigurationsPage = () => {
 		);
 	}
 
-	const updateSocialProps = (
-		fieldName: string,
-		value: string,
-		_label: string,
-		index,
-	) => {
-		const socialPropsCopy = socialProps;
-		socialPropsCopy[fieldName][index].value = value;
-		dispatch({
-			type: "field",
-			field: "socialProps",
-			value: socialPropsCopy,
-		});
-	};
+	const search = authSearch.trim().toLowerCase();
+	const authentication = Object.keys(socialProps).filter((provider) =>
+		provider.toLowerCase().includes(search),
+	);
 
-	const resetLoginProperties = () => {
-		loginProperties.refresh();
+	const updateField = (provider: string, index: number, value: string) => {
+		setSocialProps((current) => ({
+			...current,
+			[provider]: current[provider].map((field, i) =>
+				i === index ? { ...field, value } : field,
+			),
+		}));
 	};
 
 	const settingsPage = () => {
-		return Object.keys(socialProps) ? (
+		return (
 			<div className="flex flex-col gap-4 md:flex-row md:gap-0">
 				{/* Left nav, stacked above the properties on narrow screens */}
 				<div className="w-full md:w-[291px] md:shrink-0">
@@ -186,7 +146,6 @@ export const ConfigurationsPage = () => {
 									aria-hidden
 								/>
 								<Input
-									ref={authSearchBarRef}
 									className="h-8 pl-8 text-sm"
 									value={authSearch}
 									onChange={(e) =>
@@ -232,18 +191,18 @@ export const ConfigurationsPage = () => {
 					</div>
 				</div>
 				{/* Right panel */}
-				{accordionValue && (
-					<SocialProperty
-						key={authentication.indexOf(accordionValue)}
-						fieldName={accordionValue}
+				{accordionValue && socialProps[accordionValue] ? (
+					<SocialPropertyForm
+						key={accordionValue}
+						provider={accordionValue}
 						fields={socialProps[accordionValue]}
-						updateSocialProps={updateSocialProps}
-						resetLoginProperties={resetLoginProperties}
+						onFieldChange={(index, value) =>
+							updateField(accordionValue, index, value)
+						}
+						onReset={loginProperties.refresh}
 					/>
-				)}
+				) : null}
 			</div>
-		) : (
-			<div>No socials props</div>
 		);
 	};
 
@@ -306,84 +265,5 @@ export const ConfigurationsPage = () => {
 			{customTogglePanel(settingsPage(), "settings", tabValue)}
 			{customTogglePanel(fileContentsPage(), "file-contents", tabValue)}
 		</div>
-	);
-};
-
-const SocialProperty = (props) => {
-	const { fieldName, fields, resetLoginProperties, updateSocialProps } =
-		props;
-
-	const onSubmit = () => {
-		const values = toPropertyValues(fields);
-		modifyLoginProperties(fieldName, values).then(() => {
-			toast.success(`Successfully modified ${fieldName} properties`);
-		});
-	};
-
-	return (
-		<form className="w-full min-w-0 md:ml-8">
-			<div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-				<H3 className="text-xl">
-					{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
-				</H3>
-				<div className="flex justify-center gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => resetLoginProperties(fieldName)}
-						data-testid="configurationPage-reset-btn"
-					>
-						Reset
-					</Button>
-					<Button
-						type="button"
-						onClick={() => onSubmit()}
-						data-testid="configurationPage-save-btn"
-					>
-						Save
-					</Button>
-				</div>
-			</div>
-			<div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-card text-card-foreground">
-				{fields.map((f, i) => {
-					const inputId = `${fieldName}-${f.label}-value`;
-					return (
-						<div
-							key={`${fieldName}-${f.label}`}
-							className="grid gap-2 px-4 py-3 md:grid-cols-5 md:items-center md:gap-4"
-						>
-							<Label
-								htmlFor={inputId}
-								className="break-all font-mono text-sm md:col-span-2"
-							>
-								{f.label}
-							</Label>
-							<Input
-								className="md:col-span-3"
-								id={inputId}
-								type={isSecretField(f) ? "password" : "text"}
-								autoComplete="off"
-								value={getInputValue(f)}
-								placeholder={
-									isMasked(f)
-										? "Set. Type a new value to replace it."
-										: undefined
-								}
-								onChange={(e) => {
-									// emptying a secret that is set keeps it,
-									// the marker tells the server it is unchanged
-									updateSocialProps(
-										fieldName,
-										nextFieldValue(f, e.target.value),
-										f.label,
-										i,
-									);
-								}}
-							/>
-						</div>
-					);
-				})}
-			</div>
-		</form>
 	);
 };
