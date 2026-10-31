@@ -971,7 +971,7 @@ function PersonCard({
 						"rounded-full p-2 transition-all hover:scale-110",
 						vip
 							? "text-chart-4"
-							: "text-muted-foreground/40 hover:text-chart-4",
+							: "text-muted-foreground hover:text-chart-4",
 					)}
 				>
 					<Star

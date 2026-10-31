@@ -82,7 +82,7 @@ export function BriefHeader() {
 				{dueLine}
 				{at ? ` Your next meeting is at ${at}.` : ""}
 			</P>
-			<div className="flex items-center gap-1 text-muted-foreground/80 text-xs">
+			<div className="flex items-center gap-1 text-muted-foreground text-xs">
 				<span>
 					{isChecking
 						? "Checking\u2026"
