@@ -83,6 +83,9 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 		if (!project.project_id) return;
 
 		let clonedProjectId: string | undefined;
+		// the clone exists once the first call returns; a description that then fails
+		// to save is reported on its own, so a retry does not make a second clone
+		let descriptionFailure: string | undefined;
 		try {
 			if (project.project_type === "SKILL") {
 				const { errors, pixelReturn } = await runPixel(
@@ -117,14 +120,21 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 
 				const trimmedDescription = values.description.trim();
 				if (trimmedDescription && clonedProjectId) {
-					const metaResponse = await runPixel(
-						buildSetProjectMetadataPixel(clonedProjectId, {
-							description: trimmedDescription,
-						}),
-					);
+					try {
+						const metaResponse = await runPixel(
+							buildSetProjectMetadataPixel(clonedProjectId, {
+								description: trimmedDescription,
+							}),
+						);
 
-					if (metaResponse.errors.length > 0) {
-						throw new Error(metaResponse.errors.join(""));
+						if (metaResponse.errors.length > 0) {
+							throw new Error(metaResponse.errors.join(""));
+						}
+					} catch (error: unknown) {
+						descriptionFailure = getErrorMessage(
+							error,
+							"The description could not be saved.",
+						);
 					}
 				}
 			}
@@ -141,7 +151,13 @@ export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 			return;
 		}
 
-		toast.success(`${label} cloned successfully`);
+		if (descriptionFailure) {
+			toast.warning(
+				`${label} cloned, but its description was not saved: ${descriptionFailure}`,
+			);
+		} else {
+			toast.success(`${label} cloned successfully`);
+		}
 		onClose(clonedProjectId);
 	};
 

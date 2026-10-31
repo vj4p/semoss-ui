@@ -123,7 +123,7 @@ describe("CloneProjectDialog", () => {
 		expect(screen.getByRole("button", { name: "Clone" })).toBeEnabled();
 	});
 
-	it("does not close, or report success, when the description cannot be saved", async () => {
+	it("closes with the new project when only its description cannot be saved, so a retry cannot make a second clone", async () => {
 		runPixel.mockResolvedValueOnce(created("new-1")).mockResolvedValueOnce({
 			errors: ["No permission"],
 			pixelReturn: [],
@@ -135,9 +135,8 @@ describe("CloneProjectDialog", () => {
 
 		cloneAs("My copy");
 
-		expect(await screen.findByRole("alert")).toHaveTextContent(
-			"No permission",
-		);
-		expect(onClose).not.toHaveBeenCalled();
+		await waitFor(() => expect(onClose).toHaveBeenCalledWith("new-1"));
+		expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+		expect(runPixel).toHaveBeenCalledTimes(2);
 	});
 });
