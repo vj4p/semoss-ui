@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="en">
 	<head>
+		<!-- @semoss/sdk reads this for the backend module path (see packages/client/index.html).
+		     Without it Env.MODULE is "" and every request goes to the page's own origin. Keeping it
+		     here means a plain rebuild cannot ship a dist without it. -->
+		<script id="semoss-env" type="application/json">{"MODULE":"/Monolith"}</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
