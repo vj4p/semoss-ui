@@ -1,6 +1,7 @@
 import {
 	Archive,
 	Bolt,
+	Bot,
 	Briefcase,
 	ChartBar,
 	CircleUserRound,
@@ -148,6 +149,10 @@ const CardMapper: Record<string, CardConfig> = {
 	"Audit Trail": {
 		icon: <ScrollText className={ICON_CLASS} />,
 		className: "bg-primary/10 text-primary-text",
+	},
+	"Agent Runs": {
+		icon: <Bot className={ICON_CLASS} />,
+		className: "bg-chart-4/10 text-chart-4",
 	},
 	"Admin Query": {
 		icon: <DatabaseZap className={ICON_CLASS} />,

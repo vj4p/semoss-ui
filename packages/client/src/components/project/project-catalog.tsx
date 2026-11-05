@@ -21,7 +21,6 @@ import { CatalogLoadError } from "@/components/catalog/catalog-load-error";
 import { CatalogSearchBar } from "@/components/catalog/catalog-search-bar";
 import { CatalogTabs } from "@/components/catalog/catalog-tabs";
 import { useCatalogFilters } from "@/components/catalog/use-catalog-filters";
-import { Help } from "@/components/help";
 import { DeleteEntityDialog } from "@/components/shared/delete-entity-dialog";
 import { useConfig, useSession } from "@/hooks";
 import {
@@ -748,7 +747,6 @@ export const ProjectCatalog = ({ type }: ProjectCatalogProps) => {
 						)}
 					</CatalogGrid>
 				)}
-				<Help />
 			</CatalogLayout>
 
 			{/* Clone Dialog */}
