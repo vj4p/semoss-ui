@@ -518,6 +518,39 @@ describe("AgentStore.watch with transport: 'sse'", () => {
 		await agent.done;
 	});
 
+	it("reports the cause an SSE transport error carries, and the generic one when it carries none", async () => {
+		const runId = "sse-error-cause";
+		const connections = mockStream();
+		mockPollAgentRun.mockResolvedValue({
+			run: snapshot("RUNNING", runId),
+			events: [],
+			droppedEvents: 0,
+		});
+
+		const errors: Error[] = [];
+		const agent = newAgent(runId);
+		agent.watch(
+			{
+				onEvent: () => undefined,
+				onSnapshot: () => undefined,
+				onReconcile: () => undefined,
+				onError: (error) => errors.push(error),
+			},
+			{ transport: "sse", pollIntervalMs: 1 },
+		);
+
+		await vi.waitFor(() => expect(connections).toHaveLength(1));
+		const cause = new Error("connection reset");
+		connections[0].handlers.onError?.(
+			Object.assign(new Event("error"), { error: cause }),
+		);
+		await vi.waitFor(() => expect(errors).toHaveLength(1));
+
+		expect(errors[0]).toBe(cause);
+
+		agent.stop();
+	});
+
 	it("falls back to polling after one SSE transport error and never reopens SSE", async () => {
 		const runId = "sse-falls-back";
 		const connections = mockStream();
@@ -540,7 +573,8 @@ describe("AgentStore.watch with transport: 'sse'", () => {
 		);
 
 		await vi.waitFor(() => expect(connections).toHaveLength(1));
-		connections[0].handlers.onError?.(new ErrorEvent("error"));
+		// a plain Event: ErrorEvent is a browser global and this package tests under Node
+		connections[0].handlers.onError?.(new Event("error"));
 
 		// The poll loop should now be driving this subscription — give it a
 		// moment to make at least one call.

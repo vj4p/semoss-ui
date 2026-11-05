@@ -420,9 +420,13 @@ export class AgentStore {
 							return;
 						}
 						connection.close();
+						// An EventSource reports a failure as an ErrorEvent in a browser, but
+						// that global does not exist in Node, so read the cause by shape: an
+						// instanceof check would throw before the subscription could settle.
+						const cause = (error as { error?: unknown }).error;
 						onError?.(
-							error instanceof ErrorEvent && error.error
-								? (error.error as Error)
+							cause instanceof Error
+								? cause
 								: new Error("Agent run SSE transport error"),
 						);
 						settle({ outcome: "error", lastEventSequence });
