@@ -12,6 +12,7 @@ import {
 	FolderOpen,
 	Github,
 	KeyRound,
+	Landmark,
 	LayoutGrid,
 	Link2,
 	Palette,
@@ -55,6 +56,7 @@ const SECTIONS: { title: string; pages: string[] }[] = [
 	{
 		title: "Apps and engines",
 		pages: [
+			"Resource Governance",
 			"App, Agent, & Skill Settings",
 			"Model Settings",
 			"Database Settings",
@@ -81,6 +83,7 @@ const SECTIONS: { title: string; pages: string[] }[] = [
 		pages: [
 			"Enterprise Usage & Activity",
 			"Audit Trail",
+			"Agent Runs",
 			"LLM Feedback",
 			"Admin Query",
 			"View RDF Map",
@@ -100,6 +103,10 @@ const CardMapper: Record<string, CardConfig> = {
 	"My Files": {
 		icon: <FolderOpen className={ICON_CLASS} />,
 		className: "bg-chart-4/10 text-chart-4",
+	},
+	"Resource Governance": {
+		icon: <Landmark className={ICON_CLASS} />,
+		className: "bg-chart-2/10 text-chart-2",
 	},
 	"Database Settings": {
 		icon: <Database className={ICON_CLASS} />,

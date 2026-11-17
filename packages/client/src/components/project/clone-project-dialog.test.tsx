@@ -11,9 +11,8 @@ import { CloneProjectDialog } from "./clone-project-dialog";
 
 const runPixel = vi.fn();
 
-vi.mock("@/hooks", () => ({
-	useSession: (selector: (state: { runPixel: typeof runPixel }) => unknown) =>
-		selector({ runPixel }),
+vi.mock("@semoss/sdk/react", () => ({
+	useSessionInsight: () => ({ run: runPixel }),
 }));
 
 /** What the session returns for a pixel that worked, with the new project's id */
@@ -78,7 +77,7 @@ describe("CloneProjectDialog", () => {
 
 		await waitFor(() => expect(onClose).toHaveBeenCalledWith("new-1"));
 		expect(runPixel).toHaveBeenCalledWith(
-			'CreateAppFromTemplate(project=["My copy"], projectTemplate=["tpl-1"], global=["false"]);',
+			'CreateAppFromTemplate(catalogName=["My copy"], projectTemplate=["tpl-1"], global=["false"]);',
 		);
 	});
 
@@ -90,7 +89,7 @@ describe("CloneProjectDialog", () => {
 
 		await waitFor(() => expect(runPixel).toHaveBeenCalled());
 		expect(runPixel).toHaveBeenCalledWith(
-			'CreateAppFromTemplate(project=["a \\"q\\" \\\\ b"], projectTemplate=["tpl-1"], global=["false"]);',
+			'CreateAppFromTemplate(catalogName=["a \\"q\\" \\\\ b"], projectTemplate=["tpl-1"], global=["false"]);',
 		);
 	});
 
@@ -102,7 +101,7 @@ describe("CloneProjectDialog", () => {
 
 		await waitFor(() => expect(onClose).toHaveBeenCalledWith("skill-2"));
 		expect(runPixel).toHaveBeenCalledWith(
-			'CloneSkill(skillId=["tpl-1"], name=["Skill copy"]);',
+			'CloneSkill(skillId=["tpl-1"], catalogName=["Skill copy"]);',
 		);
 	});
 

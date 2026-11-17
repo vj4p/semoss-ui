@@ -4,10 +4,6 @@ import { CatalogFilterBox } from "./catalog-filter-box";
 
 const mocks = vi.hoisted(() => ({ values: [] as unknown[] }));
 
-vi.mock("@semoss/sdk/react", () => ({
-	usePixel: () => ({ status: "SUCCESS", data: mocks.values }),
-}));
-
 // one stable object: the component re-runs an effect when this list changes identity
 const state = vi.hoisted(() => ({
 	config: {
@@ -28,7 +24,8 @@ const state = vi.hoisted(() => ({
 	},
 }));
 
-vi.mock("@/hooks", () => ({
+vi.mock("@semoss/sdk/react", () => ({
+	usePixel: () => ({ status: "SUCCESS", data: mocks.values }),
 	useConfig: (select: (value: unknown) => unknown) => select(state),
 }));
 

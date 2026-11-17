@@ -9,6 +9,8 @@ import { RoomThread } from "./room-thread";
 
 interface RoomConversationProps {
 	agent: AgentConfiguration;
+	/** The agent's image for the header; left out for a room with no agent of its own. */
+	agentImage?: string;
 	title: string;
 	conversationId: string;
 	thread: RoomViewProps["thread"];
@@ -34,6 +36,7 @@ interface RoomConversationProps {
 /** Shared room view for direct rooms, saved chats, and source threads. */
 export function RoomConversation({
 	agent,
+	agentImage,
 	title,
 	conversationId,
 	thread,
@@ -74,6 +77,7 @@ export function RoomConversation({
 			{!isLanding && (
 				<RoomHeader
 					agent={agent}
+					agentImage={agentImage}
 					title={title}
 					isToolWorkbenchOpen={isToolWorkbenchOpen}
 					showToolWorkbench={showToolWorkbench}
@@ -110,7 +114,7 @@ export function RoomConversation({
 						: "px-4 pt-2 pb-4 sm:px-5 lg:px-7",
 				)}
 			>
-				<div className="mx-auto w-full max-w-3xl">{composer}</div>
+				<div className="mx-auto w-full max-w-4xl">{composer}</div>
 			</div>
 		</section>
 	);

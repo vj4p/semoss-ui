@@ -4,9 +4,9 @@ import {
 	type NotebookStateConfig,
 	type SerializedState,
 } from "@semoss/renderer";
+import type { SessionInsightStore } from "@semoss/sdk";
 import type { Project } from "@semoss/shared";
 import { buildSetProjectMetadataPixel } from "@/api/catalog-meta";
-import type { SessionStoreState } from "@/stores";
 import {
 	INPUT_TYPE_CUSTOM_QUERY,
 	INPUT_TYPE_DATABASE,
@@ -414,9 +414,19 @@ function getNotebookForPrompt(
 	return queryJson;
 }
 
+/**
+ * Create a blocks app from the prompt builder, with a field for each input and
+ * the query that runs the prompt, describe it with the prompt's context, then
+ * open it.
+ *
+ * @param builder - The prompt builder's values.
+ * @param runPixel - Runs a pixel in the session's insight.
+ * @param navigate - Opens a route.
+ * @throws When the app cannot be created.
+ */
 export async function setBlocksAndOpenUIBuilder(
 	builder: Builder,
-	sessionStore: SessionStoreState,
+	runPixel: SessionInsightStore["run"],
 	navigate: (route: string) => void,
 ) {
 	// create the state
@@ -717,13 +727,12 @@ export async function setBlocksAndOpenUIBuilder(
 		}
 	}
 
-	const pixel = `CreateAppFromBlocks ( project = [ "${
+	const pixel = `CreateAppFromBlocks ( catalogName = [ "${
 		builder.title.value
 	}" ] , json =["<encode>${JSON.stringify(state)}</encode>"]  ) ;`;
 
 	// create the app
-	const { errors, pixelReturn } =
-		await sessionStore.runPixel<[Project]>(pixel);
+	const { errors, pixelReturn } = await runPixel<[Project]>(pixel);
 
 	if (errors.length > 0) {
 		throw new Error(errors.join(","));
@@ -731,7 +740,7 @@ export async function setBlocksAndOpenUIBuilder(
 
 	const appId = pixelReturn[0].output.project_id;
 
-	await sessionStore.runPixel(
+	await runPixel(
 		buildSetProjectMetadataPixel(appId, {
 			description: builder.context.value,
 		}),

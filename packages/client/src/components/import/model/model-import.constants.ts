@@ -4,6 +4,7 @@
 import mlxLogo from "@/assets/img/MLX.svg";
 import ollamaLogo from "@/assets/img/OLLAMA.svg";
 import type { ReasoningConfig } from "@/components/engine/engine-metadata-display";
+import { CATALOG_NAME_KEY } from "@/components/import/shared/import-form.constants";
 import {
 	JEV_CATEGORY_TEXT,
 	JEV_MODEL_VERSIONS,
@@ -440,7 +441,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -581,7 +582,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -719,7 +720,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -842,7 +843,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -990,7 +991,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1100,7 +1101,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1215,7 +1216,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1294,7 +1295,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1432,7 +1433,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1536,7 +1537,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1723,7 +1724,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1810,7 +1811,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -1944,7 +1945,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -2057,7 +2058,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -2188,7 +2189,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["embedding"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -2802,7 +2803,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,
@@ -2943,7 +2944,7 @@ export const IMPORTABLE_MODELS = {
 					model_types: ["llm"],
 					fields: [
 						{
-							key: "NAME",
+							key: CATALOG_NAME_KEY,
 							label: "Catalog Name",
 							type: "text",
 							required: true,

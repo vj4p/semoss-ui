@@ -8,7 +8,6 @@ import {
 	FileExplorerNewAction,
 	FileExplorerRefreshAction,
 	type FileItem,
-	FlexLayout,
 	getFileEditorPathScope,
 	getParentPath,
 	NewFileOverlay,
@@ -16,6 +15,7 @@ import {
 	resolveMovedPath,
 	useFileExplorer,
 } from "@semoss/shared";
+import { FlexLayout } from "@/lib/flex-layout";
 import { fileModeForProject, type RoomStore } from "@/stores";
 
 interface RoomFileExplorerProps {

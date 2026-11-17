@@ -14,10 +14,10 @@ import {
 } from "@semoss/ui/next";
 import { EmbedTerminal } from "./components/embed-terminal/embed-terminal";
 
+// The server writes MODULE into index.html (semoss-env tag, read when the SDK
+// loads) and it always wins; .env, then "/Monolith", cover a page without one.
 Env.update({
-	MODULE: import.meta.env.MODULE || "/Monolith",
-	ACCESS_KEY: import.meta.env.ACCESS_KEY,
-	SECRET_KEY: import.meta.env.SECRET_KEY,
+	MODULE: Env.MODULE || import.meta.env.MODULE || "/Monolith",
 });
 
 // Languages load lazily (one chunk per language) via the builder's dynamic
@@ -33,21 +33,25 @@ const Branding = () => {
 	return <div className="font-semibold text-lg">{t("branding")}</div>;
 };
 
+/**
+ * The standalone terminal. `LoginPage` gates on the SDK's session (started in
+ * main.tsx), so the terminal's insight is made only once the user signs in.
+ */
 export const App = () => {
 	return (
 		<I18nextProvider i18n={i18n}>
-			<InsightProvider>
-				<ThemeProvider
-					defaultTheme="system"
-					storageKey={PLATFORM_THEME_STORAGE_KEY}
-					legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
-				>
-					<LoginPage branding={<Branding />}>
+			<ThemeProvider
+				defaultTheme="system"
+				storageKey={PLATFORM_THEME_STORAGE_KEY}
+				legacyStorageKeys={PLATFORM_LEGACY_THEME_KEYS}
+			>
+				<LoginPage branding={<Branding />}>
+					<InsightProvider>
 						<EmbedTerminal />
-					</LoginPage>
-					<Toaster position="top-center" closeButton />
-				</ThemeProvider>
-			</InsightProvider>
+					</InsightProvider>
+				</LoginPage>
+				<Toaster position="top-center" closeButton />
+			</ThemeProvider>
 		</I18nextProvider>
 	);
 };

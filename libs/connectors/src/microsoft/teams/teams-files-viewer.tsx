@@ -3,16 +3,18 @@ import { useTranslation } from "@semoss/i18n";
 import { Muted } from "@semoss/ui/next";
 import { ConnectorFileExplorer } from "../../components/connector-file-explorer";
 import { ConnectorViewerStatus } from "../../components/connector-viewer-status";
-import type { ConnectorViewerProps } from "../../core/connector.types";
 import { useConnectorSaver } from "../../core/use-connector-saver";
 import { MICROSOFT_PIXELS } from "../microsoft.pixels";
 import type { MicrosoftDriveItem } from "../microsoft.types";
 import {
 	createTeamsFilesAdapter,
+	type DriveViewerProps,
 	getDriveItem,
+	getDriveItemAction,
 	getDriveSaveRequest,
 } from "../microsoft-drive.adapters";
 import { TeamsChannelPicker } from "./teams-channel-picker";
+import { TeamsViewLabel } from "./teams-view-label";
 import { useTeamsChannelChoice } from "./use-teams-channel-choice";
 
 /**
@@ -35,7 +37,7 @@ const getDownload = (item: MicrosoftDriveItem) => {
 };
 
 /** Props for {@link TeamsFilesViewer}. */
-export type TeamsFilesViewerProps = ConnectorViewerProps;
+export type TeamsFilesViewerProps = DriveViewerProps;
 
 /**
  * Browse the files shared in a Teams channel: pick a team and channel, then
@@ -43,7 +45,7 @@ export type TeamsFilesViewerProps = ConnectorViewerProps;
  * tree with, and bring files into the insight.
  */
 export const TeamsFilesViewer = (props: TeamsFilesViewerProps) => {
-	const { onSignIn } = props;
+	const { onSignIn, isVisible, refreshRequestId, getFileAction } = props;
 	const { t } = useTranslation("connectors");
 	const saver = useConnectorSaver("teams-files", props);
 	const choice = useTeamsChannelChoice();
@@ -70,7 +72,7 @@ export const TeamsFilesViewer = (props: TeamsFilesViewerProps) => {
 			);
 		}
 		if (!team) {
-			return (
+			return choice.teamsQuery.data?.length ? null : (
 				<div className="px-4 py-8 text-center">
 					<Muted>{t("teams.noTeams")}</Muted>
 				</div>
@@ -91,7 +93,13 @@ export const TeamsFilesViewer = (props: TeamsFilesViewerProps) => {
 		if (choice.channelsQuery.status === "ready" && !channel) {
 			return (
 				<div className="px-4 py-8 text-center">
-					<Muted>{t("teams.noChannels")}</Muted>
+					<Muted>
+						{t(
+							choice.channelsQuery.data?.length
+								? "teams.chooseChannel"
+								: "teams.noChannels",
+						)}
+					</Muted>
 				</div>
 			);
 		}
@@ -109,7 +117,10 @@ export const TeamsFilesViewer = (props: TeamsFilesViewerProps) => {
 						getDriveSaveRequest(row, getDownload)
 					}
 					getWebUrl={(row) => getDriveItem(row)?.webUrl}
+					getItemAction={getDriveItemAction(getFileAction)}
 					onSignIn={onSignIn}
+					isVisible={isVisible}
+					refreshRequestId={refreshRequestId}
 				/>
 			</div>
 		);
@@ -117,9 +128,16 @@ export const TeamsFilesViewer = (props: TeamsFilesViewerProps) => {
 
 	return (
 		<div className="@container flex h-full min-h-0 flex-col">
-			{choice.teamsQuery.status === "ready" && team ? (
-				<div className="shrink-0 border-border border-b bg-muted/20 px-3 py-2">
-					<TeamsChannelPicker choice={choice} />
+			{choice.teamsQuery.status === "ready" &&
+			(choice.teamsQuery.data?.length ?? 0) > 0 ? (
+				<div className="flex shrink-0 items-center gap-2 border-border border-b bg-muted/20 px-3 py-2">
+					<TeamsViewLabel label={t("teams.filesLabel")} />
+					<div className="min-w-0 flex-1">
+						<TeamsChannelPicker
+							choice={choice}
+							onSignIn={onSignIn}
+						/>
+					</div>
 				</div>
 			) : null}
 			{renderBody()}

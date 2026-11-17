@@ -7,8 +7,9 @@ import {
 	stopAgentRun,
 	uploadInsight,
 } from "@semoss/sdk/react";
-import { type FileMode, FlexLayout, type ThemeMap } from "@semoss/shared";
+import type { FileMode, ThemeMap } from "@semoss/shared";
 import { STREAMING_PLACEHOLDER_ID } from "@/constants";
+import { FlexLayout } from "@/lib/flex-layout";
 import {
 	type AbstractMessageStore,
 	createMessageStore,

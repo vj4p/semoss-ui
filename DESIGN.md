@@ -140,8 +140,9 @@ settings page is not a dashboard and should not wrap every field group in a card
   8px control radius; only chips are fully round. A tool call waiting for approval offers a
   button that opens its panel; the decision itself stays in that panel.
 - **Playground defaults:** an expanded 16rem navigation sidebar; a resizable 35/65
-  conversation/Workspace split; Chat/Workspace tabs below 64rem of available content
-  width. Opening the Workspace temporarily collapses navigation without changing its
+  conversation/Workspace split; a 3rem Workspace icon rail at the end of the route that
+  lists the Workspace's places, each named in a tooltip; Chat/Workspace tabs below 64rem of available content
+  width, where the open button's menu lists the places instead of the rail. Opening the Workspace temporarily collapses navigation without changing its
   stored preference, and closing it restores that preference. Manual navigation toggles
   override the temporary state. These dimensions are playground defaults, not mandates
   for every host.
@@ -332,7 +333,7 @@ currently processed by a design linter. Never use an unexplained disable.
 3. **ECharts:** canvas option objects may require resolved color strings. Read chart tokens
   through one shared adapter and reuse its `chart-1`…`chart-5` values; never free-hand a
   literal map in a feature file.
-4. **Third-party style bridges:** adapter CSS such as FlexLayout may map the library's custom
+4. **Third-party style bridges:** adapter CSS for a third-party library may map the library's custom
   properties to SEMOSS semantic variables. A literal required by an external API needs a
   line-level suppression naming that constraint.
 5. **Data-derived colors:** a color computed per item from data (the catalog's tag chips) cannot be a

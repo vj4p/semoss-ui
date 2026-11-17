@@ -1,7 +1,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { ConnectorViewerProps } from "./connector.types";
+import type {
+	ConnectorSavedItemsProps,
+	ConnectorViewerProps,
+} from "./connector.types";
 import { saveToInsight } from "./connector-files";
 import {
 	type ConnectorSaveRequest,
@@ -39,7 +42,8 @@ let saver: ConnectorSaver | undefined;
 let root: Root;
 let container: HTMLDivElement;
 let isUnmounted: boolean;
-const Harness = ({ host }: { host: ConnectorViewerProps }) => {
+type Host = ConnectorViewerProps & ConnectorSavedItemsProps;
+const Harness = ({ host }: { host: Host }) => {
 	saver = useConnectorSaver("outlook-mail", host);
 	return null;
 };
@@ -47,7 +51,7 @@ const current = (): ConnectorSaver => {
 	if (!saver) throw new Error("Hook has not rendered");
 	return saver;
 };
-const render = async (host: ConnectorViewerProps) => {
+const render = async (host: Host) => {
 	await act(async () => root.render(<Harness host={host} />));
 };
 const deferred = <T,>() => {
@@ -91,7 +95,8 @@ it("prepares once before saving and releases after the originating callback", as
 	expect(current().isBusy("mail")).toBe(true);
 	await act(async () => preparing.resolve(release));
 	expect(save).toHaveBeenCalledWith("origin", "outlook-mail", request.source);
-	expect(onSaved).toHaveBeenCalledWith(file);
+	// the saved file names the item it came from, so the host can mark it
+	expect(onSaved).toHaveBeenCalledWith({ ...file, itemKey: "mail" });
 	expect(order).toEqual(["saved", "release"]);
 	expect(current().isBusy("mail")).toBe(false);
 });
@@ -127,28 +132,77 @@ it("does not save after preparation fails", async () => {
 	expect(current().isBusy("mail")).toBe(false);
 });
 
-it("finishes against the origin after navigation and unmount", async () => {
-	const preparing = deferred<() => void>();
-	const release = vi.fn();
+it.each(["context", "open"] as const)(
+	"finishes %s against the origin after navigation and unmount",
+	async (intent) => {
+		const preparing = deferred<() => void>();
+		const release = vi.fn();
+		const onAddToContext = vi.fn();
+		const nextCallback = vi.fn();
+		const callback = intent === "open" ? "onOpenFile" : "onAddToContext";
+		await render({
+			prepareSave: () => preparing.promise,
+			[callback]: onAddToContext,
+		});
+		await act(async () => {
+			if (intent === "open") current().open?.(request);
+			else current().addToContext?.(request);
+		});
+		mocks.insightId = "next";
+		await render({ [callback]: nextCallback });
+		await act(async () => root.unmount());
+		isUnmounted = true;
+		await act(async () => preparing.resolve(release));
+		expect(save).toHaveBeenCalledWith(
+			"origin",
+			"outlook-mail",
+			request.source,
+		);
+		expect(onAddToContext).toHaveBeenCalledWith(file);
+		expect(nextCallback).not.toHaveBeenCalled();
+		expect(release).toHaveBeenCalledOnce();
+	},
+);
+
+it("reports failed preview downloads and allows retry without adding context", async () => {
+	const onOpenFile = vi.fn();
 	const onAddToContext = vi.fn();
-	const nextCallback = vi.fn();
-	await render({ prepareSave: () => preparing.promise, onAddToContext });
-	await act(async () => current().addToContext?.(request));
-	mocks.insightId = "next";
-	await render({ onAddToContext: nextCallback });
-	await act(async () => root.unmount());
-	isUnmounted = true;
-	await act(async () => preparing.resolve(release));
-	expect(save).toHaveBeenCalledWith("origin", "outlook-mail", request.source);
-	expect(onAddToContext).toHaveBeenCalledWith(file);
-	expect(nextCallback).not.toHaveBeenCalled();
+	const release = vi.fn();
+	save.mockRejectedValueOnce(new Error("Download failed"));
+	await render({
+		onOpenFile,
+		onAddToContext,
+		prepareSave: async () => release,
+	});
+	await act(async () => current().open?.(request));
+	expect(onOpenFile).not.toHaveBeenCalled();
+	expect(mocks.error).toHaveBeenCalledOnce();
 	expect(release).toHaveBeenCalledOnce();
+	expect(current().isBusy(request.key)).toBe(false);
+	await act(async () => current().open?.(request));
+	expect(onOpenFile).toHaveBeenCalledExactlyOnceWith(file);
+	expect(onAddToContext).not.toHaveBeenCalled();
+	expect(release).toHaveBeenCalledTimes(2);
+});
+
+it("says an item is held only when the host holds it", async () => {
+	await render({});
+	expect(current().savedLabel("mail")).toBeUndefined();
+	await render({
+		savedItems: {
+			isSaved: (itemKey) => itemKey === "mail",
+			label: "In the host",
+		},
+	});
+	expect(current().savedLabel("mail")).toBe("In the host");
+	expect(current().savedLabel("other")).toBeUndefined();
 });
 
 it("preserves saves when preparation is omitted or returns void", async () => {
 	await render({ prepareSave: async () => undefined });
 	await act(async () => current().save(request));
 	await render({});
+	expect(current().open).toBeUndefined();
 	await act(async () => current().save(request));
 	expect(save).toHaveBeenCalledTimes(2);
 });

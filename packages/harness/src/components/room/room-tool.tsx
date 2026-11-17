@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
-import type { FlexLayout } from "@semoss/shared";
 import { ToolsView } from "@/components";
+import type { FlexLayout } from "@/lib/flex-layout";
 import type { RoomStore } from "@/stores";
 
 interface RoomToolProps {

@@ -8,6 +8,7 @@ import type {
 	ThreadContext,
 	WorkItem,
 } from "./collaboration.types";
+import { agreedStyle } from "./profile-style";
 
 /** Imported conversations stay discoverable until their topic is confirmed. */
 export function threadNeedsTopic(thread: Thread): boolean {
@@ -291,7 +292,6 @@ export function selectThreadContext(
 							id: topic.id,
 							name: topic.name,
 							description: topic.description,
-							goals: topic.goals,
 							...(account
 								? {
 										account: {
@@ -312,7 +312,7 @@ export function selectThreadContext(
 						? profile.role
 						: { value: "", source: "you" as const },
 				style: profile.style.confirmed
-					? profile.style
+					? agreedStyle(profile.style)
 					: {
 							summary: "",
 							source: "you" as const,
@@ -331,7 +331,6 @@ export function selectThreadContext(
 				}
 			: {}),
 		isSample: thread.isSample,
-		goal: workspace?.goal ?? "",
 		profile: confirmedProfile,
 		topics,
 		participants,

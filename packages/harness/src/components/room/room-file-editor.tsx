@@ -7,8 +7,8 @@ import {
 	useFilePanel,
 } from "@semoss/panels";
 import { useInsight } from "@semoss/sdk/react";
-import { FlexLayout } from "@semoss/shared";
 import { CodeEditor } from "@semoss/ui/next";
+import { FlexLayout } from "@/lib/flex-layout";
 import type { RoomStore } from "@/stores";
 
 interface RoomFileEditorProps {

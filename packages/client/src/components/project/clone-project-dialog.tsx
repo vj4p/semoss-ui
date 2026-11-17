@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSessionInsight } from "@semoss/sdk/react";
 import type { Project } from "@semoss/shared";
 import {
 	Alert,
@@ -27,7 +28,6 @@ import {
 	buildCloneSkillPixel,
 	buildCreateAppFromTemplatePixel,
 } from "@/api/project-clone";
-import { useSession } from "@/hooks";
 
 const schema = z.object({
 	name: z.string().trim().min(1, "Name is required"),
@@ -38,7 +38,7 @@ const schema = z.object({
 type FormInputValues = z.input<typeof schema>;
 type FormValues = z.output<typeof schema>;
 
-export interface CloneProjectDialogProps {
+interface CloneProjectDialogProps {
 	/** Track if the dialog is open */
 	open: boolean;
 	/** Full project object to clone (picks project_id and project_type) */
@@ -47,9 +47,13 @@ export interface CloneProjectDialogProps {
 	onClose: (projectId?: string) => void;
 }
 
+/**
+ * Clones a project template into a new project with a name, an optional
+ * description and, except for a skill, whether it is public.
+ */
 export const CloneProjectDialog = (props: CloneProjectDialogProps) => {
 	const { open, project, onClose } = props;
-	const runPixel = useSession((state) => state.runPixel);
+	const { run: runPixel } = useSessionInsight();
 
 	const label =
 		project.project_type === "SKILL"

@@ -21,7 +21,7 @@ const literal = (value: string): string => JSON.stringify(value);
  * @returns The Pixel to run.
  */
 export const buildCloneSkillPixel = (skillId: string, name: string): string =>
-	`CloneSkill(skillId=[${literal(skillId)}], name=[${literal(name)}]);`;
+	`CloneSkill(skillId=[${literal(skillId)}], catalogName=[${literal(name)}]);`;
 
 /**
  * Create an app from a template app.
@@ -36,4 +36,4 @@ export const buildCreateAppFromTemplatePixel = (
 	templateId: string,
 	isGlobal: boolean,
 ): string =>
-	`CreateAppFromTemplate(project=[${literal(name)}], projectTemplate=[${literal(templateId)}], global=[${literal(String(isGlobal))}]);`;
+	`CreateAppFromTemplate(catalogName=[${literal(name)}], projectTemplate=[${literal(templateId)}], global=[${literal(String(isGlobal))}]);`;

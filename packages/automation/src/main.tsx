@@ -8,7 +8,7 @@ import {
 	ThemeProvider,
 	Toaster,
 } from "@semoss/ui/next";
-import App from "./App";
+import { App } from "./App";
 import "./index.css";
 
 const root = document.getElementById("root");

@@ -16,11 +16,11 @@ vi.mock("@semoss/sdk/react", async (importOriginal) => {
 	};
 });
 
-// Mock @semoss/shared to avoid flexlayout-react instanceof issues in jsdom.
+// Mock Harness's FlexLayout (src/lib/flex-layout) to avoid flexlayout-react instanceof issues in jsdom.
 // The mocked Layout invokes onRenderTabSet with a real TabSetNode instance
 // (mirroring flexlayout-react) so the sidebar's toolbar buttons, which are
 // pushed into renderValues.buttons rather than rendered as plain JSX, show up.
-vi.mock("@semoss/shared", () => {
+vi.mock("@/lib/flex-layout", () => {
 	class TabNode {}
 	class TabSetNode {
 		constructor(private id: string) {}
@@ -52,11 +52,19 @@ vi.mock("@semoss/shared", () => {
 			TabNode,
 			TabSetNode,
 		},
+	};
+});
+
+vi.mock("@/lib/use-tab-bar-scroll", () => ({
+	useTabBarScroll: vi.fn(() => ({
+		ref: { current: null },
+		onScroll: vi.fn(),
+	})),
+}));
+
+vi.mock("@semoss/shared", () => {
+	return {
 		getFileIconComponent: vi.fn(() => null),
-		useTabBarScroll: vi.fn(() => ({
-			ref: { current: null },
-			onScroll: vi.fn(),
-		})),
 		createMcpPlatformUrl: vi.fn(() => vi.fn()),
 		createPromptPlatformUrl: vi.fn(() => vi.fn()),
 	};

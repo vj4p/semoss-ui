@@ -52,7 +52,7 @@ const RUN_STATUS_CLASSES: Record<StepRunStatus, string> = {
 	success: "border-success/40 bg-success/10 text-success",
 	error: "border-destructive/30 bg-destructive/5 text-destructive",
 };
-export interface NodeEditDrawerProps {
+interface NodeEditDrawerProps {
 	step: AutomationNode;
 	appId: string;
 	upstreamVars: string[];

@@ -62,7 +62,7 @@ import {
 } from "./run-node-view-state";
 import { RunStepVariablesViewer } from "./run-step-variables-viewer";
 
-export interface RunsTabSnapshot {
+interface RunsTabSnapshot {
 	running: boolean;
 	latestRunStatus: RunStatus | null;
 	aiRunSummary: string | null;

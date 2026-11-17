@@ -98,6 +98,8 @@ describe("SettingsIndexPage merged navigation", () => {
 	});
 
 	it("groups the pages into named sections, each a region under an H3", () => {
+		// Resource Governance (which replaced the six per-engine settings pages upstream) is admin-only
+		settings.adminMode = true;
 		renderSettings();
 		const account = screen.getByRole("region", { name: "Account" });
 		expect(
@@ -110,16 +112,21 @@ describe("SettingsIndexPage merged navigation", () => {
 		}
 		const apps = screen.getByRole("region", { name: "Apps and engines" });
 		expect(
-			within(apps).getByRole("link", { name: /Model Settings/ }),
+			within(apps).getByRole("link", { name: /Resource Governance/ }),
 		).toBeInTheDocument();
 		expect(
-			within(account).queryByRole("link", { name: /Model Settings/ }),
+			within(account).queryByRole("link", {
+				name: /Resource Governance/,
+			}),
 		).toBeNull();
 	});
 
 	it("leaves out a section with nothing to show the user", () => {
 		renderSettings();
 		expect(screen.queryByRole("region", { name: "Platform" })).toBeNull();
+		expect(
+			screen.queryByRole("region", { name: "Apps and engines" }),
+		).toBeNull();
 		expect(
 			screen.queryByRole("region", { name: "Monitoring and data" }),
 		).toBeNull();

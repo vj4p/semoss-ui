@@ -21,12 +21,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "@semoss/i18n";
 import { useInsight } from "@semoss/sdk/react";
-import {
-	FlexLayout,
-	getFileExplorerAdapter,
-	getFileIconComponent,
-	useTabBarScroll,
-} from "@semoss/shared";
+import { getFileExplorerAdapter, getFileIconComponent } from "@semoss/shared";
 
 const getFileTabIcon = (fileName: string) => {
 	const Icon = getFileIconComponent(fileName);
@@ -39,6 +34,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@semoss/ui/next";
+import { FlexLayout } from "@/lib/flex-layout";
+import { useTabBarScroll } from "@/lib/use-tab-bar-scroll";
 import type { RoomStore } from "@/stores";
 import { RoomActivity } from "./room-activity";
 import { RoomAuditLogReport } from "./room-audit-log-report";

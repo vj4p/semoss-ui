@@ -31,7 +31,7 @@ import { ToolTextBlock } from "./tool-text-block";
 import { ToolValueRow } from "./tool-value-row";
 
 /** Props for {@link ChatToolCard}. */
-export interface ChatToolCardProps {
+interface ChatToolCardProps {
 	/** The work folder or connector call to show. */
 	tool: ToolStore;
 	/** `inline` sits in the conversation; `panel` fills a sidebar tab. */
@@ -300,7 +300,7 @@ export const ChatToolCard = observer(({ tool, variant }: ChatToolCardProps) => {
 				<Small className="truncate text-muted-foreground">
 					{service
 						? t(`chatConnectors:services.${service.id}.name`)
-						: t("card.chatFiles")}
+						: t("card.roomFiles")}
 				</Small>
 			</div>
 			<StatusBadge

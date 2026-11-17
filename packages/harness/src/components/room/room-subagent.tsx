@@ -1,9 +1,9 @@
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "@semoss/i18n";
-import type { FlexLayout } from "@semoss/shared";
 import { cn, ScrollArea } from "@semoss/ui/next";
 import { getSubagentState } from "@/components/message/response-message-subagent";
+import type { FlexLayout } from "@/lib/flex-layout";
 import type { RoomStore } from "@/stores";
 
 interface RoomSubagentProps {

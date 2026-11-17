@@ -225,6 +225,7 @@ export const NotebookPreviewBlock = ({
 							<Notebook
 								ref={notebookRef}
 								content={content}
+								insightId={room?.insightId ?? ""}
 								onStateChange={setNotebookState}
 							/>
 						</div>
@@ -252,6 +253,7 @@ export const NotebookPreviewBlock = ({
 							<Notebook
 								ref={fullViewNotebookRef}
 								content={content}
+								insightId={room?.insightId ?? ""}
 								onStateChange={() => {}}
 							/>
 						) : (
