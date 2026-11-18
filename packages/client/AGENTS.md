@@ -17,7 +17,8 @@ Reuse their supported public APIs before adding local code.
 
 - **Bundler**: Vite 8
 - **Framework**: React 19 + TypeScript
-- **State**: MobX and Zustand; preserve the owning store's contract
+- **State**: MobX and Zustand today, moving to `StoreState` stores; preserve the owning
+  store's contract (see [State Management](#state-management))
 - **Routing**: `react-router` 8
 - **Styling**: Tailwind CSS v4
 - **Testing**: Vitest
@@ -394,7 +395,9 @@ and save them together, through the SDK's [`api/access.ts`](../../libs/sdk/src/a
   outcome and severity as `AuditStatusBadge` and `AuditSeverityBadge` (an icon or a dot in the
   status color beside the word). `audit-labels.ts` holds the words for the backend's event types,
   statuses, severities, categories and target types (`AuditEventType` and its siblings in SEMOSS);
-  a value it does not know is shown in words. The details sheet (`audit-event-details.tsx`) shows
+  a value it does not know is shown in words. Access SEMOSS removed because its end date passed
+  (the action `PERMISSION_EXPIRED`) reads Access Ended, and an ended place in a team reads Team
+  Membership Ended, with SEMOSS as the actor. The details sheet (`audit-event-details.tsx`) shows
   only the fields an event recorded, JSON as a tree. Enterprise Usage's Access, Settings & Limits
   tab uses the same pieces, and counts app and engine setting changes
   (`AuditEventType.SETTING_CHANGES`) beside access and usage limit changes.
@@ -664,9 +667,9 @@ restart and reload on every server in a cluster.
     for the owners of an app type (`APP_SETTINGS_TYPES`), an agent or a skill, through
     `features/app-export/use-app-export.ts`, which the Import and Export section uses too.
 - **`features/engine-export/`** exports an engine (`ExportEngine`) and downloads the zip
-  (`use-engine-export.ts`), from the menu and from the Export section of Settings. An H2
-  database asks whether to include its data: `export-engine-dialog.tsx` from the menu, a switch
-  in the Settings section.
+  (`use-engine-export.ts`), from the menu and from the Export section of Settings, with no
+  questions. The zip holds the engine's folder, so an engine that keeps its data in files, such
+  as an H2 or RDF database, comes with its data.
 - **`features/engine-clone/`** is `clone-engine-dialog.tsx`: it asks for the clone's name,
   starting from the engine's name followed by "Copy", and clones it (`CloneEngine`) into a private
   engine the user owns, with a copy of its files, settings, metadata and image. Its access is not
@@ -753,6 +756,18 @@ read that list:
   or out clears both. Mount no `AccessStoreProvider`: it is deprecated and reads nothing.
 - **Other application state** is split among the existing stores; there is no `stores/root`,
   `stores/monolith`, or `useRootStore` entry to extend.
+- **Direction.** New shared state goes in a `StoreState`-backed store read through
+  `useStoreSelector`, per the
+  [state management skill](../../skills/state-management.skill.md). Do not add a MobX or
+  Zustand store or an `observer` component over new state. The existing stores migrate one at a
+  time, each as its own scoped change:
+  - MobX: `stores/designer/designer.store.ts` and `stores/workspace/workspace.store.ts`, plus
+    the `observer` components and `computed(() => ...).get()` reads over the renderer's block
+    state under `components/blocks-workspace/`. Those reads move with `@semoss/renderer`, not
+    before it.
+  - Zustand: `stores/assistant/`, `stores/page/`, and `stores/workbench/` (`model`, `database`,
+    `automation`). The workbench domain stores take the dock's `StoreApi<WorkbenchState>` as a
+    dependency and move with or after [`@semoss/workbench`](../../libs/workbench/AGENTS.md).
 - **Domain state** uses its existing context/store contract. See the
   [client workbench components](./src/components/workbench/) and
   [domain stores](./src/stores/workbench/) for their owning implementations. General local-state and orchestration rules

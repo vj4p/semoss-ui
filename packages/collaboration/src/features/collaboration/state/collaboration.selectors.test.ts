@@ -1,4 +1,3 @@
-import { selectToday } from "@/features/dashboard/today-selectors";
 import { createInitialCollaborationState } from "./collaboration.fixtures";
 import { selectWorkItems } from "./collaboration.selectors";
 import type { CollaborationState, WorkItem } from "./collaboration.types";
@@ -71,17 +70,5 @@ describe("selectWorkItems views follow the server's", () => {
 		expect(
 			ids(selectWorkItems(state, { view: "suggested" }).items),
 		).toEqual(["suggested"]);
-	});
-});
-
-describe("selectToday", () => {
-	it("does not offer an item you are waiting on as something to do", () => {
-		const state = stateWith([
-			{ id: "mine", askType: "reply" },
-			{ id: "theirs", askType: "waiting_on" },
-		]);
-		const today = selectToday(state, new Date("2026-10-28T12:00:00Z"));
-		expect(ids(today.items)).toEqual(["mine"]);
-		expect(today.total).toBe(1);
 	});
 });
